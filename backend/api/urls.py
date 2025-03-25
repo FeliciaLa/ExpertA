@@ -15,6 +15,8 @@ from .views import (
     ExpertListView,
     ExpertDetailView,
     ExpertProfileUpdateView,
+    TrainingSessionView,
+    TrainingQuestionView,
 )
 
 urlpatterns = [
@@ -31,4 +33,6 @@ urlpatterns = [
     path('expert/profile/update/', ExpertProfileUpdateView.as_view(), name='expert_profile_update'),
     path('experts/', ExpertListView.as_view(), name='expert-list'),
     path('experts/<str:expert_id>/', ExpertDetailView.as_view(), name='expert-detail'),
+    path('training/sessions/', TrainingSessionView.as_view(), name='training-sessions'),
+    path('training/sessions/<str:session_id>/questions/', TrainingQuestionView.as_view(), name='training-questions'),
 ] 

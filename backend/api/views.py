@@ -17,8 +17,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import ModelSerializer
-from .models import Expert
-from .serializers import ExpertSerializer, ExpertProfileSerializer
+from .models import Expert, TrainingSession, TrainingQuestion
+from .serializers import (
+    ExpertSerializer, 
+    ExpertProfileSerializer, 
+    TrainingSessionSerializer, 
+    TrainingQuestionSerializer
+)
+from django.utils import timezone
 
 Expert = get_user_model()
 
@@ -609,3 +615,180 @@ class ExpertDetailView(APIView):
             return Response(data)
         except Expert.DoesNotExist:
             return Response({'error': 'Expert not found'}, status=404)
+
+class TrainingSessionView(APIView):
+    """
+    API endpoint for managing training sessions.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Get all training sessions for the current expert"""
+        sessions = TrainingSession.objects.filter(expert=request.user)
+        serializer = TrainingSessionSerializer(sessions, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        """Start a new training session"""
+        field = request.data.get('field_of_knowledge')
+        if not field:
+            return Response({
+                "error": "Field of knowledge is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create new session
+        session = TrainingSession.objects.create(
+            expert=request.user,
+            field_of_knowledge=field
+        )
+
+        # Initialize OpenAI client
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+        try:
+            # Generate questions based on the field
+            completion = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are an expert interviewer. Generate 20 in-depth questions to thoroughly understand someone's expertise in a specific field. The questions should progress from fundamental concepts to advanced applications. Each question should be detailed and require comprehensive answers. Format the output as a numbered list."},
+                    {"role": "user", "content": f"Generate 20 questions to assess and understand an expert's knowledge in: {field}"}
+                ]
+            )
+            
+            # Parse questions and create TrainingQuestion objects
+            questions_text = completion.choices[0].message.content
+            questions_list = [q.strip() for q in questions_text.split('\n') if q.strip()]
+            
+            # Create question objects
+            for i, question in enumerate(questions_list, 1):
+                # Remove the number prefix if present (e.g., "1. " or "1)")
+                question_text = re.sub(r'^\d+[\.\)]?\s*', '', question)
+                TrainingQuestion.objects.create(
+                    session=session,
+                    question=question_text,
+                    order=i
+                )
+
+            serializer = TrainingSessionSerializer(session)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            session.delete()  # Clean up the session if question generation fails
+            return Response({
+                "error": "Failed to generate questions",
+                "detail": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class TrainingQuestionView(APIView):
+    """
+    API endpoint for managing training questions.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        """Get the next unanswered question in the session"""
+        try:
+            session = TrainingSession.objects.get(id=session_id, expert=request.user)
+            if session.is_completed:
+                return Response({
+                    "message": "Training session is completed"
+                }, status=status.HTTP_200_OK)
+
+            # Get the next unanswered question
+            question = TrainingQuestion.objects.filter(
+                session=session,
+                answer__isnull=True
+            ).order_by('order').first()
+
+            if not question:
+                # If no questions left, mark session as completed
+                session.is_completed = True
+                session.save()
+                return Response({
+                    "message": "All questions have been answered"
+                }, status=status.HTTP_200_OK)
+
+            serializer = TrainingQuestionSerializer(question)
+            return Response(serializer.data)
+
+        except TrainingSession.DoesNotExist:
+            return Response({
+                "error": "Training session not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, session_id):
+        """Submit an answer for a question"""
+        try:
+            session = TrainingSession.objects.get(id=session_id, expert=request.user)
+            if session.is_completed:
+                return Response({
+                    "error": "Training session is already completed"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            question_id = request.data.get('question_id')
+            answer = request.data.get('answer')
+
+            if not all([question_id, answer]):
+                return Response({
+                    "error": "Question ID and answer are required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get the question and verify it belongs to the session
+            try:
+                question = TrainingQuestion.objects.get(
+                    id=question_id,
+                    session=session,
+                    answer__isnull=True
+                )
+            except TrainingQuestion.DoesNotExist:
+                return Response({
+                    "error": "Question not found or already answered"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            # Save the answer
+            question.answer = answer
+            question.answered_at = timezone.now()
+            question.save()
+
+            # Store the Q&A pair in the vector database
+            try:
+                # Initialize OpenAI client
+                client = OpenAI(api_key=settings.OPENAI_API_KEY)
+                
+                # Create a formatted text combining the field, question, and answer
+                knowledge_text = f"Field: {session.field_of_knowledge}\nQuestion: {question.question}\nAnswer: {answer}"
+                
+                # Generate embedding
+                embedding_response = client.embeddings.create(
+                    model="text-embedding-ada-002",
+                    input=knowledge_text
+                )
+                embedding = embedding_response.data[0].embedding
+
+                # Initialize Pinecone and store the embedding
+                index = init_pinecone()
+                if index:
+                    index.upsert(vectors=[{
+                        'id': str(uuid.uuid4()),
+                        'values': embedding[:1024],
+                        'metadata': {
+                            'text': knowledge_text,
+                            'created_by': request.user.username,
+                            'created_at': str(datetime.now()),
+                            'expert_id': str(request.user.id),
+                            'field': session.field_of_knowledge
+                        }
+                    }])
+
+            except Exception as e:
+                # Log the error but don't fail the request
+                print(f"Failed to store Q&A in vector database: {str(e)}")
+
+            return Response({
+                "message": "Answer submitted successfully"
+            }, status=status.HTTP_200_OK)
+
+        except TrainingSession.DoesNotExist:
+            return Response({
+                "error": "Training session not found"
+            }, status=status.HTTP_404_NOT_FOUND)

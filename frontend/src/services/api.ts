@@ -26,17 +26,54 @@ const api = axios.create({
   },
 });
 
-// Add interceptor to include auth token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-    console.log('Request headers:', config.headers);
-  } else {
-    console.log('No access token found in localStorage');
+// Add request interceptor to include token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Add response interceptor to handle token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If error is 401 and we haven't tried to refresh token yet
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refresh_token');
+        const response = await axios.post('/api/token/refresh/', {
+          refresh: refreshToken,
+        });
+
+        const { access } = response.data;
+        localStorage.setItem('access_token', access);
+
+        // Retry the original request with new token
+        originalRequest.headers.Authorization = `Bearer ${access}`;
+        return api(originalRequest);
+      } catch (err) {
+        // If refresh fails, redirect to login
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/';
+        return Promise.reject(err);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 // Add request interceptor to include CSRF token
 api.interceptors.request.use((config) => {
@@ -48,52 +85,86 @@ api.interceptors.request.use((config) => {
 });
 
 export const expertService = {
+  register: async (data: { name: string; email: string; password: string }) => {
+    const response = await api.post('/api/register/', data);
+    return response.data;
+  },
+
+  signIn: async (data: { email: string; password: string }) => {
+    const response = await api.post('/api/token/', {
+      username: data.email,
+      password: data.password,
+    });
+    return response.data;
+  },
+
+  getProfile: async () => {
+    const response = await api.get('/api/expert/profile/');
+    return response.data;
+  },
+
+  updateProfile: async (profileData: any) => {
+    const response = await api.put('/api/expert/profile/update/', profileData);
+    return response.data;
+  },
+
   submitKnowledge: async (knowledge: string) => {
     const response = await api.post('/api/train/', { knowledge });
     return response.data;
   },
 
   getKnowledge: async () => {
-    try {
-      const response = await api.get('/api/knowledge/');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get('/api/knowledge/');
+    return response.data;
   },
 
   updateKnowledge: async (id: string, knowledge: string) => {
-    try {
-      const response = await api.put(`/api/knowledge/${id}/`, { knowledge });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.put(`/api/knowledge/${id}/`, { knowledge });
+    return response.data;
   },
 
   deleteKnowledge: async (id: string) => {
-    try {
-      const response = await api.delete(`/api/knowledge/${id}/`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  }
+    const response = await api.delete(`/api/knowledge/${id}/`);
+    return response.data;
+  },
 };
 
 export const chatService = {
-  sendMessage: async (question: string) => {
-    try {
-      const response = await api.post('/api/chat/', { question });
-      if (!response.data || !response.data.answer) {
-        throw new Error('Invalid response format from server');
-      }
-      return response.data;
-    } catch (error) {
-      console.error('Chat service error:', error);
-      throw error;
-    }
-  }
+  sendMessage: async (message: string) => {
+    const response = await api.post('/api/chat/', { question: message });
+    return response.data;
+  },
+};
+
+export const trainingService = {
+  // Get all training sessions for the current expert
+  getSessions: async () => {
+    const response = await api.get('/api/training/sessions/');
+    return response.data;
+  },
+
+  // Start a new training session
+  startSession: async (fieldOfKnowledge: string) => {
+    const response = await api.post('/api/training/sessions/', {
+      field_of_knowledge: fieldOfKnowledge,
+    });
+    return response.data;
+  },
+
+  // Get the next question in a session
+  getNextQuestion: async (sessionId: string) => {
+    const response = await api.get(`/api/training/sessions/${sessionId}/questions/`);
+    return response.data;
+  },
+
+  // Submit an answer for a question
+  submitAnswer: async (sessionId: string, questionId: string, answer: string) => {
+    const response = await api.post(`/api/training/sessions/${sessionId}/questions/`, {
+      question_id: questionId,
+      answer: answer,
+    });
+    return response.data;
+  },
 };
 
 export interface LoginResponse {

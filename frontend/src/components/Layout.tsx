@@ -42,6 +42,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 >
                   Expert Portal
                 </Button>
+                <Button 
+                  color="primary"
+                  onClick={() => navigate('/training')}
+                  sx={{ 
+                    color: location.pathname.startsWith('/training') ? 'primary.main' : 'text.secondary'
+                  }}
+                >
+                  Train AI
+                </Button>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Typography variant="body1" sx={{ color: 'text.primary' }}>
                     {expert?.name}
