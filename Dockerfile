@@ -36,6 +36,7 @@ RUN pip install --upgrade pip && \
                 PyJWT==2.8.0 \
                 whitenoise==6.6.0 \
                 pinecone-client==3.0.0 \
+                openai==1.6.0 \
                 && \
     if [ -f backend/requirements-railway.txt ]; then \
         pip install -r backend/requirements-railway.txt; \
@@ -65,7 +66,8 @@ RUN python -c "import django; print('Django version:', django.get_version())" > 
     python -c "import corsheaders; print('corsheaders found')" >> /app/debug/imports_check.txt && \
     python -c "import rest_framework; print('DRF found')" >> /app/debug/imports_check.txt && \
     python -c "import rest_framework_simplejwt; print('JWT found')" >> /app/debug/imports_check.txt && \
-    python -c "import pinecone; print('Pinecone module found')" >> /app/debug/imports_check.txt || echo "Some imports failed, see debug directory"
+    python -c "import pinecone; print('Pinecone module found')" >> /app/debug/imports_check.txt && \
+    python -c "import openai; print('OpenAI module found')" >> /app/debug/imports_check.txt || echo "Some imports failed, see debug directory"
 
 # Run database migrations and collectstatic
 RUN cd backend && \

@@ -9,6 +9,6 @@
     ".heroku/node"
   ],
   "scripts": {
-    "start": "echo 'Setting up Python with virtual environment...' && (apt-get update && apt-get install -y python3 python3-pip python3-venv || echo 'Failed to install Python packages') && mkdir -p /app/venv && python3 -m venv /app/venv && . /app/venv/bin/activate && pip install django==4.2.11 djangorestframework==3.14.0 django-cors-headers==4.3.1 gunicorn==21.2.0 python-dotenv==1.0.0 djangorestframework-simplejwt==5.3.1 PyJWT==2.8.0 whitenoise==6.6.0 pinecone-client==3.0.0 && export PYTHONPATH='/app:/app/backend:$PYTHONPATH' && export DJANGO_SETTINGS_MODULE='expert_system.settings' && python manage.py runserver 0.0.0.0:$PORT || echo 'Failed to start Django server - please check deployment configuration'"
+    "start": "echo 'Setting up Python with virtual environment...' && (apt-get update && apt-get install -y python3 python3-pip python3-venv || echo 'Failed to install Python packages') && mkdir -p /app/venv && python3 -m venv /app/venv && . /app/venv/bin/activate && pip install django==4.2.11 djangorestframework==3.14.0 django-cors-headers==4.3.1 gunicorn==21.2.0 python-dotenv==1.0.0 djangorestframework-simplejwt==5.3.1 PyJWT==2.8.0 whitenoise==6.6.0 pinecone-client==3.0.0 openai==1.6.0 && export PYTHONPATH='/app:/app/backend:$PYTHONPATH' && export DJANGO_SETTINGS_MODULE='expert_system.settings' && python manage.py runserver 0.0.0.0:$PORT || echo 'Failed to start Django server - please check deployment configuration'"
   }
 } 
