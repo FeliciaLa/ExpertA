@@ -5,6 +5,10 @@ echo "Running Django start script"
 echo "Current directory: $(pwd)"
 echo "Directory contents: $(ls -la)"
 
+# Install bleach system-wide as a quick fix
+echo "Ensuring bleach is installed system-wide..."
+pip install --break-system-packages bleach==6.0.0 || pip3 install --break-system-packages bleach==6.0.0 || echo "Failed to install bleach system-wide"
+
 # Set up virtual environment path
 VENV_PATH="/app/venv"
 if [ -d "$VENV_PATH" ]; then
@@ -21,6 +25,8 @@ else
     if [ -d "$VENV_PATH" ]; then
         source "$VENV_PATH/bin/activate"
         echo "Installing required packages..."
+        # Install bleach first
+        pip install bleach==6.0.0
         pip install django==4.2.11 \
                   djangorestframework==3.14.0 \
                   django-cors-headers==4.3.1 \
@@ -30,8 +36,7 @@ else
                   PyJWT==2.8.0 \
                   whitenoise==6.6.0 \
                   pinecone-client==3.0.0 \
-                  openai==1.6.0 \
-                  bleach==6.0.0
+                  openai==1.6.0
     fi
 fi
 
@@ -78,6 +83,12 @@ python --version || echo "python not found"
 which python || echo "python not found in PATH"
 
 # Test Django and packages import
+echo "Testing bleach import..."
+python -c "import bleach; print(f'Bleach is installed at: {bleach.__file__}')" || \
+  (echo "Failed to import bleach - installing now" && \
+   pip install --force-reinstall bleach==6.0.0 && \
+   pip install webencodings)
+
 echo "Testing Django import..."
 python -c "import django; print('Django version:', django.get_version())" || echo "Failed to import Django"
 python -c "import corsheaders; print('corsheaders found')" || echo "Failed to import corsheaders - installing now" && pip install django-cors-headers==4.3.1
@@ -85,7 +96,9 @@ python -c "import rest_framework; print('DRF found')" || echo "Failed to import 
 python -c "import rest_framework_simplejwt; print('JWT found')" || echo "Failed to import JWT - installing now" && pip install djangorestframework-simplejwt==5.3.1
 python -c "import pinecone; print('Pinecone module found')" || echo "Failed to import Pinecone - installing now" && pip install pinecone-client==3.0.0
 python -c "import openai; print('OpenAI module found')" || echo "Failed to import OpenAI - installing now" && pip install openai==1.6.0
-python -c "import bleach; print('Bleach module found')" || echo "Failed to import Bleach - installing now" && pip install bleach==6.0.0
+
+# Final check for bleach
+python -c "import bleach; print('Bleach module finally imported successfully')" || echo "CRITICAL: Bleach still cannot be imported"
 
 # Start Django
 echo "Starting Django server on port ${PORT:-8000}"

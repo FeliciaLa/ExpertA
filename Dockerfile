@@ -9,6 +9,7 @@ RUN apt-get update && \
     curl \
     gnupg \
     python3-venv \
+    python3-dev \
     && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
@@ -25,9 +26,14 @@ ENV PATH="/app/venv/bin:$PATH" \
     PORT=8000 \
     PYTHONPATH="/app:/app/backend"
 
+# Install system-wide Python packages first (for safety)
+RUN pip install --upgrade pip && \
+    pip install --break-system-packages bleach==6.0.0
+
 # Install Python dependencies in the virtual environment
 RUN pip install --upgrade pip && \
-    pip install django==4.2.11 \
+    pip install bleach==6.0.0 \
+                django==4.2.11 \
                 djangorestframework==3.14.0 \
                 django-cors-headers==4.3.1 \
                 gunicorn==21.2.0 \
@@ -37,7 +43,6 @@ RUN pip install --upgrade pip && \
                 whitenoise==6.6.0 \
                 pinecone-client==3.0.0 \
                 openai==1.6.0 \
-                bleach==6.0.0 \
                 && \
     if [ -f backend/requirements-railway.txt ]; then \
         pip install -r backend/requirements-railway.txt; \
@@ -62,14 +67,20 @@ RUN echo "Python version:" > /app/debug/python_info.txt && \
     python -c "import sys; print(sys.path)" >> /app/debug/python_info.txt && \
     echo "Virtual env: $VIRTUAL_ENV" >> /app/debug/python_info.txt
 
-# Test importing packages
-RUN python -c "import django; print('Django version:', django.get_version())" > /app/debug/imports_check.txt && \
-    python -c "import corsheaders; print('corsheaders found')" >> /app/debug/imports_check.txt && \
-    python -c "import rest_framework; print('DRF found')" >> /app/debug/imports_check.txt && \
-    python -c "import rest_framework_simplejwt; print('JWT found')" >> /app/debug/imports_check.txt && \
-    python -c "import pinecone; print('Pinecone module found')" >> /app/debug/imports_check.txt && \
-    python -c "import openai; print('OpenAI module found')" >> /app/debug/imports_check.txt && \
-    python -c "import bleach; print('Bleach module found')" >> /app/debug/imports_check.txt || echo "Some imports failed, see debug directory"
+# Test importing packages with detailed output
+RUN (python -c "import bleach; print('BLEACH IMPORT SUCCESSFUL')" && \
+     python -c "import django; print('Django version:', django.get_version())" && \
+     python -c "import corsheaders; print('corsheaders found')" && \
+     python -c "import rest_framework; print('DRF found')" && \
+     python -c "import rest_framework_simplejwt; print('JWT found')" && \
+     python -c "import pinecone; print('Pinecone module found')" && \
+     python -c "import openai; print('OpenAI module found')") > /app/debug/imports_check.txt 2>&1 || \
+    echo "Some imports failed, see debug directory"
+
+# Double-check bleach installation
+RUN python -c "import bleach; print(f'Bleach is installed at: {bleach.__file__}')" > /app/debug/bleach_check.txt 2>&1 || \
+    echo "Bleach import failed, installing again" && \
+    pip install --upgrade --force-reinstall bleach==6.0.0
 
 # Run database migrations and collectstatic
 RUN cd backend && \
