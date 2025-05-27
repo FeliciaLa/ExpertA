@@ -1,1 +1,1 @@
-web: cd backend && gunicorn expert_system.wsgi:application --log-file -
+web: gunicorn expert_system.wsgi:application --log-file -
