@@ -1,0 +1,324 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Box,
+  Typography,
+  IconButton,
+  Tabs,
+  Tab,
+  TextField,
+  DialogActions,
+  Button,
+  Link,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`auth-tabpanel-${index}`}
+      aria-labelledby={`auth-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ pt: 2 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+interface AuthDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSignIn: (email: string, password: string, isExpertLogin: boolean) => Promise<{ success: boolean; message?: string }>;
+  onRegister: (name: string, email: string, password: string, isExpertRegistration: boolean) => Promise<{ success: boolean; message?: string }>;
+  expertRegisterOnly?: boolean;
+}
+
+const AuthDialog: React.FC<AuthDialogProps> = ({
+  open,
+  onClose,
+  onSignIn,
+  onRegister,
+  expertRegisterOnly = false,
+}) => {
+  const [tabValue, setTabValue] = useState(0);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      // If expertRegisterOnly is true, force the register tab
+      if (expertRegisterOnly) {
+        setTabValue(1);
+      } else {
+        // Otherwise check localStorage for initial tab value
+        const initialTab = localStorage.getItem('authInitialTab');
+        if (initialTab) {
+          setTabValue(parseInt(initialTab, 10));
+          // Clear the value after using it
+          localStorage.removeItem('authInitialTab');
+        }
+      }
+    } else {
+      // Reset form when dialog closes
+      resetForm();
+    }
+  }, [open, expertRegisterOnly]);
+
+  const resetForm = () => {
+    setName('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
+    setIsSubmitting(false);
+    setSuccessMessage(null);
+  };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+    setError('');
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError('');
+      // We pass false for isExpertLogin - the backend will determine the role
+      const result = await onSignIn(email, password, false);
+      if (result.success) {
+        onClose();
+      } else {
+        setError(result.message || 'Invalid email or password');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError('');
+      // We pass false for isExpertRegistration - all users register as regular users
+      const result = await onRegister(name, email, password, false);
+      if (result.success) {
+        // Instead of closing immediately, show success message
+        setName('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        
+        // Show success message about verification email
+        setSuccessMessage('Registration successful! Please check your email to verify your account.');
+        
+        // Don't close dialog immediately so user can see the message
+        setTimeout(() => {
+          setSuccessMessage(null);
+          onClose();
+        }, 5000);
+      } else {
+        setError(result.message || 'Registration failed');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === 'object' && err !== null) {
+        // Try to extract more details if available
+        const errorObj = err as any;
+        if (errorObj.response?.data?.error) {
+          setError(errorObj.response.data.error);
+        } else {
+          setError('Registration failed: ' + JSON.stringify(err));
+        }
+      } else {
+        setError('Registration failed with an unknown error');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          {expertRegisterOnly ? 'Expert Registration' : 'Account'}
+          <IconButton edge="end" onClick={onClose} aria-label="close">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        {!expertRegisterOnly && (
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={tabValue} onChange={handleTabChange} aria-label="auth tabs">
+              <Tab label="Sign In" id="auth-tab-0" aria-controls="auth-tabpanel-0" />
+              <Tab label="Register" id="auth-tab-1" aria-controls="auth-tabpanel-1" />
+            </Tabs>
+          </Box>
+        )}
+
+        {error && (
+          <Typography color="error" variant="body2" sx={{ mt: 2 }}>
+            {error}
+          </Typography>
+        )}
+        
+        {successMessage && (
+          <Typography color="success" variant="body2" sx={{ mt: 2 }}>
+            {successMessage}
+          </Typography>
+        )}
+
+        {!expertRegisterOnly && (
+          <TabPanel value={tabValue} index={0}>
+            <form onSubmit={handleSignIn}>
+              <Box display="flex" flexDirection="column" gap={3}>
+                <TextField
+                  label="Email"
+                  type="email"
+                  fullWidth
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isSubmitting}
+                />
+                <TextField
+                  label="Password"
+                  type="password"
+                  fullWidth
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isSubmitting}
+                />
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                  <Button onClick={onClose} color="inherit" disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </Box>
+              </Box>
+            </form>
+          </TabPanel>
+        )}
+
+        <TabPanel value={expertRegisterOnly ? 0 : tabValue} index={expertRegisterOnly ? 0 : 1}>
+          <form onSubmit={handleRegister}>
+            <Box display="flex" flexDirection="column" gap={3}>
+              <TextField
+                label="Full Name"
+                type="text"
+                fullWidth
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
+              <TextField
+                label="Email"
+                type="email"
+                fullWidth
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
+              <TextField
+                label="Password"
+                type="password"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isSubmitting}
+                helperText="Password must be at least 8 characters long"
+              />
+              <TextField
+                label="Confirm Password"
+                type="password"
+                fullWidth
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={isSubmitting}
+                error={confirmPassword !== '' && password !== confirmPassword}
+                helperText={confirmPassword !== '' && password !== confirmPassword ? 'Passwords do not match' : ''}
+              />
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                <Button onClick={onClose} color="inherit" disabled={isSubmitting}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Registering...' : 'Register'}
+                </Button>
+              </Box>
+            </Box>
+          </form>
+        </TabPanel>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AuthDialog; 

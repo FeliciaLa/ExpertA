@@ -137,6 +137,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Media files (User uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -144,20 +148,20 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # REST Framework settings
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
+        # Temporarily disable throttling to fix expert loading issues
+        # 'rest_framework.throttling.AnonRateThrottle',
+        # 'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '10/hour',
-        'user': '100/hour',
-        'training': '20/day',
+        'anon': '1000/day',
+        'user': '10000/day',
     }
 }
 
@@ -168,15 +172,104 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'JTI_CLAIM': 'jti',
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
 }
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOW_ALL_ORIGINS = True  # This must come first to take precedence
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:5174",
+    "http://localhost:5174",
+    "http://127.0.0.1:5175",
+    "http://localhost:5175",
+    "http://127.0.0.1:5176",
+    "http://localhost:5176",
+    "http://127.0.0.1:5177",
+    "http://localhost:5177",
+    "http://127.0.0.1:5178",
+    "http://localhost:5178",
+    "http://127.0.0.1:5179",
+    "http://localhost:5179",
+    "http://127.0.0.1:5180",
+    "http://localhost:5180",
+    "http://127.0.0.1:5181",
+    "http://localhost:5181",
+    "http://127.0.0.1:5182",
+    "http://localhost:5182",
+    "http://127.0.0.1:5183",
+    "http://localhost:5183",
+    "http://127.0.0.1:5184",
+    "http://localhost:5184",
+    "http://127.0.0.1:5185",
+    "http://localhost:5185",
+    "http://127.0.0.1:5186",
+    "http://localhost:5186",
+    "http://127.0.0.1:5187",
+    "http://localhost:5187",
+    "http://127.0.0.1:5188",
+    "http://localhost:5188",
+    "http://127.0.0.1:5189",
+    "http://localhost:5189",
+    "http://127.0.0.1:5190",
+    "http://localhost:5190",
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'cache-control',
+    'pragma',
+    'access-control-allow-origin',
+]
+CORS_EXPOSE_HEADERS = [
+    'content-type', 
+    'authorization',
+    'cache-control',
+    'pragma',
+]
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",  # Vite dev server
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+    "http://localhost:5177",
+    "http://localhost:5178",
+    "http://localhost:5179",
+    "http://localhost:5180",
+    "http://localhost:5181",
+    "http://localhost:5182",
+    "http://localhost:5183",
+    "http://localhost:5184",
+    "http://localhost:5185",
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to CSRF token
@@ -217,3 +310,10 @@ LOGIN_REDIRECT_URL = '/api/expert-form/'
 
 # Custom user model
 AUTH_USER_MODEL = 'api.Expert'
+
+# Frontend URL for email verification
+FRONTEND_URL = 'http://127.0.0.1:5175'
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
+DEFAULT_FROM_EMAIL = 'experta@example.com'

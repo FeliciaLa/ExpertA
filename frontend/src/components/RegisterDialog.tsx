@@ -24,7 +24,6 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose, onRegist
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,7 +33,6 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose, onRegist
       setName('');
       setEmail('');
       setPassword('');
-      setConfirmPassword('');
       setError('');
       setIsSubmitting(false);
     }
@@ -42,12 +40,8 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose, onRegist
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !email || !password) {
       setError('Please fill in all fields');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
       return;
     }
 
@@ -67,7 +61,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose, onRegist
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          Expert Registration
+          Register as Expert
           <IconButton edge="end" onClick={onClose} aria-label="close">
             <CloseIcon />
           </IconButton>
@@ -106,15 +100,6 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose, onRegist
               fullWidth
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isSubmitting}
-            />
-            <TextField
-              label="Confirm Password"
-              type="password"
-              fullWidth
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               disabled={isSubmitting}
             />

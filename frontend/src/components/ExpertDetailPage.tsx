@@ -5,14 +5,25 @@ import {
   Paper,
   Typography,
   Avatar,
-  Chip,
   Divider,
   Button,
-  Container
+  Container,
+  TextField
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Chat } from './Chat';
 import api from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import UserAuthDialog from './UserAuthDialog';
+
+interface ExpertProfile {
+  industry?: string;
+  years_of_experience?: string;
+  key_skills?: string;
+  typical_problems?: string;
+  methodologies?: string;
+  tools_technologies?: string;
+}
 
 interface ExpertDetail {
   id: string;
@@ -20,29 +31,266 @@ interface ExpertDetail {
   email: string;
   specialties: string;
   bio: string;
+  title?: string;
+  profile_image: string | null;
+  profile: ExpertProfile | null;
 }
 
 export const ExpertDetailPage: React.FC = () => {
   const { expertId } = useParams();
   const navigate = useNavigate();
   const [expert, setExpert] = useState<ExpertDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const { isUser, signIn, register, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const fetchExpertDetails = async () => {
+      if (!expertId || expertId === 'undefined') {
+        console.error('Invalid expert ID:', expertId);
+        setError('Expert not found. Please go back to the expert list.');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Fetching expert details for ID:', expertId);
       try {
+        setLoading(true);
+        setError(null);
+        
         const response = await api.get(`/api/experts/${expertId}/`);
-        setExpert(response.data);
-      } catch (error) {
-        console.error('Failed to fetch expert details:', error);
+        console.log('Expert details response:', response.data);
+        
+        // Validate that we received valid data with an ID
+        if (!response.data || !response.data.id) {
+          console.error('Received invalid expert data:', response.data);
+          setError('Invalid expert data received. Please try again.');
+          setLoading(false);
+          return;
+        }
+        
+        setExpert({
+          id: response.data.id,
+          name: response.data.name || 'Unknown Expert',
+          email: response.data.email || '',
+          specialties: response.data.specialties || '',
+          bio: response.data.bio || '',
+          title: response.data.title || '',
+          profile_image: response.data.profile_image,
+          profile: response.data.profile
+        });
+      } catch (err: any) {
+        console.error('Failed to fetch expert details:', err);
+        console.error('Error response:', err.response?.data);
+        console.error('Error status:', err.response?.status);
+        
+        // Set different error messages based on the error type
+        setError(err.response?.status === 404 
+          ? 'Expert not found. Please go back to the expert list.'
+          : 'Failed to load expert details. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchExpertDetails();
   }, [expertId]);
 
-  if (!expert) {
-    return <Box sx={{ p: 3 }}>Loading...</Box>;
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="body1">Loading expert details...</Typography>
+        </Box>
+      </Container>
+    );
   }
+
+  if (error || !expert) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Button 
+          onClick={() => navigate('/experts')}
+          sx={{ mb: 3 }}
+        >
+          ← Back to Experts
+        </Button>
+        <Paper sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h6" color="error" gutterBottom>
+            {error || 'Expert not found'}
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/experts')}
+            sx={{ mt: 2 }}
+          >
+            Browse All Experts
+          </Button>
+        </Paper>
+      </Container>
+    );
+  }
+
+  // Function to get the correct image URL
+  const getProfileImageUrl = () => {
+    if (!expert.profile_image) return '';
+    
+    // Handle both relative and absolute URLs
+    if (expert.profile_image.startsWith('http')) {
+      return expert.profile_image;
+    }
+    
+    // Use the API URL from the api service
+    return `${api.defaults.baseURL}${expert.profile_image}`;
+  };
+
+  // Handle user sign in
+  const handleUserSignIn = async (email: string, password: string) => {
+    try {
+      const result = await signIn(email, password, false); // false indicates user login, not expert
+      if (result.success) {
+        setIsAuthDialogOpen(false);
+      }
+      return result;
+    } catch (error) {
+      // Error is handled by the dialog
+      throw error;
+    }
+  };
+
+  // Handle user registration
+  const handleUserRegister = async (name: string, email: string, password: string) => {
+    try {
+      const result = await register(name, email, password, false); // false indicates user registration, not expert
+      if (result.success) {
+        setIsAuthDialogOpen(false);
+      }
+      return result;
+    } catch (error) {
+      // Error is handled by the dialog
+      throw error;
+    }
+  };
+
+  // Render chat or login prompt based on authentication
+  const renderChatSection = () => {
+    // Simple check: if authenticated (user OR expert), allow chat with ANY AI
+    if (isAuthenticated) {
+      return <Chat expertId={expert.id} expertName={expert.name} />;
+    }
+    
+    // Sample preview messages to show when not logged in
+    const previewMessages = [
+      { role: 'user', content: 'What can I ask you?' },
+      { role: 'assistant', content: `I'm here to help with anything in my area of expertise — from quick advice to deep dives into complex topics.` }
+    ];
+
+    // Show preview chat interface for non-logged in users
+    return (
+      <>
+        <Box
+          sx={{
+            flex: 1,
+            overflow: 'auto',
+            p: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            bgcolor: '#fafafa',
+          }}
+        >
+          {/* Show preview messages for non-logged in users */}
+          {previewMessages.map((message, index) => (
+            <Box
+              key={index}
+              sx={{
+                alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                maxWidth: '70%',
+              }}
+            >
+              <Paper
+                elevation={1}
+                sx={{
+                  p: 2,
+                  backgroundColor: message.role === 'user' ? '#1976d2' : 'white',
+                  color: message.role === 'user' ? 'white' : 'text.primary',
+                  borderRadius: 2,
+                  boxShadow: message.role === 'user' ? 1 : 2,
+                }}
+              >
+                <Typography variant="body1">
+                  {message.content}
+                </Typography>
+              </Paper>
+            </Box>
+          ))}
+          
+          <Box sx={{ textAlign: 'center', p: 2, mt: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              This is a preview of the chat. {' '}
+              <Box 
+                component="span" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAuthDialogOpen(true);
+                }}
+                sx={{ 
+                  color: '#1976d2', 
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                  '&:hover': {
+                    color: '#1565c0',
+                  }
+                }}
+              >
+                Sign in
+              </Box>
+              {' '} to continue the conversation.
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box 
+          component="div" 
+          onClick={() => setIsAuthDialogOpen(true)}
+          sx={{ 
+            width: '100%',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            p: 2,
+            cursor: 'pointer'
+          }}
+        >
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Sign in to chat with this expert"
+            size="medium"
+            InputProps={{
+              readOnly: true,
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                backgroundColor: '#f8f9fa',
+                cursor: 'pointer'
+              },
+              '&:hover .MuiOutlinedInput-root': {
+                backgroundColor: '#f0f0f0',
+                borderColor: '#1976d2'
+              },
+              '& .MuiInputBase-input': {
+                cursor: 'pointer'
+              },
+              cursor: 'pointer'
+            }}
+          />
+        </Box>
+      </>
+    );
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -59,6 +307,7 @@ export const ExpertDetailPage: React.FC = () => {
           <Paper sx={{ p: 3, height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <Avatar
+                src={getProfileImageUrl()}
                 sx={{
                   width: 80,
                   height: 80,
@@ -73,26 +322,15 @@ export const ExpertDetailPage: React.FC = () => {
                 <Typography variant="h5" gutterBottom>
                   {expert.name}
                 </Typography>
-                <Typography color="textSecondary">
-                  {expert.email}
-                </Typography>
+                {expert.title && (
+                  <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                    {expert.title}
+                  </Typography>
+                )}
               </Box>
             </Box>
 
             <Divider sx={{ my: 2 }} />
-
-            <Typography variant="h6" gutterBottom>
-              Specialties
-            </Typography>
-            <Box sx={{ mb: 2 }}>
-              {expert.specialties?.split(',').map((specialty, index) => (
-                <Chip
-                  key={index}
-                  label={specialty.trim()}
-                  sx={{ mr: 1, mb: 1 }}
-                />
-              ))}
-            </Box>
 
             <Typography variant="h6" gutterBottom>
               About
@@ -105,11 +343,22 @@ export const ExpertDetailPage: React.FC = () => {
 
         {/* Chat Section */}
         <Grid item xs={12} md={7}>
-          <Paper sx={{ p: 3, height: '100%' }}>
-            <Chat expertId={expert.id} />
+          <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {/* Always show the title, regardless of authentication state */}
+            <Typography variant="h5" sx={{ mb: 3, color: '#1976d2', fontWeight: 500 }}>
+              Chat with {expert.name.split(' ')[0]}'s AI
+            </Typography>
+            {renderChatSection()}
           </Paper>
         </Grid>
       </Grid>
+
+      <UserAuthDialog
+        open={isAuthDialogOpen}
+        onClose={() => setIsAuthDialogOpen(false)}
+        onSignIn={handleUserSignIn}
+        onRegister={handleUserRegister}
+      />
     </Container>
   );
 };

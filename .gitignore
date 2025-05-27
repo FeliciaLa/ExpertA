@@ -60,3 +60,6 @@ htmlcov/
 # Distribution
 dist/
 build/
+.env
+db.sqlite3
+media/
