@@ -5,22 +5,30 @@ WORKDIR /app
 # Copy requirements first (for better caching)
 COPY backend/requirements.txt /app/requirements.txt
 
-# Install dependencies and ensure gunicorn is globally available
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
+# Install dependencies with verbose output
+RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir gunicorn==21.2.0 && \
-    ln -sf /usr/local/bin/gunicorn /usr/bin/gunicorn
+    ls -la /usr/local/bin/ && \
+    echo "PATH is $PATH"
 
 # Copy application code
 COPY backend/ /app/
+
+# Create a startup script
+RUN echo '#!/bin/sh\n\
+echo "Current directory: $(pwd)"\n\
+echo "PATH=$PATH"\n\
+echo "Python location: $(which python)"\n\
+echo "Gunicorn location:"\n\
+find / -name gunicorn 2>/dev/null || echo "Gunicorn not found"\n\
+echo "Starting with direct path..."\n\
+exec /usr/local/bin/python -m gunicorn expert_system.wsgi:application --bind 0.0.0.0:$PORT\n\
+' > /app/start.sh && \
+    chmod +x /app/start.sh
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PORT=8000
 
-# Start the application
-CMD ["sh", "-c", "echo 'Starting gunicorn...' && echo 'PATH=$PATH' && which gunicorn && gunicorn expert_system.wsgi:application --bind 0.0.0.0:$PORT"] 
+# Use the startup script
+ENTRYPOINT ["/app/start.sh"] 
