@@ -1,1 +1,1 @@
-web: find / -name python -type f 2>/dev/null || echo "Python not found"; echo "PATH=$PATH"; ls -la /bin; ls -la /usr/bin 
+web: cd backend && /nix/var/nix/profiles/default/bin/python -m django runserver 0.0.0.0:$PORT 
