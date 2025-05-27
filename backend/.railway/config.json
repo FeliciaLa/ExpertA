@@ -1,10 +1,11 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "pip install -r requirements.txt"
+    "builder": "DOCKERFILE",
+    "dockerfile": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "gunicorn expert_system.wsgi:application --log-file -",
+    "numReplicas": 1,
+    "startCommand": null,
     "healthcheckPath": "/",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
