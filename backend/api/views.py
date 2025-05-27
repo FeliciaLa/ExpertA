@@ -727,7 +727,7 @@ class ExpertRegistrationView(APIView):
                 return Response({
                     "error": "Email already registered"
                 }, status=status.HTTP_400_BAD_REQUEST)
-                
+
             # Validate password length
             if len(password) < 8:
                 return Response({
@@ -742,7 +742,7 @@ class ExpertRegistrationView(APIView):
                 role=User.Role.EXPERT,
                 is_active=False  # Expert starts inactive until email is verified
             )
-            
+
             # Send verification email
             token = send_verification_email(expert, request)
 
@@ -802,7 +802,7 @@ class ExpertProfileUpdateView(APIView):
         
         # Return updated profile
         serializer = ExpertProfileSerializer(expert)
-        return Response(serializer.data)
+            return Response(serializer.data)
 
 class ProfileImageUploadView(APIView):
     """
@@ -1458,9 +1458,9 @@ class PublicExpertListView(APIView):
                 
                 expert_data = {
                     'id': str(expert.id),  # Ensure ID is explicitly converted to string
-                    'name': expert.get_full_name() or expert.username,
-                    'email': expert.email,
-                    'specialties': getattr(expert, 'specialties', ''),
+                'name': expert.get_full_name() or expert.username,
+                'email': expert.email,
+                'specialties': getattr(expert, 'specialties', ''),
                     'bio': getattr(expert, 'bio', ''),
                     'title': getattr(expert, 'title', ''),
                     'profile_image': expert.profile_image.url if hasattr(expert, 'profile_image') and expert.profile_image else None,
