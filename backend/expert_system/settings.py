@@ -10,9 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-from pathlib import Path
 import os
 import sys
+from pathlib import Path
+
+# Check if running on Railway
+ON_RAILWAY = os.environ.get('RAILWAY_STATIC_URL', '') != ''
+if ON_RAILWAY:
+    print("Running on Railway - using simplified authentication")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,12 +29,14 @@ if os.path.exists(vendor_path) and vendor_path not in sys.path:
     print(f"Added vendor directory to path: {vendor_path}")
 
 # Try to load JWT packages using our helper
-try:
-    from .jwt_helper import ensure_jwt_available
-    jwt_available = ensure_jwt_available()
-except Exception as e:
-    print(f"Error in JWT helper: {e}")
-    jwt_available = False
+jwt_available = False
+if not ON_RAILWAY:  # Only try to use JWT if not on Railway
+    try:
+        from .jwt_helper import ensure_jwt_available
+        jwt_available = ensure_jwt_available()
+    except Exception as e:
+        print(f"Error in JWT helper: {e}")
+        jwt_available = False
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -81,8 +88,8 @@ INSTALLED_APPS = [
     "rest_framework",
 ]
 
-# Conditionally add JWT to installed apps if available
-if jwt_available:
+# Conditionally add JWT to installed apps if available and not on Railway
+if jwt_available and not ON_RAILWAY:
     INSTALLED_APPS.append("rest_framework_simplejwt")
     print("Added rest_framework_simplejwt to INSTALLED_APPS")
 
@@ -196,8 +203,8 @@ REST_FRAMEWORK = {
     }
 }
 
-# Add JWT authentication if available
-if jwt_available:
+# Add JWT authentication if available and not on Railway
+if jwt_available and not ON_RAILWAY:
     REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].insert(
         0, 'rest_framework_simplejwt.authentication.JWTAuthentication'
     )
@@ -206,8 +213,8 @@ if jwt_available:
 # JWT settings
 from datetime import timedelta
 
-# Only add SIMPLE_JWT settings if JWT is available
-if jwt_available:
+# Only add SIMPLE_JWT settings if JWT is available and not on Railway
+if jwt_available and not ON_RAILWAY:
     SIMPLE_JWT = {
         'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
         'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
