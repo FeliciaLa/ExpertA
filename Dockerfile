@@ -10,12 +10,8 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the backend code
+# Copy only the backend code
 COPY backend /app/backend
-COPY start-django.sh /app/start-django.sh
-
-# Make startup script executable
-RUN chmod +x /app/start-django.sh
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
@@ -43,18 +39,15 @@ ENV PYTHONPATH="/app:/app/backend"
 ENV DJANGO_SETTINGS_MODULE="expert_system.settings"
 ENV PORT=8000
 
-# Expose port
-EXPOSE 8000
-
-# Add a basic health check endpoint
+# Create health endpoint
 RUN mkdir -p /app/backend/static
 RUN echo '{"status":"ok"}' > /app/backend/static/health.json
 
 # Change to the backend directory
 WORKDIR /app/backend
 
-# Create a simple health check view
-RUN echo 'from django.http import JsonResponse\n\ndef health_check(request):\n    return JsonResponse({"status": "ok"})' > health_view.py
+# Create a standalone health view file
+RUN echo 'from django.http import JsonResponse\n\ndef health(request):\n    return JsonResponse({"status": "ok"})' > health_view.py
 
-# Start the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "expert_system.wsgi"] 
+# Run Django directly with simple health check
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:${PORT:-8000} expert_system.wsgi"] 
