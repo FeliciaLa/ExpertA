@@ -88,4 +88,10 @@ urlpatterns = [
     
     # Email verification - now generic for both users and experts
     path('verify-email/<str:token>/', EmailVerificationView.as_view(), name='verify-email'),
+]
+
+# Ensure the public-experts endpoint is added
+urlpatterns += [
+    # Public endpoints for non-authenticated users
+    path('public-experts/', PublicExpertListView.as_view(), name='public-experts'),
 ] 
