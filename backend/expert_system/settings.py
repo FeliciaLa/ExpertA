@@ -112,12 +112,40 @@ WSGI_APPLICATION = "expert_system.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Configure database based on environment
+if os.getenv('DATABASE_URL'):
+    # Using Railway's DATABASE_URL
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+    print("Using PostgreSQL from DATABASE_URL")
+elif os.getenv('DB_HOST'):
+    # Using custom PostgreSQL configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'experta'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
+    print("Using custom PostgreSQL configuration")
+else:
+    # Default SQLite for development
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+    print("Using SQLite for development")
 
 
 # Password validation

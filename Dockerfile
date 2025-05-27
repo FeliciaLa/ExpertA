@@ -10,6 +10,8 @@ RUN apt-get update && \
     gnupg \
     python3-venv \
     python3-dev \
+    postgresql-client \
+    libpq-dev \
     && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
@@ -44,6 +46,8 @@ RUN pip install --upgrade pip && \
                 whitenoise==6.6.0 \
                 pinecone-client==3.0.0 \
                 openai==1.6.0 \
+                psycopg2-binary==2.9.6 \
+                dj-database-url==2.1.0 \
                 && \
     if [ -f backend/requirements-railway.txt ]; then \
         pip install -r backend/requirements-railway.txt; \

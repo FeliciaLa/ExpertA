@@ -6,8 +6,8 @@ echo "Current directory: $(pwd)"
 echo "Directory contents: $(ls -la)"
 
 # Install bleach system-wide as a quick fix
-echo "Ensuring bleach is installed system-wide..."
-pip install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11 Pillow==10.1.0 || pip3 install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11 Pillow==10.1.0 || echo "Failed to install bleach system-wide"
+echo "Ensuring required packages are installed system-wide..."
+pip install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11 Pillow==10.1.0 psycopg2-binary==2.9.6 dj-database-url==2.1.0 || pip3 install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11 Pillow==10.1.0 psycopg2-binary==2.9.6 dj-database-url==2.1.0 || echo "Failed to install packages system-wide"
 
 # Set up virtual environment path
 VENV_PATH="/app/venv"
@@ -26,7 +26,7 @@ else
         source "$VENV_PATH/bin/activate"
         echo "Installing required packages..."
         # Install bleach first
-        pip install bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11 Pillow==10.1.0
+        pip install bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11 Pillow==10.1.0 psycopg2-binary==2.9.6 dj-database-url==2.1.0
         pip install django==4.2.11 \
                   djangorestframework==3.14.0 \
                   django-cors-headers==4.3.1 \
@@ -104,6 +104,16 @@ python -c "from PIL import Image; print(f'Pillow is installed at: {Image.__file_
   (echo "Failed to import Pillow - installing now" && \
    pip install --force-reinstall Pillow==10.1.0)
 
+echo "Testing PostgreSQL support..."
+python -c "import psycopg2; print(f'psycopg2 is installed at: {psycopg2.__file__}')" || \
+  (echo "Failed to import psycopg2 - installing now" && \
+   pip install --force-reinstall psycopg2-binary==2.9.6)
+
+echo "Testing database URL support..."
+python -c "import dj_database_url; print(f'dj-database-url is installed at: {dj_database_url.__file__}')" || \
+  (echo "Failed to import dj_database_url - installing now" && \
+   pip install --force-reinstall dj-database-url==2.1.0)
+
 echo "Testing Django import..."
 python -c "import django; print('Django version:', django.get_version())" || echo "Failed to import Django"
 python -c "import corsheaders; print('corsheaders found')" || echo "Failed to import corsheaders - installing now" && pip install django-cors-headers==4.3.1
@@ -114,6 +124,15 @@ python -c "import openai; print('OpenAI module found')" || echo "Failed to impor
 
 # Final check for bleach
 python -c "import bleach; print('Bleach module finally imported successfully')" || echo "CRITICAL: Bleach still cannot be imported"
+
+# Run database migrations
+echo "Running database migrations..."
+python manage.py makemigrations --noinput || echo "Warning: Makemigrations failed"
+python manage.py migrate --noinput || echo "Warning: Database migration failed"
+
+# Collect static files
+echo "Collecting static files..."
+python manage.py collectstatic --noinput || echo "Warning: Static file collection failed"
 
 # Start Django
 echo "Starting Django server on port ${PORT:-8000}"
