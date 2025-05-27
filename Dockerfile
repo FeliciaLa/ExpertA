@@ -27,8 +27,19 @@ ENV PATH="/app/venv/bin:$PATH" \
 
 # Install Python dependencies in the virtual environment
 RUN pip install --upgrade pip && \
-    pip install django==4.2.11 djangorestframework==3.14.0 gunicorn==21.2.0 && \
-    pip install -r backend/requirements-railway.txt || pip install -r backend/requirements.txt
+    pip install django==4.2.11 \
+                djangorestframework==3.14.0 \
+                django-cors-headers==4.3.1 \
+                gunicorn==21.2.0 \
+                python-dotenv==1.0.0 \
+                djangorestframework-simplejwt==5.3.1 \
+                PyJWT==2.8.0 \
+                whitenoise==6.6.0 && \
+    if [ -f backend/requirements-railway.txt ]; then \
+        pip install -r backend/requirements-railway.txt; \
+    elif [ -f backend/requirements.txt ]; then \
+        pip install -r backend/requirements.txt; \
+    fi
 
 # Make startup script executable
 RUN chmod +x /app/start-django.sh
@@ -47,8 +58,11 @@ RUN echo "Python version:" > /app/debug/python_info.txt && \
     python -c "import sys; print(sys.path)" >> /app/debug/python_info.txt && \
     echo "Virtual env: $VIRTUAL_ENV" >> /app/debug/python_info.txt
 
-# Verify Django installation
-RUN python -c "import django; print('Django version:', django.get_version())" > /app/debug/django_check.txt
+# Test importing packages
+RUN python -c "import django; print('Django version:', django.get_version())" > /app/debug/imports_check.txt && \
+    python -c "import corsheaders; print('corsheaders found')" >> /app/debug/imports_check.txt && \
+    python -c "import rest_framework; print('DRF found')" >> /app/debug/imports_check.txt && \
+    python -c "import rest_framework_simplejwt; print('JWT found')" >> /app/debug/imports_check.txt || echo "Some imports failed, see debug directory"
 
 # Run database migrations and collectstatic
 RUN cd backend && \
