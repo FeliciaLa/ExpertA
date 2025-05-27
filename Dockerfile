@@ -28,11 +28,12 @@ ENV PATH="/app/venv/bin:$PATH" \
 
 # Install system-wide Python packages first (for safety)
 RUN pip install --upgrade pip && \
-    pip install --break-system-packages bleach==6.0.0
+    pip install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1
 
 # Install Python dependencies in the virtual environment
 RUN pip install --upgrade pip && \
     pip install bleach==6.0.0 \
+                PyPDF2==3.0.1 \
                 django==4.2.11 \
                 djangorestframework==3.14.0 \
                 django-cors-headers==4.3.1 \
