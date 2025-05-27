@@ -7,7 +7,7 @@ echo "Directory contents: $(ls -la)"
 
 # Install bleach system-wide as a quick fix
 echo "Ensuring bleach is installed system-wide..."
-pip install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1 || pip3 install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1 || echo "Failed to install bleach system-wide"
+pip install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11 || pip3 install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11 || echo "Failed to install bleach system-wide"
 
 # Set up virtual environment path
 VENV_PATH="/app/venv"
@@ -26,7 +26,7 @@ else
         source "$VENV_PATH/bin/activate"
         echo "Installing required packages..."
         # Install bleach first
-        pip install bleach==6.0.0 PyPDF2==3.0.1
+        pip install bleach==6.0.0 PyPDF2==3.0.1 python-docx==0.8.11
         pip install django==4.2.11 \
                   djangorestframework==3.14.0 \
                   django-cors-headers==4.3.1 \
@@ -93,6 +93,11 @@ echo "Testing PyPDF2 import..."
 python -c "import PyPDF2; print(f'PyPDF2 is installed at: {PyPDF2.__file__}')" || \
   (echo "Failed to import PyPDF2 - installing now" && \
    pip install --force-reinstall PyPDF2==3.0.1)
+
+echo "Testing python-docx import..."
+python -c "import docx; print(f'python-docx is installed at: {docx.__file__}')" || \
+  (echo "Failed to import python-docx - installing now" && \
+   pip install --force-reinstall python-docx==0.8.11)
 
 echo "Testing Django import..."
 python -c "import django; print('Django version:', django.get_version())" || echo "Failed to import Django"
