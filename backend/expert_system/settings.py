@@ -23,29 +23,13 @@ if os.path.exists(vendor_path) and vendor_path not in sys.path:
     sys.path.insert(0, vendor_path)
     print(f"Added vendor directory to path: {vendor_path}")
 
-# Explicitly check for JWT package
+# Try to load JWT packages using our helper
 try:
-    import rest_framework_simplejwt
-    print("Successfully imported rest_framework_simplejwt")
-except ImportError as e:
-    print(f"Error importing rest_framework_simplejwt: {e}")
-    try:
-        import subprocess
-        print("Attempting to install JWT packages...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "djangorestframework-simplejwt==5.3.1", "PyJWT==2.8.0"])
-        import rest_framework_simplejwt
-        print("Successfully installed and imported rest_framework_simplejwt")
-    except Exception as e:
-        print(f"Failed to install JWT packages: {e}")
-        raise
-
-# Ensuring PyJWT is also available
-try:
-    import jwt
-    print("Successfully imported PyJWT")
-except ImportError as e:
-    print(f"Error importing PyJWT: {e}")
-    raise
+    from .jwt_helper import ensure_jwt_available
+    jwt_available = ensure_jwt_available()
+except Exception as e:
+    print(f"Error in JWT helper: {e}")
+    jwt_available = False
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -95,11 +79,15 @@ INSTALLED_APPS = [
     # Third-party apps - put these before our apps
     "corsheaders",
     "rest_framework",
-    # "rest_framework_simplejwt",  # Temporarily commented out for Railway deployment
-    
-    # Our apps
-    "api",
 ]
+
+# Conditionally add JWT to installed apps if available
+if jwt_available:
+    INSTALLED_APPS.append("rest_framework_simplejwt")
+    print("Added rest_framework_simplejwt to INSTALLED_APPS")
+
+# Add our apps after third-party apps
+INSTALLED_APPS.append("api")
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -192,7 +180,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',  # Temporarily commented out
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -209,27 +196,35 @@ REST_FRAMEWORK = {
     }
 }
 
+# Add JWT authentication if available
+if jwt_available:
+    REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].insert(
+        0, 'rest_framework_simplejwt.authentication.JWTAuthentication'
+    )
+    print("Added JWT authentication to REST_FRAMEWORK")
+
 # JWT settings
 from datetime import timedelta
-# Temporarily commented out for Railway deployment
-"""
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
-    'JTI_CLAIM': 'jti',
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
-    'AUDIENCE': None,
-    'ISSUER': None,
-}
-"""
+
+# Only add SIMPLE_JWT settings if JWT is available
+if jwt_available:
+    SIMPLE_JWT = {
+        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+        'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+        'ROTATE_REFRESH_TOKENS': True,
+        'BLACKLIST_AFTER_ROTATION': True,
+        'USER_ID_FIELD': 'id',
+        'USER_ID_CLAIM': 'user_id',
+        'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+        'TOKEN_TYPE_CLAIM': 'token_type',
+        'JTI_CLAIM': 'jti',
+        'ALGORITHM': 'HS256',
+        'SIGNING_KEY': SECRET_KEY,
+        'VERIFYING_KEY': None,
+        'AUDIENCE': None,
+        'ISSUER': None,
+    }
+    print("Configured SIMPLE_JWT settings")
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # This must come first to take precedence

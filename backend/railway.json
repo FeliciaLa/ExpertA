@@ -5,7 +5,7 @@
     "buildCommand": "pip install --upgrade pip && pip install -r backend/requirements-railway.txt"
   },
   "deploy": {
-    "startCommand": "cd backend && python -m pip install djangorestframework-simplejwt==5.3.1 PyJWT==2.8.0 && gunicorn expert_system.wsgi:application --log-file -",
+    "startCommand": "cd backend && python -c 'from expert_system.jwt_helper import ensure_jwt_available; ensure_jwt_available()' && gunicorn expert_system.wsgi:application --log-file -",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
