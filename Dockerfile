@@ -2,98 +2,59 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Install dependencies
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
-    gnupg \
-    python3-venv \
-    python3-dev \
-    postgresql-client \
     libpq-dev \
-    && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
-    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the entire project
-COPY . /app/
-
-# Create and activate virtual environment
-RUN python -m venv /app/venv
-ENV PATH="/app/venv/bin:$PATH" \
-    VIRTUAL_ENV="/app/venv" \
-    PYTHONUNBUFFERED=1 \
-    PORT=8000 \
-    PYTHONPATH="/app:/app/backend"
-
-# Install system-wide Python packages first (for safety)
-RUN pip install --upgrade pip && \
-    pip install --break-system-packages bleach==6.0.0 PyPDF2==3.0.1
-
-# Install Python dependencies in the virtual environment
-RUN pip install --upgrade pip && \
-    pip install bleach==6.0.0 \
-                PyPDF2==3.0.1 \
-                django==4.2.11 \
-                djangorestframework==3.14.0 \
-                django-cors-headers==4.3.1 \
-                gunicorn==21.2.0 \
-                python-dotenv==1.0.0 \
-                djangorestframework-simplejwt==5.3.1 \
-                PyJWT==2.8.0 \
-                whitenoise==6.6.0 \
-                pinecone-client==3.0.0 \
-                openai==1.6.0 \
-                psycopg2-binary==2.9.6 \
-                dj-database-url==2.1.0 \
-                && \
-    if [ -f backend/requirements-railway.txt ]; then \
-        pip install -r backend/requirements-railway.txt; \
-    elif [ -f backend/requirements.txt ]; then \
-        pip install -r backend/requirements.txt; \
-    fi
+# Copy the backend code
+COPY backend /app/backend
+COPY start-django.sh /app/start-django.sh
 
 # Make startup script executable
 RUN chmod +x /app/start-django.sh
 
-# Create debug directory for troubleshooting
-RUN mkdir -p /app/debug
+# Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install \
+    django==4.2.11 \
+    djangorestframework==3.14.0 \
+    django-cors-headers==4.3.1 \
+    gunicorn==21.2.0 \
+    python-dotenv==1.0.0 \
+    djangorestframework-simplejwt==5.3.1 \
+    PyJWT==2.8.0 \
+    whitenoise==6.6.0 \
+    pinecone-client==3.0.0 \
+    openai==1.6.0 \
+    psycopg2-binary==2.9.6 \
+    dj-database-url==2.1.0 \
+    bleach==6.0.0 \
+    PyPDF2==3.0.1 \
+    python-docx==0.8.11 \
+    Pillow==10.1.0
 
-# Print Python info for debugging
-RUN echo "Python version:" > /app/debug/python_info.txt && \
-    python --version >> /app/debug/python_info.txt && \
-    echo "Pip version:" >> /app/debug/python_info.txt && \
-    pip --version >> /app/debug/python_info.txt && \
-    echo "Installed packages:" >> /app/debug/python_info.txt && \
-    pip list >> /app/debug/python_info.txt && \
-    echo "Python path:" >> /app/debug/python_info.txt && \
-    python -c "import sys; print(sys.path)" >> /app/debug/python_info.txt && \
-    echo "Virtual env: $VIRTUAL_ENV" >> /app/debug/python_info.txt
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH="/app:/app/backend"
+ENV DJANGO_SETTINGS_MODULE="expert_system.settings"
+ENV PORT=8000
 
-# Test importing packages with detailed output
-RUN (python -c "import bleach; print('BLEACH IMPORT SUCCESSFUL')" && \
-     python -c "import django; print('Django version:', django.get_version())" && \
-     python -c "import corsheaders; print('corsheaders found')" && \
-     python -c "import rest_framework; print('DRF found')" && \
-     python -c "import rest_framework_simplejwt; print('JWT found')" && \
-     python -c "import pinecone; print('Pinecone module found')" && \
-     python -c "import openai; print('OpenAI module found')") > /app/debug/imports_check.txt 2>&1 || \
-    echo "Some imports failed, see debug directory"
+# Expose port
+EXPOSE 8000
 
-# Double-check bleach installation
-RUN python -c "import bleach; print(f'Bleach is installed at: {bleach.__file__}')" > /app/debug/bleach_check.txt 2>&1 || \
-    echo "Bleach import failed, installing again" && \
-    pip install --upgrade --force-reinstall bleach==6.0.0
+# Add a basic health check endpoint
+RUN mkdir -p /app/backend/static
+RUN echo '{"status":"ok"}' > /app/backend/static/health.json
 
-# Run database migrations and collectstatic
-RUN cd backend && \
-    python manage.py migrate && \
-    python manage.py collectstatic --noinput
+# Change to the backend directory
+WORKDIR /app/backend
 
-# Set working directory to app root
-WORKDIR /app
+# Create a simple health check view
+RUN echo 'from django.http import JsonResponse\n\ndef health_check(request):\n    return JsonResponse({"status": "ok"})' > health_view.py
 
-# Start the Django application (either using script or CMD will work)
-CMD ["/app/start-django.sh"] 
+# Start the application
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "expert_system.wsgi"] 

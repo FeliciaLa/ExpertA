@@ -5,8 +5,8 @@ dockerfile = "Dockerfile"
 [deploy]
 restartPolicyType = "ON_FAILURE"
 healthcheckPath = "/health/"
+restartPolicyMaxRetries = 10
 numReplicas = 1
-startCommand = "/app/start-django.sh"
 
 [variables]
 NODE_ENV = "production" 
