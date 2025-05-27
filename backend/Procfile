@@ -1,1 +1,1 @@
-web: gunicorn --workers=2 expert_system.wsgi
+web: python -m django runserver 0.0.0.0:$PORT
