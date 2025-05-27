@@ -95,7 +95,7 @@ INSTALLED_APPS = [
     # Third-party apps - put these before our apps
     "corsheaders",
     "rest_framework",
-    "rest_framework_simplejwt",
+    # "rest_framework_simplejwt",  # Temporarily commented out for Railway deployment
     
     # Our apps
     "api",
@@ -192,7 +192,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',  # Temporarily commented out
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -210,6 +211,8 @@ REST_FRAMEWORK = {
 
 # JWT settings
 from datetime import timedelta
+# Temporarily commented out for Railway deployment
+"""
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -226,6 +229,7 @@ SIMPLE_JWT = {
     'AUDIENCE': None,
     'ISSUER': None,
 }
+"""
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # This must come first to take precedence
