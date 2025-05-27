@@ -14,28 +14,38 @@ from pathlib import Path
 import os
 import sys
 
-# Add the vendor directory to the path so we can import packages installed there
-vendor_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'vendor')
-if os.path.exists(vendor_path):
-    sys.path.insert(0, vendor_path)
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Try to explicitly import the JWT module to bypass import errors
+# Check for vendor directory and add it to path if exists
+vendor_path = os.path.join(BASE_DIR, "vendor")
+if os.path.exists(vendor_path) and vendor_path not in sys.path:
+    sys.path.insert(0, vendor_path)
+    print(f"Added vendor directory to path: {vendor_path}")
+
+# Explicitly check for JWT package
 try:
     import rest_framework_simplejwt
     print("Successfully imported rest_framework_simplejwt")
 except ImportError as e:
     print(f"Error importing rest_framework_simplejwt: {e}")
-    # If import fails, try to install it directly
     try:
-        import pip
-        pip.main(['install', 'djangorestframework-simplejwt==5.3.1'])
+        import subprocess
+        print("Attempting to install JWT packages...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "djangorestframework-simplejwt==5.3.1", "PyJWT==2.8.0"])
         import rest_framework_simplejwt
         print("Successfully installed and imported rest_framework_simplejwt")
     except Exception as e:
-        print(f"Failed to install rest_framework_simplejwt: {e}")
+        print(f"Failed to install JWT packages: {e}")
+        raise
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Ensuring PyJWT is also available
+try:
+    import jwt
+    print("Successfully imported PyJWT")
+except ImportError as e:
+    print(f"Error importing PyJWT: {e}")
+    raise
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -48,17 +58,24 @@ load_dotenv(env_path)
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', "django-insecure-=uok9b=dp!93dxjqljv7%8)(^v9tj8@$^b^uz2_111182!#8qc")
+# For deployment, set this with an environment variable
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    # Generate a random key for development only
+    import secrets
+    SECRET_KEY = secrets.token_urlsafe(50)
+    print("WARNING: Using auto-generated SECRET_KEY. Set DJANGO_SECRET_KEY env variable in production.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ["*"]
 
-# Security Settings
-SECURE_SSL_REDIRECT = not DEBUG
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
+# Security Settings - Disabled for Railway deployment
+# These should be re-enabled in a production environment with proper SSL
+SECURE_SSL_REDIRECT = False  # Disabled for Railway
+SESSION_COOKIE_SECURE = False  # Disabled for Railway
+CSRF_COOKIE_SECURE = False  # Disabled for Railway
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
