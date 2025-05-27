@@ -1,12 +1,11 @@
 [build]
 builder = "NIXPACKS"
+buildCommand = "./setup.sh"
 
 [deploy]
 restartPolicyType = "ON_FAILURE"
 healthcheckPath = "/health/"
-buildCommand = "./setup.sh"
-startCommand = "cd backend && npm start"
+startCommand = "node backend/server.js"
 
 [variables]
-NODE_ENV = "production"
-RAILWAY_DOCKERFILE_PATH = "Dockerfile" 
+NODE_ENV = "production" 
