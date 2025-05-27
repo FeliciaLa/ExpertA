@@ -4,7 +4,7 @@ builder = "NIXPACKS"
 [deploy]
 restartPolicyType = "ON_FAILURE"
 healthcheckPath = "/health/"
-buildCommand = "pip install -r backend/requirements-railway.txt && cd backend && python manage.py migrate"
+buildCommand = "./setup.sh"
 startCommand = "cd backend && npm start"
 
 [variables]
