@@ -209,6 +209,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
+    # Local development
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
@@ -217,6 +218,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5178",
     "http://localhost:5179",
     "http://localhost:5180",
+    # Vercel domains
+    "https://expert-a.vercel.app",
+    "https://expert-a-git-main.vercel.app",
+    "https://expert-a-feliciala.vercel.app",
+    # Add your custom Vercel domain once you have it
 ]
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -249,6 +255,7 @@ CORS_EXPOSE_HEADERS = [
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
+    # Local development
     "http://localhost:5173",  # Vite dev server
     "http://localhost:5174",
     "http://localhost:5175",
@@ -257,6 +264,11 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5178",
     "http://localhost:5179",
     "http://localhost:5180",
+    # Vercel domains
+    "https://expert-a.vercel.app",
+    "https://expert-a-git-main.vercel.app",
+    "https://expert-a-feliciala.vercel.app",
+    # Add your custom Vercel domain once you have it
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to CSRF token
