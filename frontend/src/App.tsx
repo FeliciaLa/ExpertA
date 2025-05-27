@@ -1,4 +1,4 @@
-import React from 'react';
+// React is used for JSX transformation even if not explicitly referenced
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import AppRoutes from './routes';

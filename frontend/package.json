@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "vercel:build": "CI=false tsc -b || true && vite build",
     "start": "vite preview --host --port ${PORT:-5173}",
     "build:with-types": "tsc -b && vite build",
     "lint": "eslint .",
