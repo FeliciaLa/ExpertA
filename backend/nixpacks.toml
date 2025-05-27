@@ -1,9 +1,10 @@
 [phases.setup]
-nixPkgs = ["python39", "gcc"]
+nixPkgs = ["python39", "gcc", "curl"]
 
 [phases.install]
 cmds = [
-  "python -m pip install --upgrade pip",
+  "curl -sSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py",
+  "python get-pip.py",
   "pip install -r /app/backend/requirements.txt"
 ]
 

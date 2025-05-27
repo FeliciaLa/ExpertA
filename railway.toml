@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pip install -r backend/requirements.txt"
+buildCommand = "curl -sSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python get-pip.py && pip install -r backend/requirements.txt"
 
 [deploy]
 startCommand = "./start.sh"
