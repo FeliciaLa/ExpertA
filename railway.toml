@@ -1,9 +1,8 @@
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+builder = "NIXPACKS"
 
 [deploy]
-startCommand = "./run.sh"
+startCommand = "./railway-run.sh"
 healthcheckPath = "/health/"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"

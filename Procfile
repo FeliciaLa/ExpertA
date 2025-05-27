@@ -1,1 +1,1 @@
-web: cd backend && /nix/var/nix/profiles/default/bin/python -m django runserver 0.0.0.0:$PORT 
+web: ./railway-run.sh 
