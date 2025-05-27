@@ -1,7 +1,13 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+buildCommand = ""
 
 [deploy]
 healthcheckPath = "/"
-healthcheckTimeout = 100 
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+numReplicas = 1
+
+[variables]
+RAILWAY_DOCKERFILE_PATH = "Dockerfile" 
