@@ -319,12 +319,22 @@ CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to CSRF token
 
 # API Keys with validation
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-if not OPENAI_API_KEY:
+if not OPENAI_API_KEY and not DEBUG:
+    # Only raise error in production
     raise ValueError("OPENAI_API_KEY must be set in environment variables")
+elif not OPENAI_API_KEY:
+    # Use a placeholder in development
+    print("WARNING: Using placeholder OPENAI_API_KEY for development")
+    OPENAI_API_KEY = "sk-placeholder-key-for-development"
 
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
-if not PINECONE_API_KEY:
+if not PINECONE_API_KEY and not DEBUG:
+    # Only raise error in production
     raise ValueError("PINECONE_API_KEY must be set in environment variables")
+elif not PINECONE_API_KEY:
+    # Use a placeholder in development
+    print("WARNING: Using placeholder PINECONE_API_KEY for development")
+    PINECONE_API_KEY = "placeholder-key-for-development"
 
 # Logging Configuration
 LOGGING = {
