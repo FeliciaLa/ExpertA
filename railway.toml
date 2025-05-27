@@ -1,6 +1,6 @@
 [build]
-builder = "nixpacks"
-buildCommand = "python -m ensurepip && python -m pip install -r backend/requirements.txt"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "./start.sh"
