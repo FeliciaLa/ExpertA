@@ -5,6 +5,25 @@ echo "Running Django start script"
 echo "Current directory: $(pwd)"
 echo "Directory contents: $(ls -la)"
 
+# Set up virtual environment path
+VENV_PATH="/app/venv"
+if [ -d "$VENV_PATH" ]; then
+    echo "Activating virtual environment at $VENV_PATH"
+    source "$VENV_PATH/bin/activate"
+    # Verify activation
+    echo "Virtual env: $VIRTUAL_ENV"
+    echo "Which python: $(which python)"
+else
+    echo "Warning: Virtual environment not found at $VENV_PATH"
+    # Try to create one if missing
+    echo "Attempting to create virtual environment..."
+    python3 -m venv "$VENV_PATH" || python -m venv "$VENV_PATH" || echo "Failed to create virtual environment"
+    if [ -d "$VENV_PATH" ]; then
+        source "$VENV_PATH/bin/activate"
+        pip install django==4.2.11 djangorestframework==3.14.0 gunicorn==21.2.0
+    fi
+fi
+
 # Check if we're in the right directory
 if [ -f "backend/manage.py" ]; then
     cd backend
@@ -26,7 +45,7 @@ else
     echo "PYTHONPATH: $PYTHONPATH" >> /app/debug/env_debug.txt
     echo "Current directory: $(pwd)" >> /app/debug/env_debug.txt
     echo "Directory listing: $(ls -la)" >> /app/debug/env_debug.txt
-    echo "Python location: $(which python3 || which python || echo 'Not found')" >> /app/debug/env_debug.txt
+    echo "Python location: $(which python || echo 'Not found')" >> /app/debug/env_debug.txt
     
     exit 1
 fi
@@ -39,26 +58,18 @@ export DJANGO_SETTINGS_MODULE="expert_system.settings"
 echo "Environment variables:"
 echo "PYTHONPATH: $PYTHONPATH"
 echo "DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
+echo "VIRTUAL_ENV: $VIRTUAL_ENV"
+echo "PATH: $PATH"
 
 # Verify Python installation
 echo "Python information:"
-python3 --version || python --version || echo "python not found"
-which python3 || which python || echo "python not found in PATH"
+python --version || echo "python not found"
+which python || echo "python not found in PATH"
 
 # Test Django import
 echo "Testing Django import..."
-python3 -c "import django; print('Django version:', django.get_version())" || \
-python -c "import django; print('Django version:', django.get_version())" || \
-echo "Failed to import Django - this will cause startup to fail"
-
-# Try installing Django explicitly if not found
-if ! python3 -c "import django" 2>/dev/null && ! python -c "import django" 2>/dev/null; then
-    echo "Django not found, attempting to install..."
-    pip install django==4.2.11 || pip3 install django==4.2.11 || echo "Failed to install Django"
-fi
+python -c "import django; print('Django version:', django.get_version())" || echo "Failed to import Django - this will cause startup to fail"
 
 # Start Django
 echo "Starting Django server on port ${PORT:-8000}"
-python3 manage.py runserver "0.0.0.0:${PORT:-8000}" || \
-python manage.py runserver "0.0.0.0:${PORT:-8000}" || \
-echo "Failed to start Django server" 
+python manage.py runserver "0.0.0.0:${PORT:-8000}" || echo "Failed to start Django server" 
