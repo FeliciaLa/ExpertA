@@ -2,30 +2,47 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Copy only the needed backend code
+# Install only necessary system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the minimal required files
 COPY backend/expert_system /app/expert_system
 COPY backend/api /app/api
 COPY backend/manage.py /app/manage.py
 
-# Install just the minimal needed dependencies
-RUN pip install django==4.2.11 \
+# Create empty directory for media and static files
+RUN mkdir -p /app/media /app/staticfiles
+
+# Install minimal dependencies needed for Django
+RUN pip install --no-cache-dir \
+    django==4.2.11 \
     djangorestframework==3.14.0 \
     django-cors-headers==4.3.1 \
     gunicorn==21.2.0 \
     PyJWT==2.8.0
 
-# Create a simple health check file
-RUN mkdir -p /app/static
-RUN echo '{"status":"ok"}' > /app/static/health.json
+# Create a SQLite database file to ensure permissions are correct
+RUN touch /app/db.sqlite3 && chmod 666 /app/db.sqlite3
 
-# Create a simple health check python script
-RUN echo 'import http.server\nimport socketserver\nimport os\n\nPORT = int(os.environ.get("PORT", 8000))\nHandler = http.server.SimpleHTTPRequestHandler\n\nwith socketserver.TCPServer(("", PORT), Handler) as httpd:\n    print("serving at port", PORT)\n    httpd.serve_forever()' > /app/server.py
+# Set environment variables to force SQLite
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH="/app"
+ENV DJANGO_SETTINGS_MODULE="expert_system.settings"
+ENV RAILWAY_STATIC_URL="true"
+ENV DATABASE_URL=""
+ENV DB_HOST=""
 
 # Expose the port
 EXPOSE 8000
-
-# Set environment variable for port
 ENV PORT=8000
 
-# Start the simple Python HTTP server
-CMD ["python", "server.py"] 
+# Create a simple startup script
+RUN echo '#!/bin/bash\ncd /app\npython manage.py migrate\npython manage.py collectstatic --noinput\ngunicorn --bind 0.0.0.0:${PORT:-8000} expert_system.wsgi' > /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Run the startup script
+CMD ["/app/start.sh"] 
