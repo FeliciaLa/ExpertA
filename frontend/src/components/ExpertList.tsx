@@ -18,6 +18,8 @@ import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
+import { Link } from 'react-router-dom';
+import { API_URL } from '../config';
 
 interface Expert {
   id: string;
@@ -43,8 +45,8 @@ export const ExpertList: React.FC = () => {
     const testDirectFetch = async () => {
       try {
         console.log('Testing direct fetch to backend...');
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8999/api';
-        console.log('Using API URL from env:', apiUrl);
+        const apiUrl = API_URL;
+        console.log('Using API URL from config:', apiUrl);
         
         // Try multiple test endpoints
         const testEndpoints = [
@@ -83,7 +85,7 @@ export const ExpertList: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8999/api';
+        const apiUrl = API_URL;
         console.log('Fetching experts using API URL:', apiUrl);
         
         // Try direct fetch to the local backend
