@@ -224,6 +224,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://expert-a-feliciala.vercel.app",
     "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
     "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
+    "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
     # Add your custom Vercel domain once you have it
 ]
 CORS_ALLOW_METHODS = [
@@ -272,6 +273,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://expert-a-feliciala.vercel.app",
     "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
     "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
+    "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
     # Add your custom Vercel domain once you have it
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
