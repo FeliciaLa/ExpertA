@@ -781,12 +781,11 @@ class ExpertProfileUpdateView(APIView):
     """
     permission_classes = [IsAuthenticated]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
-
+    
     def put(self, request):
         expert = request.user
-        print(f"Received data: {request.data}")
         
-        # Extract valid fields
+        # Extract valid fields from request data
         valid_data = {}
         for field in ['first_name', 'last_name', 'bio', 'specialties', 'title']:
             if field in request.data:
@@ -802,7 +801,7 @@ class ExpertProfileUpdateView(APIView):
         
         # Return updated profile
         serializer = ExpertProfileSerializer(expert)
-            return Response(serializer.data)
+        return Response(serializer.data)
 
 class ProfileImageUploadView(APIView):
     """
