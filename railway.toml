@@ -2,11 +2,10 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "./railway-run.sh"
-healthcheckPath = "/health/"
-healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
-numReplicas = 1
+healthcheckPath = "/health/"
+buildCommand = "pip install -r backend/requirements-railway.txt"
+startCommand = "cd backend && python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT"
 
 [variables]
 RAILWAY_DOCKERFILE_PATH = "Dockerfile" 

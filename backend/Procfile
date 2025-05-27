@@ -1,1 +1,0 @@
-web: /nix/var/nix/profiles/default/bin/python -m django runserver 0.0.0.0:$PORT
