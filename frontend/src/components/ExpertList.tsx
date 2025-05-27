@@ -43,22 +43,30 @@ export const ExpertList: React.FC = () => {
     const testDirectFetch = async () => {
       try {
         console.log('Testing direct fetch to backend...');
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8008/api';
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8999/api';
+        console.log('Using API URL from env:', apiUrl);
         
         // Try multiple test endpoints
         const testEndpoints = [
           `${apiUrl}/test/`,
           `${apiUrl.replace(/\/api\/?$/, '')}/health/`,
-          `${apiUrl}/public-experts/`
+          `${apiUrl}/public-experts/`,
+          `${apiUrl}/experts/`
         ];
         
         for (const endpoint of testEndpoints) {
           try {
             console.log(`Testing endpoint: ${endpoint}`);
-            const response = await fetch(endpoint);
+            const response = await fetch(endpoint, {
+              headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              },
+              credentials: 'omit' // Avoid CORS preflight
+            });
             console.log(`Status for ${endpoint}:`, response.status);
             const text = await response.text();
-            console.log(`Response for ${endpoint}:`, text);
+            console.log(`Response for ${endpoint}:`, text.substring(0, 100) + '...');
           } catch (endpointError) {
             console.error(`Error fetching ${endpoint}:`, endpointError);
           }
@@ -75,50 +83,47 @@ export const ExpertList: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // First try the public-experts endpoint which should be accessible to all
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8999/api';
+        console.log('Fetching experts using API URL:', apiUrl);
+        
+        // Try direct fetch to the local backend
         try {
-          const response = await api.get('/api/public-experts/');
-          console.log('Experts data:', response.data);
+          // Use local endpoint - you confirmed this works
+          const endpoint = `${apiUrl}/public-experts/`;
+          console.log('Fetching from endpoint:', endpoint);
           
-          // Make sure response.data is an array before using forEach
-          if (Array.isArray(response.data)) {
-            // Debug each expert's ID
-            response.data.forEach((expert: Expert, index: number) => {
+          const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            },
+            credentials: 'omit' // Avoid CORS preflight
+          });
+          
+          console.log('Response status:', response.status);
+          
+          if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          console.log('Experts data:', data);
+          
+          if (Array.isArray(data)) {
+            data.forEach((expert, index) => {
               console.log(`Expert ${index} (${expert.name}), ID:`, expert.id);
-              console.log(`Expert ${index} full object:`, expert);
             });
-            setExperts(response.data);
+            setExperts(data);
           } else {
-            console.error('Response data is not an array:', response.data);
+            console.error('Response data is not an array:', data);
             throw new Error('Invalid response format');
           }
-        } catch (publicError) {
-          // If that fails, try the fallback experts endpoint
-          console.warn('Failed to fetch from public endpoint, trying fallback:', publicError);
-          try {
-            const fallbackResponse = await api.get('/api/experts/');
-            console.log('Fallback experts data:', fallbackResponse.data);
-            
-            // Make sure fallbackResponse.data is an array before using forEach
-            if (Array.isArray(fallbackResponse.data)) {
-              // Debug each expert's ID from fallback
-              fallbackResponse.data.forEach((expert: Expert, index: number) => {
-                console.log(`Expert ${index} (${expert.name}), ID:`, expert.id);
-                console.log(`Expert ${index} full object:`, expert);
-              });
-              setExperts(fallbackResponse.data);
-            } else {
-              console.error('Fallback response data is not an array:', fallbackResponse.data);
-              throw new Error('Invalid fallback response format');
-            }
-          } catch (fallbackError) {
-            console.error('All endpoints failed:', fallbackError);
-            setError('Failed to load experts. Please refresh the page or try again later.');
-          }
+        } catch (error) {
+          console.error('Failed to fetch experts:', error);
+          setError('Failed to load experts. Please refresh the page or try again later.');
         }
-      } catch (err: any) {
-        console.error('Failed to fetch experts:', err);
-        setError('Failed to load experts. Please refresh the page or try again later.');
       } finally {
         setLoading(false);
       }
