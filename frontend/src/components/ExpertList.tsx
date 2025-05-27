@@ -39,6 +39,37 @@ export const ExpertList: React.FC = () => {
   const { isUser, signIn, register } = useAuth();
 
   useEffect(() => {
+    // Add a direct API test without axios to debug the connection
+    const testDirectFetch = async () => {
+      try {
+        console.log('Testing direct fetch to backend...');
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8008/api';
+        
+        // Try multiple test endpoints
+        const testEndpoints = [
+          `${apiUrl}/test/`,
+          `${apiUrl.replace(/\/api\/?$/, '')}/health/`,
+          `${apiUrl}/public-experts/`
+        ];
+        
+        for (const endpoint of testEndpoints) {
+          try {
+            console.log(`Testing endpoint: ${endpoint}`);
+            const response = await fetch(endpoint);
+            console.log(`Status for ${endpoint}:`, response.status);
+            const text = await response.text();
+            console.log(`Response for ${endpoint}:`, text);
+          } catch (endpointError) {
+            console.error(`Error fetching ${endpoint}:`, endpointError);
+          }
+        }
+      } catch (error) {
+        console.error('Direct fetch test failed:', error);
+      }
+    };
+    
+    testDirectFetch();
+    
     const fetchExperts = async () => {
       try {
         setLoading(true);

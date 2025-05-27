@@ -23,6 +23,30 @@ from .views import (
 from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView
 from .document_views import DocumentListView, DocumentUploadView, DocumentDeleteView
 from .jwt_views import CustomTokenRefreshView
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+
+# Simple test endpoint that doesn't require authentication
+@api_view(['GET', 'OPTIONS'])
+@permission_classes([AllowAny])
+def api_test(request):
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight request handled'})
+    else:
+        response = JsonResponse({
+            'status': 'ok',
+            'message': 'API is working correctly',
+            'cors_enabled': True,
+            'auth_required': False
+        })
+    
+    # Add CORS headers
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    
+    return response
 
 urlpatterns = [
     path('chat/', ChatView.as_view(), name='chat'),
@@ -40,6 +64,9 @@ urlpatterns = [
     path('experts/', ExpertListView.as_view(), name='expert-list'),
     path('public-experts/', PublicExpertListView.as_view(), name='public-expert-list'),
     path('experts/<str:pk>/', ExpertDetailView.as_view(), name='expert-detail'),
+    
+    # Test endpoint
+    path('test/', api_test, name='api-test'),
     
     # Training endpoints
     path('onboarding/', OnboardingView.as_view(), name='expert-onboarding'),

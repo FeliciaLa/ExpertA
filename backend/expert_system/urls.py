@@ -20,13 +20,25 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import sys
 import os
 
 # Health check view for Railway
 def health_check(request):
-    return JsonResponse({"status": "healthy"})
+    response = JsonResponse({"status": "healthy"})
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
+
+# Options method for health check (CORS preflight)
+def health_check_options(request):
+    response = HttpResponse()
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 # Debug endpoint to get information about the environment
 def debug_info(request):
@@ -62,6 +74,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('', RedirectView.as_view(url='api/expert-form/', permanent=False)),
     path('health/', health_check, name='health-check'),
+    path('health-options/', health_check_options, name='health-check-options'),
     path('debug-info/', debug_info, name='debug-info'),
 ]
 

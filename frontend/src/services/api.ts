@@ -630,4 +630,46 @@ export const debugLogin = async (email: string, password: string) => {
   }
 };
 
+// Add a direct test function to validate the API connection
+export const testBackendConnection = async () => {
+  try {
+    // Log all the steps for debugging
+    console.log('Testing backend connection...');
+    console.log('API URL:', API_URL);
+    
+    // First try with fetch for a more direct test
+    console.log('Testing with fetch API...');
+    const fetchResponse = await fetch(`${API_URL.replace(/\/api\/?$/, '')}/health/`);
+    console.log('Fetch response status:', fetchResponse.status);
+    const fetchText = await fetchResponse.text();
+    console.log('Fetch response text:', fetchText);
+    
+    // Then try with axios for comparison
+    console.log('Testing with axios...');
+    const axiosResponse = await axios.get(`${API_URL.replace(/\/api\/?$/, '')}/health/`);
+    console.log('Axios response status:', axiosResponse.status);
+    console.log('Axios response data:', axiosResponse.data);
+    
+    return {
+      success: true,
+      fetchResponse: fetchText,
+      axiosResponse: axiosResponse.data
+    };
+  } catch (error) {
+    console.error('Backend connection test failed:', error);
+    return {
+      success: false,
+      error
+    };
+  }
+};
+
+// Run the test immediately for diagnostics
+console.log('Running backend connection test...');
+testBackendConnection().then(result => {
+  console.log('Backend connection test result:', result);
+}).catch(error => {
+  console.error('Backend connection test error:', error);
+});
+
 export default api; 
