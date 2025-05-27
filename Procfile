@@ -1,1 +1,0 @@
-web: cd backend && python manage.py migrate && gunicorn expert_system.wsgi:application --log-file - 
