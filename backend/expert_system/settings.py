@@ -44,7 +44,7 @@ if not SECRET_KEY:
     print("WARNING: Using auto-generated SECRET_KEY. Set DJANGO_SECRET_KEY env variable in production.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = True  # Temporarily set to True for debugging
 
 ALLOWED_HOSTS = ["*"]
 
