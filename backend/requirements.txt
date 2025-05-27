@@ -1,10 +1,13 @@
+# JWT packages first to ensure they are installed
+djangorestframework-simplejwt==5.3.1
+PyJWT==2.8.0
+
+# Django and other packages
 django>=4.2.20
 djangorestframework>=3.15.2
-djangorestframework-simplejwt==5.3.1
 pinecone>=6.0.2
 langchain>=0.3.20
 openai>=1.66.3
 python-dotenv>=1.0.1
 gunicorn>=21.2.0
-django-cors-headers>=4.3.1
-PyJWT==2.8.0 
+django-cors-headers>=4.3.1 
