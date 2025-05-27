@@ -21,10 +21,39 @@ from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
+import sys
+import os
 
 # Health check view for Railway
 def health_check(request):
     return JsonResponse({"status": "healthy"})
+
+# Debug endpoint to get information about the environment
+def debug_info(request):
+    try:
+        env_vars = {}
+        for key, value in os.environ.items():
+            # Filter out sensitive information
+            if not any(secret in key.lower() for secret in ['key', 'secret', 'token', 'password', 'auth']):
+                env_vars[key] = value
+            else:
+                env_vars[key] = "[FILTERED]"
+                
+        info = {
+            "status": "running",
+            "python_version": sys.version,
+            "python_path": sys.executable,
+            "environment": os.environ.get("NODE_ENV", "unknown"),
+            "working_directory": os.getcwd(),
+            "directory_listing": os.listdir(),
+            "backend_directory_exists": os.path.exists("backend"),
+            "env_variables": env_vars,
+            "sys_path": sys.path,
+        }
+        
+        return JsonResponse(info)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,6 +62,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('', RedirectView.as_view(url='api/expert-form/', permanent=False)),
     path('health/', health_check, name='health-check'),
+    path('debug-info/', debug_info, name='debug-info'),
 ]
 
 # Direct API endpoints for authentication
