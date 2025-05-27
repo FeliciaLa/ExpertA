@@ -6,6 +6,7 @@ dockerfile = "Dockerfile"
 restartPolicyType = "ON_FAILURE"
 healthcheckPath = "/health/"
 numReplicas = 1
+startCommand = "/app/start-django.sh"
 
 [variables]
 NODE_ENV = "production" 

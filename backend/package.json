@@ -9,6 +9,6 @@
     ".heroku/node"
   ],
   "scripts": {
-    "start": "python3 manage.py runserver 0.0.0.0:$PORT || python manage.py runserver 0.0.0.0:$PORT"
+    "start": "echo 'Attempting to install Python if not available...' && (apt-get update && apt-get install -y python3 python3-pip || apk add --no-cache python3 py3-pip || echo 'Failed to install Python with package managers') && (python3 manage.py runserver 0.0.0.0:$PORT || python manage.py runserver 0.0.0.0:$PORT || echo 'Failed to start Django server - please check deployment configuration')"
   }
 } 
