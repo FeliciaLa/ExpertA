@@ -12,6 +12,27 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import sys
+
+# Add the vendor directory to the path so we can import packages installed there
+vendor_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'vendor')
+if os.path.exists(vendor_path):
+    sys.path.insert(0, vendor_path)
+
+# Try to explicitly import the JWT module to bypass import errors
+try:
+    import rest_framework_simplejwt
+    print("Successfully imported rest_framework_simplejwt")
+except ImportError as e:
+    print(f"Error importing rest_framework_simplejwt: {e}")
+    # If import fails, try to install it directly
+    try:
+        import pip
+        pip.main(['install', 'djangorestframework-simplejwt==5.3.1'])
+        import rest_framework_simplejwt
+        print("Successfully installed and imported rest_framework_simplejwt")
+    except Exception as e:
+        print(f"Failed to install rest_framework_simplejwt: {e}")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,16 +67,21 @@ X_FRAME_OPTIONS = 'DENY'
 # Application definition
 
 INSTALLED_APPS = [
+    # Built-in apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    
+    # Third-party apps - put these before our apps
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
+    
+    # Our apps
     "api",
-    "corsheaders",
 ]
 
 MIDDLEWARE = [
