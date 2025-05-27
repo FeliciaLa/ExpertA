@@ -20,6 +20,11 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
+
+# Health check view for Railway
+def health_check(request):
+    return JsonResponse({"status": "healthy"})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +32,7 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='api/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('', RedirectView.as_view(url='api/expert-form/', permanent=False)),
+    path('health/', health_check, name='health-check'),
 ]
 
 # Direct API endpoints for authentication
