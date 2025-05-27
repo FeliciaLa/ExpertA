@@ -1,1 +1,1 @@
-web: cd backend && /usr/local/bin/python -m django runserver 0.0.0.0:$PORT 
+web: find / -name python -type f 2>/dev/null || echo "Python not found"; echo "PATH=$PATH"; ls -la /bin; ls -la /usr/bin 
