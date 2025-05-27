@@ -1,15 +1,13 @@
 [phases.setup]
-nixPkgs = ["python39", "gcc", "curl"]
+nixPkgs = ["python39", "gcc"]
 
 [phases.install]
 cmds = [
-  "curl -sSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py",
-  "python get-pip.py",
-  "pip install -r /app/backend/requirements.txt"
+  "pip install -r requirements.txt"
 ]
 
 [start]
-cmd = "gunicorn --pythonpath /app/backend expert_system.wsgi:application --log-file -"
+cmd = "gunicorn expert_system.wsgi:application --log-file -"
 
 [variables]
 PYTHONPATH = "/app:/app/backend" 
