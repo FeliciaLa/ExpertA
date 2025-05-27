@@ -1,11 +1,11 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "./setup.sh"
+builder = "DOCKERFILE"
+dockerfile = "Dockerfile"
 
 [deploy]
 restartPolicyType = "ON_FAILURE"
 healthcheckPath = "/health/"
-startCommand = "node backend/server.js"
+numReplicas = 1
 
 [variables]
 NODE_ENV = "production" 
