@@ -134,6 +134,43 @@ python manage.py migrate --noinput || echo "Warning: Database migration failed"
 echo "Collecting static files..."
 python manage.py collectstatic --noinput || echo "Warning: Static file collection failed"
 
-# Start Django
-echo "Starting Django server on port ${PORT:-8000}"
-python manage.py runserver "0.0.0.0:${PORT:-8000}" || echo "Failed to start Django server" 
+# Create a simple health check endpoint
+mkdir -p static
+echo '{"status":"ok"}' > static/health.json
+
+# Add a special health endpoint
+echo "Creating health check endpoint..."
+cat > /tmp/health_view.py << 'EOF'
+from django.http import JsonResponse
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+EOF
+
+# Register health endpoint in urls.py if it doesn't exist
+if ! grep -q "health_check" expert_system/urls.py; then
+    echo "Adding health check URL to urls.py..."
+    # Create a backup
+    cp expert_system/urls.py expert_system/urls.py.bak
+    
+    # Add the import at the top if needed
+    if ! grep -q "from django.http import JsonResponse" expert_system/urls.py; then
+        sed -i '1s/^/from django.http import JsonResponse\n/' expert_system/urls.py
+    fi
+    
+    # Add the view function
+    echo "def health_check(request):" >> expert_system/urls.py
+    echo "    return JsonResponse({'status': 'ok'})" >> expert_system/urls.py
+    echo "" >> expert_system/urls.py
+    
+    # Add the URL pattern
+    sed -i '/urlpatterns = \[/a \    path("health/", health_check, name="health_check"),' expert_system/urls.py
+fi
+
+# Get the PORT environment variable, default to 8000
+PORT="${PORT:-8000}"
+echo "PORT is set to: $PORT"
+
+# Start Django - use Gunicorn for production
+echo "Starting Django with Gunicorn on port $PORT"
+gunicorn --workers=2 --bind="0.0.0.0:$PORT" expert_system.wsgi 
