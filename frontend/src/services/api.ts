@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 
-// Explicitly define API URL with port for consistency
-export const API_URL = 'http://localhost:8008';
+// Read API URL from environment variable in production, or use localhost in development
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008/api';
 
 // Log the API URL being used
 console.log('API URL:', API_URL);
@@ -74,14 +74,13 @@ export interface UserAuthResponse {
   message: string;
 }
 
-// Create API instance with proper configuration
-export const api = axios.create({
+// Create an instance of axios with the base URL
+const api = axios.create({
   baseURL: API_URL,
-  withCredentials: false,  // Must be false to avoid CORS issues with credentials
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
+  },
+  withCredentials: true,
 });
 
 // Add request interceptor to add auth token
