@@ -22,28 +22,14 @@ if ON_RAILWAY:
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Check for vendor directory and add it to path if exists
-vendor_path = os.path.join(BASE_DIR, "vendor")
-if os.path.exists(vendor_path) and vendor_path not in sys.path:
-    sys.path.insert(0, vendor_path)
-    print(f"Added vendor directory to path: {vendor_path}")
-
-# Try to load JWT packages using our helper
-jwt_available = False
-if not ON_RAILWAY:  # Only try to use JWT if not on Railway
-    try:
-        from .jwt_helper import ensure_jwt_available
-        jwt_available = ensure_jwt_available()
-    except Exception as e:
-        print(f"Error in JWT helper: {e}")
-        jwt_available = False
-
 # Load environment variables
-from dotenv import load_dotenv
-
-# Load .env file from project root
-env_path = os.path.join(BASE_DIR.parent, '.env')
-load_dotenv(env_path)
+try:
+    from dotenv import load_dotenv
+    env_path = os.path.join(BASE_DIR.parent, '.env')
+    load_dotenv(env_path)
+    print("Loaded environment variables from .env file")
+except ImportError:
+    print("python-dotenv not installed, skipping .env loading")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -83,18 +69,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     
-    # Third-party apps - put these before our apps
+    # Third-party apps
     "corsheaders",
     "rest_framework",
+    
+    # Our apps
+    "api",
 ]
-
-# Conditionally add JWT to installed apps if available and not on Railway
-if jwt_available and not ON_RAILWAY:
-    INSTALLED_APPS.append("rest_framework_simplejwt")
-    print("Added rest_framework_simplejwt to INSTALLED_APPS")
-
-# Add our apps after third-party apps
-INSTALLED_APPS.append("api")
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -174,6 +155,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files (User uploads)
 MEDIA_URL = '/media/'
@@ -192,88 +174,21 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        # Temporarily disable throttling to fix expert loading issues
-        # 'rest_framework.throttling.AnonRateThrottle',
-        # 'rest_framework.throttling.UserRateThrottle',
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '1000/day',
-        'user': '10000/day',
-    }
 }
 
-# Add JWT authentication if available and not on Railway
-if jwt_available and not ON_RAILWAY:
-    REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].insert(
-        0, 'rest_framework_simplejwt.authentication.JWTAuthentication'
-    )
-    print("Added JWT authentication to REST_FRAMEWORK")
-
-# JWT settings
-from datetime import timedelta
-
-# Only add SIMPLE_JWT settings if JWT is available and not on Railway
-if jwt_available and not ON_RAILWAY:
-    SIMPLE_JWT = {
-        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-        'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-        'ROTATE_REFRESH_TOKENS': True,
-        'BLACKLIST_AFTER_ROTATION': True,
-        'USER_ID_FIELD': 'id',
-        'USER_ID_CLAIM': 'user_id',
-        'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-        'TOKEN_TYPE_CLAIM': 'token_type',
-        'JTI_CLAIM': 'jti',
-        'ALGORITHM': 'HS256',
-        'SIGNING_KEY': SECRET_KEY,
-        'VERIFYING_KEY': None,
-        'AUDIENCE': None,
-        'ISSUER': None,
-    }
-    print("Configured SIMPLE_JWT settings")
-
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # This must come first to take precedence
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5173",
     "http://localhost:5173",
-    "http://127.0.0.1:5174",
     "http://localhost:5174",
-    "http://127.0.0.1:5175",
     "http://localhost:5175",
-    "http://127.0.0.1:5176",
     "http://localhost:5176",
-    "http://127.0.0.1:5177",
     "http://localhost:5177",
-    "http://127.0.0.1:5178",
     "http://localhost:5178",
-    "http://127.0.0.1:5179",
     "http://localhost:5179",
-    "http://127.0.0.1:5180",
     "http://localhost:5180",
-    "http://127.0.0.1:5181",
-    "http://localhost:5181",
-    "http://127.0.0.1:5182",
-    "http://localhost:5182",
-    "http://127.0.0.1:5183",
-    "http://localhost:5183",
-    "http://127.0.0.1:5184",
-    "http://localhost:5184",
-    "http://127.0.0.1:5185",
-    "http://localhost:5185",
-    "http://127.0.0.1:5186",
-    "http://localhost:5186",
-    "http://127.0.0.1:5187",
-    "http://localhost:5187",
-    "http://127.0.0.1:5188",
-    "http://localhost:5188",
-    "http://127.0.0.1:5189",
-    "http://localhost:5189",
-    "http://127.0.0.1:5190",
-    "http://localhost:5190",
 ]
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -314,33 +229,13 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5178",
     "http://localhost:5179",
     "http://localhost:5180",
-    "http://localhost:5181",
-    "http://localhost:5182",
-    "http://localhost:5183",
-    "http://localhost:5184",
-    "http://localhost:5185",
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to CSRF token
 
-# API Keys with validation
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-if not OPENAI_API_KEY and not DEBUG:
-    # Only raise error in production
-    raise ValueError("OPENAI_API_KEY must be set in environment variables")
-elif not OPENAI_API_KEY:
-    # Use a placeholder in development
-    print("WARNING: Using placeholder OPENAI_API_KEY for development")
-    OPENAI_API_KEY = "sk-placeholder-key-for-development"
-
-PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
-if not PINECONE_API_KEY and not DEBUG:
-    # Only raise error in production
-    raise ValueError("PINECONE_API_KEY must be set in environment variables")
-elif not PINECONE_API_KEY:
-    # Use a placeholder in development
-    print("WARNING: Using placeholder PINECONE_API_KEY for development")
-    PINECONE_API_KEY = "placeholder-key-for-development"
+# API Keys with validation - simplified for Railway
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'placeholder-key')
+PINECONE_API_KEY = os.getenv('PINECONE_API_KEY', 'placeholder-key')
 
 # Logging Configuration
 LOGGING = {

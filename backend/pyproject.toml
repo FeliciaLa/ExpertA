@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "experta-backend"
+version = "1.0.0"
+description = "Expert AI application backend"
+requires-python = ">=3.9"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+django = "4.2.11"
+djangorestframework = "3.14.0"
+django-cors-headers = "4.3.1"
+gunicorn = "21.2.0"
+python-dotenv = "1.0.0" 

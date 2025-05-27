@@ -1,12 +1,14 @@
 [phases.setup]
-nixPkgs = ["python39", "pip"]
+nixPkgs = ["python39", "gcc"]
 
 [phases.install]
 cmds = [
-  "pip install djangorestframework-simplejwt==5.3.1 PyJWT==2.8.0",
-  "pip install --upgrade pip",
+  "python -m pip install --upgrade pip",
   "pip install -r requirements.txt"
 ]
 
 [start]
-cmd = "cd . && gunicorn expert_system.wsgi:application --log-file -" 
+cmd = "gunicorn expert_system.wsgi:application --log-file -"
+
+[variables]
+PYTHONPATH = "/app:/app/backend" 

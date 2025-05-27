@@ -1,1 +1,1 @@
-web: gunicorn expert_system.wsgi:application --log-file -
+web: gunicorn --workers=2 expert_system.wsgi
