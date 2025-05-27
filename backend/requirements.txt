@@ -1,9 +1,10 @@
-# Django and core packages
+# Core requirements
 django==4.2.11
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
 gunicorn==21.2.0
 python-dotenv==1.0.0
+whitenoise==6.6.0
 
 # JWT packages last
 djangorestframework-simplejwt==5.3.1
