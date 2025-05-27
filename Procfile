@@ -1,0 +1,1 @@
+web: cd backend && /usr/local/bin/python -m django runserver 0.0.0.0:$PORT 
