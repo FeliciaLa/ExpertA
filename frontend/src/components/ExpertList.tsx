@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
 import { Link } from 'react-router-dom';
-import { API_URL } from '../config';
+import { API_URL, formatApiUrl } from '../config';
 
 interface Expert {
   id: string;
@@ -41,19 +41,23 @@ export const ExpertList: React.FC = () => {
   const { isUser, signIn, register } = useAuth();
 
   useEffect(() => {
+    // Debug environment variables
+    console.log('Environment variable value:', import.meta.env.VITE_API_URL);
+    console.log('Hostname:', window.location.hostname);
+    console.log('Is localhost?', window.location.hostname === 'localhost');
+    
     // Add a direct API test without axios to debug the connection
     const testDirectFetch = async () => {
       try {
         console.log('Testing direct fetch to backend...');
-        const apiUrl = API_URL;
-        console.log('Using API URL from config:', apiUrl);
+        console.log('Using API URL from config:', API_URL);
         
         // Try multiple test endpoints
         const testEndpoints = [
-          `${apiUrl}/test/`,
-          `${apiUrl.replace(/\/api\/?$/, '')}/health/`,
-          `${apiUrl}/public-experts/`,
-          `${apiUrl}/experts/`
+          formatApiUrl('test'),
+          API_URL.replace(/\/api\/?$/, '/health/'),
+          formatApiUrl('public-experts'),
+          formatApiUrl('experts')
         ];
         
         for (const endpoint of testEndpoints) {
@@ -85,13 +89,12 @@ export const ExpertList: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        const apiUrl = API_URL;
-        console.log('Fetching experts using API URL:', apiUrl);
+        console.log('Fetching experts using API URL:', API_URL);
         
-        // Try direct fetch to the local backend
+        // Try direct fetch to the backend
         try {
-          // Use local endpoint - you confirmed this works
-          const endpoint = `${apiUrl}/public-experts/`;
+          // Use endpoint with trailing slash to match Django URL patterns
+          const endpoint = formatApiUrl('public-experts');
           console.log('Fetching from endpoint:', endpoint);
           
           const response = await fetch(endpoint, {
