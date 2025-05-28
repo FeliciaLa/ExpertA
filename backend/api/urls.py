@@ -48,6 +48,25 @@ def api_test(request):
     
     return response
 
+# Health check endpoint for Railway
+@api_view(['GET', 'OPTIONS'])
+@permission_classes([AllowAny])
+def health_check(request):
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight request handled'})
+    else:
+        response = JsonResponse({
+            'status': 'ok',
+            'message': 'Health check passed'
+        })
+    
+    # Add CORS headers
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    
+    return response
+
 urlpatterns = [
     path('chat/', ChatView.as_view(), name='chat'),
     path('token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -67,6 +86,9 @@ urlpatterns = [
     
     # Test endpoint
     path('test/', api_test, name='api-test'),
+    
+    # Health check endpoint
+    path('health/', health_check, name='health-check'),
     
     # Training endpoints
     path('onboarding/', OnboardingView.as_view(), name='expert-onboarding'),
