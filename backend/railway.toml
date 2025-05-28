@@ -2,4 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-healthcheckPath = "/health/" 
+healthcheckPath = "/health/"
+
+[variables]
+PORT = "8000" 
