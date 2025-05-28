@@ -2,14 +2,8 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json ./
-
-# Install dependencies
-RUN npm install --production
-
 # Copy server file
-COPY server.js ./
+COPY server.js package.json ./
 
 # Expose port 8000
 EXPOSE 8000

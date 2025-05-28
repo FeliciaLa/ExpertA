@@ -1,7 +1,9 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
+const http = require('http');
+
+// Port to listen on
 const PORT = process.env.PORT || 8000;
+
+console.log(`Starting server with PORT=${PORT}`);
 
 // Sample expert data based on your real data
 const experts = [
@@ -25,58 +27,73 @@ const experts = [
   }
 ];
 
-// Enable CORS for all routes
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma']
-}));
+// Create the server
+const server = http.createServer((req, res) => {
+  // Set CORS headers for all responses
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, Pragma');
+  res.setHeader('Content-Type', 'application/json');
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  console.log('Health check request received');
-  res.json({ status: 'ok' });
-});
+  // Handle OPTIONS requests for CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
 
-// Public experts endpoint
-app.get('/api/public-experts', (req, res) => {
-  console.log('Public experts request received');
-  res.json(experts);
-});
+  // Log all requests
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
 
-// Also support trailing slash
-app.get('/api/public-experts/', (req, res) => {
-  console.log('Public experts request received (with trailing slash)');
-  res.json(experts);
-});
+  // Route handling
+  const url = req.url;
 
-// Experts endpoint
-app.get('/api/experts', (req, res) => {
-  console.log('Experts request received');
-  res.json(experts);
-});
+  // Health check endpoint
+  if (url === '/health' || url === '/health/') {
+    console.log('Health check request received');
+    res.statusCode = 200;
+    res.end(JSON.stringify({ status: 'ok' }));
+    return;
+  }
 
-// Also support trailing slash
-app.get('/api/experts/', (req, res) => {
-  console.log('Experts request received (with trailing slash)');
-  res.json(experts);
-});
+  // Public experts endpoint
+  if (url === '/api/public-experts' || url === '/api/public-experts/') {
+    console.log('Public experts request received');
+    res.statusCode = 200;
+    res.end(JSON.stringify(experts));
+    return;
+  }
 
-// Default route
-app.get('/', (req, res) => {
-  console.log('Root request received');
-  res.json({ 
-    status: 'ok', 
-    message: 'ExpertA API is running',
-    endpoints: [
-      '/health',
-      '/api/public-experts',
-      '/api/experts'
-    ]
-  });
+  // Experts endpoint
+  if (url === '/api/experts' || url === '/api/experts/') {
+    console.log('Experts request received');
+    res.statusCode = 200;
+    res.end(JSON.stringify(experts));
+    return;
+  }
+
+  // Default route
+  if (url === '/' || url === '') {
+    console.log('Root request received');
+    res.statusCode = 200;
+    res.end(JSON.stringify({
+      status: 'ok',
+      message: 'ExpertA API is running',
+      endpoints: [
+        '/health',
+        '/api/public-experts',
+        '/api/experts'
+      ]
+    }));
+    return;
+  }
+
+  // Not found
+  res.statusCode = 404;
+  res.end(JSON.stringify({ error: 'Not found' }));
 });
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running at http://0.0.0.0:${PORT}`);
 }); 
