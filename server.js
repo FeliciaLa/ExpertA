@@ -3,7 +3,10 @@ const http = require('http');
 // Port to listen on
 const PORT = process.env.PORT || 8000;
 
-console.log(`Starting server with PORT=${PORT}`);
+console.log(`Starting server with PORT=${PORT} and NODE_ENV=${process.env.NODE_ENV}`);
+console.log('Server process ID:', process.pid);
+console.log('Current directory:', process.cwd());
+console.log('Environment variables:', Object.keys(process.env).sort());
 
 // Sample expert data based on your real data
 const experts = [
@@ -43,7 +46,7 @@ const server = http.createServer((req, res) => {
   }
 
   // Log all requests
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers)}`);
 
   // Route handling
   const url = req.url;
@@ -89,11 +92,18 @@ const server = http.createServer((req, res) => {
   }
 
   // Not found
+  console.log(`Not found: ${url}`);
   res.statusCode = 404;
   res.end(JSON.stringify({ error: 'Not found' }));
+});
+
+// Error handling
+server.on('error', (error) => {
+  console.error('Server error:', error);
 });
 
 // Start the server
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${PORT}`);
+  console.log(`Available endpoints: /health, /api/public-experts, /api/experts`);
 }); 
