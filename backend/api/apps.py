@@ -1,4 +1,7 @@
 from django.apps import AppConfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ApiConfig(AppConfig):
@@ -7,7 +10,13 @@ class ApiConfig(AppConfig):
 
     def ready(self):
         """
-        Initialize Pinecone when Django starts
+        Initialize Pinecone when Django starts - but don't fail if it doesn't work
         """
-        from .pinecone_utils import init_pinecone
-        init_pinecone()
+        try:
+            from .pinecone_utils import init_pinecone
+            init_pinecone()
+            logger.info("Pinecone initialized successfully")
+        except Exception as e:
+            logger.warning(f"Pinecone initialization failed: {e}")
+            # Don't fail the entire app if Pinecone fails
+            pass

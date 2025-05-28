@@ -47,7 +47,13 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Temporarily set to True for debugging
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "experta-production.up.railway.app",
+    "*.up.railway.app",  # Allow all Railway subdomains
+    "localhost",
+    "127.0.0.1",
+    "*"  # Allow all hosts for debugging (remove in production)
+]
 
 # Security Settings - Disabled for Railway deployment
 # These should be re-enabled in a production environment with proper SSL
@@ -82,12 +88,12 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # CORS middleware must be at the top
     'django.middleware.common.CommonMiddleware',  # This should come right after CORS
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Add WhiteNoise middleware for static files
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'expert_system.urls.CORSMiddleware',  # Our custom CORS middleware that ensures all responses have CORS headers
 ]
 
 ROOT_URLCONF = "expert_system.urls"
@@ -186,6 +192,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Enable WhiteNoise compression and caching
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (User uploads)
 MEDIA_URL = '/media/'
