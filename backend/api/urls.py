@@ -26,6 +26,7 @@ from .jwt_views import CustomTokenRefreshView
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from .models import Expert
 
 # Simple test endpoint that doesn't require authentication
 @api_view(['GET', 'OPTIONS'])
@@ -45,6 +46,48 @@ def api_test(request):
     response["Access-Control-Allow-Origin"] = "*"
     response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
     response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    
+    return response
+
+# Public experts endpoint without authentication and with explicit CORS headers
+@api_view(['GET', 'OPTIONS'])
+@permission_classes([AllowAny])
+def public_experts_direct(request):
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight request handled'})
+    else:
+        try:
+            # Query the User model, which is the Expert model in this case
+            experts = Expert.objects.filter(is_superuser=False, is_staff=False)
+            
+            # Manually serialize the data
+            data = []
+            for expert in experts:
+                expert_data = {
+                    'id': str(expert.id),
+                    'name': expert.get_full_name() or expert.username,
+                    'email': expert.email,
+                    'specialties': getattr(expert, 'specialties', ''),
+                    'bio': getattr(expert, 'bio', ''),
+                    'title': getattr(expert, 'title', ''),
+                    'profile_image': expert.profile_image.url if hasattr(expert, 'profile_image') and expert.profile_image else None,
+                }
+                data.append(expert_data)
+                
+            response = JsonResponse(data, safe=False)
+        except Exception as e:
+            import traceback
+            print("Error fetching experts:", str(e))
+            print(traceback.format_exc())
+            response = JsonResponse(
+                {'error': 'Failed to fetch experts', 'details': str(e)},
+                status=500
+            )
+    
+    # Add CORS headers explicitly
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
     
     return response
 
@@ -82,6 +125,7 @@ urlpatterns = [
     path('profile/upload-image/', ProfileImageUploadView.as_view(), name='profile-image-upload'),
     path('experts/', ExpertListView.as_view(), name='expert-list'),
     path('public-experts/', PublicExpertListView.as_view(), name='public-expert-list'),
+    path('public-experts-direct/', public_experts_direct, name='public-experts-direct'),  # Direct function view with CORS
     path('experts/<str:pk>/', ExpertDetailView.as_view(), name='expert-detail'),
     
     # Test endpoint

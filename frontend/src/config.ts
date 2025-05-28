@@ -23,6 +23,11 @@ export const formatApiUrl = (path: string) => {
     return `${API_URL}${cleanPath.substring(4)}`;
   }
   
+  // Special case for public-experts - use the direct endpoint that has explicit CORS headers
+  if (cleanPath === 'public-experts' || cleanPath === 'public-experts/') {
+    return `${API_URL}public-experts-direct/`;
+  }
+  
   return `${API_URL}${cleanPath}`;
 };
 
