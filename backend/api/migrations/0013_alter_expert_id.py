@@ -10,11 +10,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name="expert",
-            name="id",
-            field=models.UUIDField(
-                default=uuid.uuid4, editable=False, primary_key=True, serialize=False
-            ),
-        ),
+        # Temporarily disabled UUID migration to avoid conversion issues
+        # migrations.AlterField(
+        #     model_name="expert",
+        #     name="id",
+        #     field=models.UUIDField(
+        #         default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+        #     ),
+        # ),
     ]
