@@ -27,32 +27,72 @@ from datetime import datetime
 
 # Super simple health check for Railway
 def health(request):
+    # Add CORS headers directly to handle preflight requests
+    response_headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRFToken'
+    }
+    
+    # Handle OPTIONS request for preflight
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight handled'})
+        for key, value in response_headers.items():
+            response[key] = value
+        return response
+    
     try:
         # Try to import and use Django models to ensure DB connection works
-        from django.contrib.auth.models import User
-        count = User.objects.count()
+        from api.models import Expert
+        count = Expert.objects.count()
         
         # Return success response with more information
-        return JsonResponse({
+        response = JsonResponse({
             "status": "ok",
             "message": "Health check passed",
             "db_connection": "successful",
-            "user_count": count,
+            "expert_count": count,
             "timestamp": str(datetime.now())
         })
+        
+        # Add CORS headers
+        for key, value in response_headers.items():
+            response[key] = value
+        
+        return response
     except Exception as e:
         # Log the error but still return a 200 response
         # to prevent Railway from restarting unnecessarily
         print(f"Health check error: {str(e)}")
-        return JsonResponse({
+        response = JsonResponse({
             "status": "warning",
             "message": "Health check has warnings",
             "error": str(e),
             "timestamp": str(datetime.now())
-        })
+        }, status=200)  # Still return 200 to prevent Railway restarts
+        
+        # Add CORS headers
+        for key, value in response_headers.items():
+            response[key] = value
+        
+        return response
 
 # Debug endpoint to get information about the environment
 def debug_info(request):
+    # Add CORS headers directly to handle preflight requests
+    response_headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRFToken'
+    }
+    
+    # Handle OPTIONS request for preflight
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight handled'})
+        for key, value in response_headers.items():
+            response[key] = value
+        return response
+    
     try:
         env_vars = {}
         for key, value in os.environ.items():
@@ -74,9 +114,21 @@ def debug_info(request):
             "sys_path": sys.path,
         }
         
-        return JsonResponse(info)
+        response = JsonResponse(info)
+        
+        # Add CORS headers
+        for key, value in response_headers.items():
+            response[key] = value
+        
+        return response
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)})
+        response = JsonResponse({"status": "error", "message": str(e)})
+        
+        # Add CORS headers
+        for key, value in response_headers.items():
+            response[key] = value
+        
+        return response
 
 urlpatterns = [
     path('admin/', admin.site.urls),
