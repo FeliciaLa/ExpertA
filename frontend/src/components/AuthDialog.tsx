@@ -144,8 +144,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     try {
       setIsSubmitting(true);
       setError('');
-      // We pass false for isExpertRegistration - all users register as regular users
-      const result = await onRegister(name, email, password, false);
+      // Use expertRegisterOnly prop to determine registration type
+      const result = await onRegister(name, email, password, expertRegisterOnly);
       if (result.success) {
         // Instead of closing immediately, show success message
         setName('');

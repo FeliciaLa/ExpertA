@@ -333,9 +333,11 @@ export const authApi = {
     }
   },
 
-  register: async (name: string, email: string, password: string): Promise<AuthResponse> => {
+  register: async (name: string, email: string, password: string, isExpertRegistration: boolean = false): Promise<AuthResponse> => {
     try {
-      const response = await api.post<any>('/api/register/', {
+      // Use the appropriate registration endpoint based on user type
+      const endpoint = isExpertRegistration ? '/api/register/' : '/api/user/register/';
+      const response = await api.post<any>(endpoint, {
         name,
         email,
         password,
@@ -566,8 +568,8 @@ export const userApi = {
   },
 
   register: async (name: string, email: string, password: string): Promise<AuthResponse> => {
-    // Use the unified registration endpoint with user role
-    return authApi.register(name, email, password);
+    // Use the unified registration endpoint with user role (false = user registration)
+    return authApi.register(name, email, password, false);
   },
 
   getProfile: async (): Promise<UserData> => {

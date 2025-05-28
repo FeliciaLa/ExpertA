@@ -293,11 +293,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const register = async (name: string, email: string, password: string, isExpertRegistration = true) => {
+  const register = async (name: string, email: string, password: string, isExpertRegistration = false) => {
     setIsLoading(true);
     try {
-      // Use the unified register endpoint - the backend will handle user types
-      const response = await authApi.register(name, email, password);
+      // Pass the isExpertRegistration parameter to determine the correct endpoint
+      const response = await authApi.register(name, email, password, isExpertRegistration);
       
       // For registration with email verification, we don't log in automatically
       // Check message for verification notification
