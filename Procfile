@@ -1,0 +1,2 @@
+release: cd backend && python manage.py migrate --noinput
+web: cd backend && gunicorn expert_system.wsgi --bind 0.0.0.0:$PORT 
