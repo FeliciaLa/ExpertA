@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
 import { Link } from 'react-router-dom';
-import { API_URL, formatApiUrl, MOCK_EXPERTS, fetchOptions } from '../config';
+import { API_URL, formatApiUrl, MOCK_EXPERTS, fetchOptions, FORCE_MOCK_DATA } from '../config';
 
 interface Expert {
   id: string;
@@ -44,21 +44,16 @@ export const ExpertList: React.FC = () => {
     // Debug environment variables
     console.log('Environment variable value:', import.meta.env.VITE_API_URL);
     console.log('Hostname:', window.location.hostname);
-    console.log('Is localhost?', window.location.hostname === 'localhost');
+    console.log('API URL:', API_URL);
+    console.log('Force mock data:', FORCE_MOCK_DATA);
     
     // Add a direct API test without axios to debug the connection
     const testDirectFetch = async () => {
       try {
         console.log('Testing direct fetch to backend...');
-        console.log('Using API URL from config:', API_URL);
         
-        // Check if we're using JSONPlaceholder (temporary solution)
-        const isUsingJsonPlaceholder = API_URL.includes('jsonplaceholder');
-        console.log('Using JSONPlaceholder?', isUsingJsonPlaceholder);
-        
-        if (isUsingJsonPlaceholder) {
-          console.log('Using mock data:', MOCK_EXPERTS);
-          // No need to test endpoints if using mock data
+        if (FORCE_MOCK_DATA) {
+          console.log('Using mock data because FORCE_MOCK_DATA is true');
           return;
         }
         
@@ -101,11 +96,9 @@ export const ExpertList: React.FC = () => {
         
         console.log('Fetching experts using API URL:', API_URL);
         
-        // Check if we're using JSONPlaceholder (temporary solution)
-        const isUsingJsonPlaceholder = API_URL.includes('jsonplaceholder');
-        
-        if (isUsingJsonPlaceholder) {
-          console.log('Using mock experts data');
+        // Use mock data if forced
+        if (FORCE_MOCK_DATA) {
+          console.log('Using mock experts data (forced)');
           setExperts(MOCK_EXPERTS);
           setLoading(false);
           return;
@@ -138,8 +131,8 @@ export const ExpertList: React.FC = () => {
             throw new Error('Invalid response format');
           }
         } catch (error) {
-          console.error('Failed to fetch experts:', error);
-          setError('Failed to load experts. Please refresh the page or try again later.');
+          console.error('Failed to fetch experts from backend, using mock data:', error);
+          setExperts(MOCK_EXPERTS);
         }
       } finally {
         setLoading(false);

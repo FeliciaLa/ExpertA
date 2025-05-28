@@ -2,7 +2,7 @@
 const API_URL = (import.meta.env.VITE_API_URL || 
   (window.location.hostname === 'localhost' 
     ? 'http://localhost:8999/api' 
-    : 'https://jsonplaceholder.typicode.com')).replace(/\/$/, '') + '/';
+    : 'https://experta-production.up.railway.app/api')).replace(/\/$/, '') + '/';
 
 // Make sure URLs have correct formatting
 export const formatApiUrl = (path: string) => {
@@ -10,6 +10,9 @@ export const formatApiUrl = (path: string) => {
   const cleanPath = path.startsWith('/') ? path.substring(1) : path;
   return `${API_URL}${cleanPath}`;
 };
+
+// Flag to force using mock data until Railway is fixed
+export const FORCE_MOCK_DATA = false;
 
 // Mock data for when using JSONPlaceholder
 export const MOCK_EXPERTS = [
