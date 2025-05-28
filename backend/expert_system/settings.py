@@ -87,6 +87,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'expert_system.urls.CORSMiddleware',  # Our custom CORS middleware that ensures all responses have CORS headers
 ]
 
 ROOT_URLCONF = "expert_system.urls"
@@ -209,38 +210,38 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler',
 }
 
-# CORS settings
+# CORS settings - allow all origins, this is safer for changing Vercel domains
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Use either CORS_ALLOWED_ORIGINS or CORS_ALLOW_ALL_ORIGINS, not both
-# Uncomment and use specific origins when restricting access
-CORS_ALLOWED_ORIGINS = [
-    # Local development
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:5176",
-    "http://localhost:5177",
-    "http://localhost:5178",
-    "http://localhost:5179",
-    "http://localhost:5180",
-    # Vercel domains
-    "https://expert-a.vercel.app",
-    "https://expert-a-git-main.vercel.app",
-    "https://expert-a-feliciala.vercel.app",
-    "https://expert-42lkksco4-felicia-lammertings-projects.vercel.app",
-    "https://expert-h0m39zhmz-felicia-lammertings-projects.vercel.app",
-    "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
-    "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
-    "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
-    "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
-    "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
-    # Add your custom Vercel domain once you have it
-]
+# Comment out CORS_ALLOWED_ORIGINS when using CORS_ALLOW_ALL_ORIGINS
+# CORS_ALLOWED_ORIGINS = [
+#     # Local development
+#     "http://localhost:5173",
+#     "http://localhost:5174",
+#     "http://localhost:5175",
+#     "http://localhost:5176",
+#     "http://localhost:5177",
+#     "http://localhost:5178",
+#     "http://localhost:5179",
+#     "http://localhost:5180",
+#     # Vercel domains
+#     "https://expert-a.vercel.app",
+#     "https://expert-a-git-main.vercel.app",
+#     "https://expert-a-feliciala.vercel.app",
+#     "https://expert-42lkksco4-felicia-lammertings-projects.vercel.app",
+#     "https://expert-h0m39zhmz-felicia-lammertings-projects.vercel.app",
+#     "https://expert-rm7gqywrd-felicia-lammertings-projects.vercel.app",
+#     "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
+#     "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
+#     "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
+#     "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
+#     "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
+#     # Add your custom Vercel domain once you have it
+# ]
 
-# Override CORS_ALLOW_ALL_ORIGINS since we're using CORS_ALLOWED_ORIGINS
-CORS_ALLOW_ALL_ORIGINS = False
+# Override CORS_ALLOW_ALL_ORIGINS setting - we'll use our custom middleware instead
+# CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -286,13 +287,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://expert-a.vercel.app",
     "https://expert-a-git-main.vercel.app",
     "https://expert-a-feliciala.vercel.app",
-    "https://expert-42lkksco4-felicia-lammertings-projects.vercel.app",
-    "https://expert-h0m39zhmz-felicia-lammertings-projects.vercel.app",
-    "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
-    "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
-    "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
-    "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
-    "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
+    "https://*.vercel.app",  # Wildcard to cover all Vercel subdomains
     # Add your custom Vercel domain once you have it
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
