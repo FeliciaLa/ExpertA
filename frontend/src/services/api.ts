@@ -6,10 +6,25 @@ const baseUrl = import.meta.env.VITE_API_URL ||
     ? 'http://localhost:8000' 
     : 'https://experta-backend-d64920064058.herokuapp.com');
 
-// Fix double /api/ issue by checking if baseUrl already contains /api/
-export const API_URL = baseUrl.includes('/api/') 
-  ? baseUrl 
-  : (baseUrl.endsWith('/') ? `${baseUrl}api/` : `${baseUrl}/api/`);
+// Robust API URL construction to prevent double /api/ issues
+let apiUrl = baseUrl;
+
+// Remove trailing slash if present
+if (apiUrl.endsWith('/')) {
+  apiUrl = apiUrl.slice(0, -1);
+}
+
+// If the URL doesn't end with /api, add it
+if (!apiUrl.endsWith('/api')) {
+  apiUrl += '/api';
+}
+
+// Ensure it ends with a slash
+if (!apiUrl.endsWith('/')) {
+  apiUrl += '/';
+}
+
+export const API_URL = apiUrl;
 
 // Log the API URL being used
 console.log('API URL:', API_URL);
