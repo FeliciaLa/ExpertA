@@ -840,14 +840,38 @@ class ExpertListView(APIView):
         return response
     
     def get(self, request):
-        """Get only experts that have valid profiles and are not system users"""
-        queryset = Expert.objects.filter(is_superuser=False, is_staff=False).exclude(email='admin@example.com')
-        serializer = ExpertSerializer(queryset, many=True)
-        response = Response(serializer.data)
-        # Add CORS headers to response
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
+        try:
+            experts = Expert.objects.filter(is_superuser=False, is_staff=False)
+            # Convert expert data manually to avoid UUID issues
+            expert_data = []
+            for expert in experts:
+                # Debug each expert's ID
+                print(f"Expert ID in ExpertListView: {expert.id}")
+                
+                data = {
+                    'id': str(expert.id),
+                    'name': expert.get_full_name() or expert.username,
+                    'email': expert.email,
+                    'specialties': getattr(expert, 'specialties', ''),
+                    'bio': getattr(expert, 'bio', ''),
+                    'title': getattr(expert, 'title', ''),
+                    'profile_image': expert.profile_image.url if hasattr(expert, 'profile_image') and expert.profile_image else None,
+                }
+                expert_data.append(data)
+            
+            response = Response(expert_data)
+            # Add CORS headers
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            return response
+        except Exception as e:
+            import traceback
+            print(f"Error in ExpertListView: {str(e)}")
+            print(traceback.format_exc())
+            response = Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            return response
 
 class ExpertDetailView(APIView):
     """
