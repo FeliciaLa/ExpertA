@@ -49,7 +49,7 @@ def send_verification_email(user, request=None):
     frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
     
     # Create the verification URL
-    verification_url = f"{frontend_url}/verify/{token}"
+    verification_url = f"{frontend_url}/verify-email/{token}"
     
     # Get the user's name - compatible with both User and Expert models
     if hasattr(user, 'name'):
