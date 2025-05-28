@@ -1,85 +1,52 @@
-FROM node:18-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+# Remove default nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
 
-# Create a simple server.js file
-RUN echo 'const express = require("express");\n\
-const cors = require("cors");\n\
-const app = express();\n\
-const PORT = process.env.PORT || 8000;\n\
-\n\
-// Enable CORS for all routes\n\
-app.use(cors({\n\
-  origin: "*",\n\
-  methods: ["GET", "POST", "OPTIONS"],\n\
-  allowedHeaders: ["Content-Type", "Authorization", "Cache-Control", "Pragma"]\n\
-}));\n\
-\n\
-// Health check endpoint\n\
-app.get("/health", (req, res) => {\n\
-  res.json({ status: "ok" });\n\
-});\n\
-\n\
-// Mock experts endpoint\n\
-app.get("/api/public-experts", (req, res) => {\n\
-  const experts = [\n\
-    {\n\
-      id: "3ce3731a-cc37-4fd8-a3e2-ec34dc8b83b2",\n\
-      name: "Flu1",\n\
-      email: "f@lu1.com",\n\
-      specialties: "\\n\\nMethodologies: \\nTools & Technologies: ",\n\
-      bio: "hhhh",\n\
-      title: "Marketing expert",\n\
-      profile_image: "/media/profile_images/London_Skyline_125508655.jpeg"\n\
-    },\n\
-    {\n\
-      id: "a3823504-6333-487a-9b31-e1ee24bebb11",\n\
-      name: "fla1",\n\
-      email: "f@la.com",\n\
-      specialties: "",\n\
-      bio: "",\n\
-      title: "",\n\
-      profile_image: null\n\
+# Create a simple configuration file with CORS headers
+RUN echo 'server {\n\
+    listen 80;\n\
+    server_name localhost;\n\
+    \n\
+    # Add CORS headers for all responses\n\
+    add_header Access-Control-Allow-Origin "*";\n\
+    add_header Access-Control-Allow-Methods "GET, OPTIONS";\n\
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization, Cache-Control, Pragma";\n\
+    add_header Content-Type "application/json";\n\
+    \n\
+    # Health check endpoint\n\
+    location /health {\n\
+        default_type application/json;\n\
+        return 200 \'{"status": "ok"}\';\n\
     }\n\
-  ];\n\
-  res.json(experts);\n\
-});\n\
-\n\
-// Mock experts endpoint with trailing slash\n\
-app.get("/api/public-experts/", (req, res) => {\n\
-  const experts = [\n\
-    {\n\
-      id: "3ce3731a-cc37-4fd8-a3e2-ec34dc8b83b2",\n\
-      name: "Flu1",\n\
-      email: "f@lu1.com",\n\
-      specialties: "\\n\\nMethodologies: \\nTools & Technologies: ",\n\
-      bio: "hhhh",\n\
-      title: "Marketing expert",\n\
-      profile_image: "/media/profile_images/London_Skyline_125508655.jpeg"\n\
-    },\n\
-    {\n\
-      id: "a3823504-6333-487a-9b31-e1ee24bebb11",\n\
-      name: "fla1",\n\
-      email: "f@la.com",\n\
-      specialties: "",\n\
-      bio: "",\n\
-      title: "",\n\
-      profile_image: null\n\
+    \n\
+    # Public experts API endpoint\n\
+    location /api/public-experts {\n\
+        default_type application/json;\n\
+        return 200 \'[{"id":"3ce3731a-cc37-4fd8-a3e2-ec34dc8b83b2","name":"Flu1","email":"f@lu1.com","specialties":"Methodologies and Tools","bio":"Marketing expert bio","title":"Marketing expert","profile_image":null},{"id":"a3823504-6333-487a-9b31-e1ee24bebb11","name":"fla1","email":"f@la.com","specialties":"","bio":"","title":"","profile_image":null}]\';\n\
     }\n\
-  ];\n\
-  res.json(experts);\n\
-});\n\
-\n\
-// Start the server\n\
-app.listen(PORT, () => {\n\
-  console.log(`Server running on port ${PORT}`);\n\
-});' > /app/server.js
+    \n\
+    # Experts API endpoint\n\
+    location /api/experts {\n\
+        default_type application/json;\n\
+        return 200 \'[{"id":"3ce3731a-cc37-4fd8-a3e2-ec34dc8b83b2","name":"Flu1","email":"f@lu1.com","specialties":"Methodologies and Tools","bio":"Marketing expert bio","title":"Marketing expert","profile_image":null},{"id":"a3823504-6333-487a-9b31-e1ee24bebb11","name":"fla1","email":"f@la.com","specialties":"","bio":"","title":"","profile_image":null}]\';\n\
+    }\n\
+    \n\
+    # API root\n\
+    location /api {\n\
+        default_type application/json;\n\
+        return 200 \'{"status":"ok","message":"ExpertA API"}\';\n\
+    }\n\
+    \n\
+    # Default route\n\
+    location / {\n\
+        default_type application/json;\n\
+        return 200 \'{"status":"ok","service":"ExpertA Backend"}\';\n\
+    }\n\
+}\n' > /etc/nginx/conf.d/default.conf
 
-# Install express and cors
-RUN npm init -y && npm install express cors
+# Expose port 80
+EXPOSE 80
 
-# Expose the port
-EXPOSE 8000
-
-# Start the server
-CMD ["node", "server.js"] 
+# Start nginx in the foreground
+CMD ["nginx", "-g", "daemon off;"] 
