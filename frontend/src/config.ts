@@ -1,17 +1,18 @@
 // API Configuration
-const apiUrlWithoutTrailingSlash = (import.meta.env.VITE_API_URL || 
+const baseApiUrl = import.meta.env.VITE_API_URL || 
   (window.location.hostname === 'localhost' 
-    ? 'http://localhost:8999/api' 
-    : 'https://experta-production.up.railway.app/api')).replace(/\/$/, '');
+    ? 'http://localhost:8000' 
+    : 'https://experta-backend-d64920064058.herokuapp.com');
 
-// Base URL for API requests - prevent double /api/ in URL
-export const API_URL = apiUrlWithoutTrailingSlash.endsWith('/api') 
-  ? `${apiUrlWithoutTrailingSlash}/` 
-  : `${apiUrlWithoutTrailingSlash}/api/`;
+// Base URL for API requests - always ensure it ends with /api/
+export const API_URL = baseApiUrl.endsWith('/') 
+  ? `${baseApiUrl}api/` 
+  : `${baseApiUrl}/api/`;
 
 // Debug logging
 console.log('API URL environment variable:', import.meta.env.VITE_API_URL);
-console.log('Resolved API URL:', API_URL);
+console.log('Base API URL:', baseApiUrl);
+console.log('Final API URL:', API_URL);
 
 // Make sure URLs have correct formatting
 export const formatApiUrl = (path: string) => {

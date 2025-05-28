@@ -16,6 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { useAuth } from '../contexts/AuthContext';
 import { expertApi } from '../services/api';
+import { API_URL } from '../config';
 
 interface ProfileData {
   first_name: string;
@@ -138,8 +139,9 @@ const ExpertProfile: React.FC = () => {
       return profile.profile_image;
     }
     
-    // Use a hardcoded API URL for development
-    return `http://localhost:8000${profile.profile_image}`;
+    // Use the configured API URL base
+    const baseUrl = API_URL.replace('/api/', '').replace('/api', '');
+    return `${baseUrl}${profile.profile_image}`;
   };
 
   return (

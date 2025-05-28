@@ -1,7 +1,14 @@
 import axios, { AxiosError } from 'axios';
 
 // Read API URL from environment variable in production, or use localhost in development
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008/api';
+const baseUrl = import.meta.env.VITE_API_URL || 
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+    ? 'http://localhost:8000' 
+    : 'https://experta-backend-d64920064058.herokuapp.com');
+
+export const API_URL = baseUrl.endsWith('/') 
+  ? `${baseUrl}api/` 
+  : `${baseUrl}/api/`;
 
 // Log the API URL being used
 console.log('API URL:', API_URL);
@@ -583,8 +590,8 @@ export const debugLogin = async (email: string, password: string) => {
     const endpoints = [
       '/login/',
       '/api/login/',
-      'http://localhost:8008/login/',
-      'http://localhost:8008/api/login/'
+      'http://localhost:8000/login/',
+      'http://localhost:8000/api/login/'
     ];
     
     let lastError = null;
