@@ -6,25 +6,17 @@ const baseUrl = import.meta.env.VITE_API_URL ||
     ? 'http://localhost:8000' 
     : 'https://experta-backend-d64920064058.herokuapp.com');
 
-// Robust API URL construction to prevent double /api/ issues
-let apiUrl = baseUrl;
-
-// Remove trailing slash if present
-if (apiUrl.endsWith('/')) {
-  apiUrl = apiUrl.slice(0, -1);
+// Handle API URL construction properly to prevent double /api/
+let finalApiUrl;
+if (baseUrl.includes('/api/')) {
+  // If baseUrl already contains /api/, use it as is
+  finalApiUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+} else {
+  // If baseUrl doesn't contain /api/, add it
+  finalApiUrl = baseUrl.endsWith('/') ? `${baseUrl}api/` : `${baseUrl}/api/`;
 }
 
-// If the URL doesn't end with /api, add it
-if (!apiUrl.endsWith('/api')) {
-  apiUrl += '/api';
-}
-
-// Ensure it ends with a slash
-if (!apiUrl.endsWith('/')) {
-  apiUrl += '/';
-}
-
-export const API_URL = apiUrl;
+export const API_URL = finalApiUrl;
 
 // Log the API URL being used
 console.log('API URL:', API_URL);
@@ -169,7 +161,7 @@ api.interceptors.response.use(
         }
 
         // Use the unified token refresh endpoint
-        const refreshEndpoint = '/api/token/refresh/';
+        const refreshEndpoint = 'api/token/refresh/';
         console.log('Using refresh endpoint:', refreshEndpoint);
 
         // Try to refresh the token - use direct axios to avoid interceptor loop
@@ -228,13 +220,13 @@ api.interceptors.response.use(
 
 export const expertService = {
   submitKnowledge: async (knowledge: string) => {
-    const response = await api.post('/api/train/', { knowledge });
+    const response = await api.post('api/train/', { knowledge });
     return response.data;
   },
 
   getKnowledge: async () => {
     try {
-      const response = await api.get('/api/knowledge/');
+      const response = await api.get('api/knowledge/');
       return response.data;
     } catch (error) {
       throw error;
@@ -243,7 +235,7 @@ export const expertService = {
 
   updateKnowledge: async (id: string, knowledge: string) => {
     try {
-      const response = await api.put(`/api/knowledge/${id}/`, { knowledge });
+      const response = await api.put(`api/knowledge/${id}/`, { knowledge });
       return response.data;
     } catch (error) {
       throw error;
@@ -252,7 +244,7 @@ export const expertService = {
 
   deleteKnowledge: async (id: string) => {
     try {
-      const response = await api.delete(`/api/knowledge/${id}/`);
+      const response = await api.delete(`api/knowledge/${id}/`);
       return response.data;
     } catch (error) {
       throw error;
@@ -352,7 +344,7 @@ export const authApi = {
   register: async (name: string, email: string, password: string, isExpertRegistration: boolean = false): Promise<AuthResponse> => {
     try {
       // Use the appropriate registration endpoint based on user type
-      const endpoint = isExpertRegistration ? '/api/register/' : '/api/user/register/';
+      const endpoint = isExpertRegistration ? 'api/register/' : 'api/user/register/';
       const response = await api.post<any>(endpoint, {
         name,
         email,

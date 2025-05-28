@@ -15,8 +15,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { useAuth } from '../contexts/AuthContext';
-import { expertApi } from '../services/api';
-import { API_URL } from '../config';
+import { expertApi, API_URL } from '../services/api';
 
 interface ProfileData {
   first_name: string;
