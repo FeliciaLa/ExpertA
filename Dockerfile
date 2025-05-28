@@ -11,21 +11,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend project - make sure to copy into the correct location
+# Copy backend project directly into the /app directory
 COPY backend/ /app/
-COPY start.sh /app/
 
-# Make the start script executable
-RUN chmod +x /app/start.sh
-
-# Make sure the workdir has the Django project
+# Verify Django project structure
 RUN ls -la && \
     if [ ! -f "manage.py" ]; then \
       echo "ERROR: manage.py not found in /app - Docker build context may be incorrect"; \
       exit 1; \
     fi
 
-# Collect static files
+# Run migrations
 RUN python manage.py collectstatic --noinput || echo "Collectstatic failed - continuing build"
 
 # Expose port
@@ -36,5 +32,5 @@ ENV PORT=8000
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=expert_system.settings
 
-# Start server - use bash to properly process the script
-CMD ["/bin/bash", "/app/start.sh"] 
+# Start Gunicorn directly
+CMD gunicorn expert_system.wsgi:application --bind 0.0.0.0:$PORT --log-level debug --timeout 300 --workers 2 

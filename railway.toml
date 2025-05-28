@@ -1,6 +1,7 @@
 [build]
 builder = "DOCKERFILE"
 dockerfile = "Dockerfile"
+buildCommand = "echo 'Using Dockerfile for build'"
 
 [deploy]
 restartPolicyType = "ON_FAILURE"
@@ -8,7 +9,11 @@ healthcheckPath = "/health/"
 healthcheckTimeout = 60
 restartPolicyMaxRetries = 5
 numReplicas = 1
-startCommand = "/bin/bash /app/start.sh"
+startCommand = "cd /app && gunicorn expert_system.wsgi:application --bind 0.0.0.0:$PORT --log-level debug --timeout 300 --workers 2"
+
+[service]
+internal_port = 8000
+auto_deploy = true
 
 [variables]
 PORT = "8000"
@@ -16,5 +21,5 @@ PYTHON_VERSION = "3.10.0"
 DATABASE_URL = "${DATABASE_URL}"
 DJANGO_SETTINGS_MODULE = "expert_system.settings"
 RAILWAY_DEPLOYMENT = "true"
-DEBUG = "True"
+DEBUG = "true"
 PYTHONPATH = "/app" 
