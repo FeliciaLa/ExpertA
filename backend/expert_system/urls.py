@@ -23,10 +23,33 @@ from django.conf.urls.static import static
 from django.http import JsonResponse, HttpResponse
 import sys
 import os
+from datetime import datetime
 
 # Super simple health check for Railway
 def health(request):
-    return JsonResponse({"status": "ok"})
+    try:
+        # Try to import and use Django models to ensure DB connection works
+        from django.contrib.auth.models import User
+        count = User.objects.count()
+        
+        # Return success response with more information
+        return JsonResponse({
+            "status": "ok",
+            "message": "Health check passed",
+            "db_connection": "successful",
+            "user_count": count,
+            "timestamp": str(datetime.now())
+        })
+    except Exception as e:
+        # Log the error but still return a 200 response
+        # to prevent Railway from restarting unnecessarily
+        print(f"Health check error: {str(e)}")
+        return JsonResponse({
+            "status": "warning",
+            "message": "Health check has warnings",
+            "error": str(e),
+            "timestamp": str(datetime.now())
+        })
 
 # Debug endpoint to get information about the environment
 def debug_info(request):

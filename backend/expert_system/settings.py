@@ -213,27 +213,29 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    # Local development
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:5176",
-    "http://localhost:5177",
-    "http://localhost:5178",
-    "http://localhost:5179",
-    "http://localhost:5180",
-    # Vercel domains
-    "https://expert-a.vercel.app",
-    "https://expert-a-git-main.vercel.app",
-    "https://expert-a-feliciala.vercel.app",
-    "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
-    "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
-    "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
-    "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
-    "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
-    # Add your custom Vercel domain once you have it
-]
+# Use either CORS_ALLOWED_ORIGINS or CORS_ALLOW_ALL_ORIGINS, not both
+# Comment out CORS_ALLOWED_ORIGINS when CORS_ALLOW_ALL_ORIGINS is True
+# CORS_ALLOWED_ORIGINS = [
+#     # Local development
+#     "http://localhost:5173",
+#     "http://localhost:5174",
+#     "http://localhost:5175",
+#     "http://localhost:5176",
+#     "http://localhost:5177",
+#     "http://localhost:5178",
+#     "http://localhost:5179",
+#     "http://localhost:5180",
+#     # Vercel domains
+#     "https://expert-a.vercel.app",
+#     "https://expert-a-git-main.vercel.app",
+#     "https://expert-a-feliciala.vercel.app",
+#     "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
+#     "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
+#     "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
+#     "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
+#     "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
+#     # Add your custom Vercel domain once you have it
+# ]
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
