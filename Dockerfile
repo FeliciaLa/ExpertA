@@ -13,22 +13,28 @@ COPY backend/requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy health check and startup script
+COPY health_server.py start.sh ./
+RUN chmod +x start.sh health_server.py
+
 # Copy project
-COPY backend/ .
+COPY backend/ ./backend/
 
 # Copy any necessary files from root
 COPY .env* ./
 
 # Collect static files
-RUN python manage.py collectstatic --noinput
+RUN cd backend && python manage.py collectstatic --noinput
 
 # Expose port
 EXPOSE 8000
+EXPOSE 8001
 
 # Set environment variable
 ENV PORT=8000
+ENV DJANGO_PORT=8001
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=expert_system.settings
 
 # Start server
-CMD gunicorn expert_system.wsgi:application --bind 0.0.0.0:$PORT 
+CMD ["./start.sh"] 

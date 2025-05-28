@@ -4,7 +4,7 @@ dockerfile = "Dockerfile"
 
 [deploy]
 restartPolicyType = "ON_FAILURE"
-healthcheckPath = "/api/health/"
+healthcheckPath = "/health"
 healthcheckTimeout = 10
 restartPolicyMaxRetries = 5
 numReplicas = 1
@@ -14,4 +14,5 @@ PORT = "8000"
 PYTHON_VERSION = "3.10.0"
 DATABASE_URL = "${DATABASE_URL}"
 DJANGO_SETTINGS_MODULE = "expert_system.settings"
-RAILWAY_DEPLOYMENT = "true" 
+RAILWAY_DEPLOYMENT = "true"
+DEBUG = "True" 
