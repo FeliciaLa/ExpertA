@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 import sys
 from pathlib import Path
+from datetime import timedelta
 
 # Check if running on Railway
 ON_RAILWAY = os.environ.get('RAILWAY_STATIC_URL', '') != ''
@@ -229,6 +230,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
     "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
     "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
+    "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
+    "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
     # Add your custom Vercel domain once you have it
 ]
 CORS_ALLOW_METHODS = [
@@ -278,6 +281,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
     "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
     "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
+    "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
+    "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
     # Add your custom Vercel domain once you have it
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
@@ -321,3 +326,20 @@ FRONTEND_URL = 'http://127.0.0.1:5175'
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
 DEFAULT_FROM_EMAIL = 'experta@example.com'
+
+# JWT settings 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'JTI_CLAIM': 'jti',
+}

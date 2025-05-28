@@ -1,13 +1,28 @@
 // API Configuration
-const API_URL = (import.meta.env.VITE_API_URL || 
+const apiUrlWithoutTrailingSlash = (import.meta.env.VITE_API_URL || 
   (window.location.hostname === 'localhost' 
     ? 'http://localhost:8999/api' 
-    : 'https://experta-production.up.railway.app/api')).replace(/\/$/, '') + '/';
+    : 'https://experta-production.up.railway.app/api')).replace(/\/$/, '');
+
+// Base URL for API requests - prevent double /api/ in URL
+export const API_URL = apiUrlWithoutTrailingSlash.endsWith('/api') 
+  ? `${apiUrlWithoutTrailingSlash}/` 
+  : `${apiUrlWithoutTrailingSlash}/api/`;
+
+// Debug logging
+console.log('API URL environment variable:', import.meta.env.VITE_API_URL);
+console.log('Resolved API URL:', API_URL);
 
 // Make sure URLs have correct formatting
 export const formatApiUrl = (path: string) => {
   // Remove leading slash if present
   const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  
+  // Prevent adding /api/ twice
+  if (API_URL.endsWith('/api/') && cleanPath.startsWith('api/')) {
+    return `${API_URL}${cleanPath.substring(4)}`;
+  }
+  
   return `${API_URL}${cleanPath}`;
 };
 
@@ -46,6 +61,4 @@ export const fetchOptions = {
   },
   credentials: 'omit' as RequestCredentials,
   mode: 'cors' as RequestMode
-};
-
-export { API_URL }; 
+}; 
