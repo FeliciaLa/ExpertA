@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
 import { Link } from 'react-router-dom';
-import { API_URL, formatApiUrl } from '../config';
+import { API_URL, formatApiUrl, MOCK_EXPERTS, fetchOptions } from '../config';
 
 interface Expert {
   id: string;
@@ -51,6 +51,16 @@ export const ExpertList: React.FC = () => {
       try {
         console.log('Testing direct fetch to backend...');
         console.log('Using API URL from config:', API_URL);
+        
+        // Check if we're using JSONPlaceholder (temporary solution)
+        const isUsingJsonPlaceholder = API_URL.includes('jsonplaceholder');
+        console.log('Using JSONPlaceholder?', isUsingJsonPlaceholder);
+        
+        if (isUsingJsonPlaceholder) {
+          console.log('Using mock data:', MOCK_EXPERTS);
+          // No need to test endpoints if using mock data
+          return;
+        }
         
         // Try multiple test endpoints
         const testEndpoints = [
@@ -91,21 +101,23 @@ export const ExpertList: React.FC = () => {
         
         console.log('Fetching experts using API URL:', API_URL);
         
+        // Check if we're using JSONPlaceholder (temporary solution)
+        const isUsingJsonPlaceholder = API_URL.includes('jsonplaceholder');
+        
+        if (isUsingJsonPlaceholder) {
+          console.log('Using mock experts data');
+          setExperts(MOCK_EXPERTS);
+          setLoading(false);
+          return;
+        }
+        
         // Try direct fetch to the backend
         try {
           // Use endpoint with trailing slash to match Django URL patterns
           const endpoint = formatApiUrl('public-experts');
           console.log('Fetching from endpoint:', endpoint);
           
-          const response = await fetch(endpoint, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            },
-            credentials: 'omit' // Avoid CORS preflight
-          });
+          const response = await fetch(endpoint, fetchOptions);
           
           console.log('Response status:', response.status);
           
