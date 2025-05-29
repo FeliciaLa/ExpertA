@@ -161,7 +161,7 @@ api.interceptors.response.use(
         }
 
         // Use the unified token refresh endpoint
-        const refreshEndpoint = 'api/token/refresh/';
+        const refreshEndpoint = 'token/refresh/';
         console.log('Using refresh endpoint:', refreshEndpoint);
 
         // Try to refresh the token - use direct axios to avoid interceptor loop
@@ -220,13 +220,13 @@ api.interceptors.response.use(
 
 export const expertService = {
   submitKnowledge: async (knowledge: string) => {
-    const response = await api.post('api/train/', { knowledge });
+    const response = await api.post('train/', { knowledge });
     return response.data;
   },
 
   getKnowledge: async () => {
     try {
-      const response = await api.get('api/knowledge/');
+      const response = await api.get('knowledge/');
       return response.data;
     } catch (error) {
       throw error;
@@ -235,7 +235,7 @@ export const expertService = {
 
   updateKnowledge: async (id: string, knowledge: string) => {
     try {
-      const response = await api.put(`api/knowledge/${id}/`, { knowledge });
+      const response = await api.put(`knowledge/${id}/`, { knowledge });
       return response.data;
     } catch (error) {
       throw error;
@@ -244,7 +244,7 @@ export const expertService = {
 
   deleteKnowledge: async (id: string) => {
     try {
-      const response = await api.delete(`api/knowledge/${id}/`);
+      const response = await api.delete(`knowledge/${id}/`);
       return response.data;
     } catch (error) {
       throw error;
@@ -255,7 +255,7 @@ export const expertService = {
 export const chatService = {
   sendMessage: async (message: string, expertId: string) => {
     try {
-      const response = await api.post('/api/chat/', { message, expert_id: expertId });
+      const response = await api.post('chat/', { message, expert_id: expertId });
       if (!response.data || !response.data.answer) {
         throw new Error('Invalid response format from server');
       }
@@ -271,16 +271,16 @@ export const authApi = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
     try {
       console.log('Login request payload:', { email, password: '***' });
-      // Try the /api/login/ endpoint first, fall back to /login/ if it fails
+      // Try the login endpoint first, fall back to login/ if it fails
       let response;
       try {
-        response = await api.post('/api/login/', {
+        response = await api.post('login/', {
           email,
           password,
         });
       } catch (error) {
-        console.log('Falling back to /login/ endpoint');
-        response = await api.post('/login/', {
+        console.log('Falling back to login/ endpoint');
+        response = await api.post('login/', {
           email,
           password,
         });
@@ -313,7 +313,7 @@ export const authApi = {
       
       try {
         // If user data is not in the response, try to get user profile
-        const userResponse = await api.get<any>('/api/user/profile/');
+        const userResponse = await api.get<any>('user/profile/');
         console.log('User profile response:', userResponse.data);
         
         // Store user data
@@ -344,7 +344,7 @@ export const authApi = {
   register: async (name: string, email: string, password: string, isExpertRegistration: boolean = false): Promise<AuthResponse> => {
     try {
       // Use the appropriate registration endpoint based on user type
-      const endpoint = isExpertRegistration ? 'api/register/' : 'api/user/register/';
+      const endpoint = isExpertRegistration ? 'register/' : 'user/register/';
       const response = await api.post<any>(endpoint, {
         name,
         email,
@@ -402,7 +402,7 @@ export const authApi = {
     if (!refresh) throw new Error('No refresh token available');
 
     try {
-      const response = await axios.post<{ access: string }>(`${API_URL}/api/token/refresh/`, {
+      const response = await axios.post<{ access: string }>(`${API_URL}token/refresh/`, {
         refresh,
       });
 
@@ -423,7 +423,7 @@ export const authApi = {
   },
 
   getExpertProfile: async (): Promise<ExpertData> => {
-    const response = await api.get<ExpertData>('/api/profile/');
+    const response = await api.get<ExpertData>('profile/');
     return response.data;
   },
 };
@@ -437,7 +437,7 @@ export const expertApi = {
     title?: string;
   }) => {
     try {
-      const response = await api.put('/api/profile/update/', profileData);
+      const response = await api.put('profile/update/', profileData);
       return response.data;
     } catch (error) {
       throw error;
@@ -446,7 +446,7 @@ export const expertApi = {
 
   getProfile: async () => {
     try {
-      const response = await api.get('/api/profile/');
+      const response = await api.get('profile/');
       return response.data;
     } catch (error) {
       throw error;
@@ -458,7 +458,7 @@ export const expertApi = {
       const formData = new FormData();
       formData.append('profile_image', imageFile);
       
-      const response = await api.post('/api/profile/upload-image/', formData, {
+      const response = await api.post('profile/upload-image/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -473,7 +473,7 @@ export const expertApi = {
 export const trainingService = {
   getOnboardingStatus: async () => {
     try {
-      const response = await api.get('/api/onboarding/');
+      const response = await api.get('onboarding/');
       return response.data;
     } catch (error) {
       throw error;
@@ -482,7 +482,7 @@ export const trainingService = {
 
   submitOnboardingAnswer: async (data: { question_id: number; answer: string }) => {
     try {
-      const response = await api.post('/api/onboarding/', data);
+      const response = await api.post('onboarding/', data);
       return response.data;
     } catch (error) {
       throw error;
@@ -491,7 +491,7 @@ export const trainingService = {
   
   updateOnboardingAnswer: async (data: { question_id: number; answer: string }) => {
     try {
-      const response = await api.put('/api/onboarding/', data);
+      const response = await api.put('onboarding/', data);
       return response.data;
     } catch (error) {
       throw error;
@@ -500,7 +500,7 @@ export const trainingService = {
   
   getOnboardingAnswers: async () => {
     try {
-      const response = await api.get('/api/onboarding/answers/');
+      const response = await api.get('onboarding/answers/');
       return response.data;
     } catch (error) {
       throw error;
@@ -509,7 +509,7 @@ export const trainingService = {
   
   processKnowledge: async () => {
     try {
-      const response = await api.post('/api/knowledge/process/');
+      const response = await api.post('knowledge/process/');
       return response.data;
     } catch (error) {
       throw error;
@@ -518,7 +518,7 @@ export const trainingService = {
 
   getDocuments: async () => {
     try {
-      const response = await api.get('/api/documents/');
+      const response = await api.get('documents/');
       return response.data;
     } catch (error) {
       throw error;
@@ -527,7 +527,7 @@ export const trainingService = {
   
   uploadDocuments: async (formData: FormData) => {
     try {
-      const response = await api.post('/api/documents/upload/', formData, {
+      const response = await api.post('documents/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -540,7 +540,7 @@ export const trainingService = {
   
   deleteDocument: async (documentId: number) => {
     try {
-      const response = await api.delete(`/api/documents/${documentId}/`);
+      const response = await api.delete(`documents/${documentId}/`);
       return response.data;
     } catch (error) {
       throw error;
@@ -549,7 +549,7 @@ export const trainingService = {
 
   getChatHistory: async () => {
     try {
-      const response = await api.get('/api/training/chat/');
+      const response = await api.get('training/chat/');
       return response.data;
     } catch (error) {
       throw error;
@@ -559,7 +559,7 @@ export const trainingService = {
   sendMessage: async (message: string) => {
     try {
       console.log('Sending message:', message);
-      const response = await api.post('/api/training/chat/', { message });
+      const response = await api.post('training/chat/', { message });
       console.log('Received response:', response.data);
       return response.data;
     } catch (error) {
@@ -581,12 +581,12 @@ export const userApi = {
   },
 
   getProfile: async (): Promise<UserData> => {
-    const response = await api.get<UserData>('/api/user/profile/');
+    const response = await api.get<UserData>('user/profile/');
     return response.data;
   },
 
   updateProfile: async (profileData: any): Promise<UserData> => {
-    const response = await api.put('/api/user/profile/update/', profileData);
+    const response = await api.put('user/profile/update/', profileData);
     return response.data;
   }
 };
