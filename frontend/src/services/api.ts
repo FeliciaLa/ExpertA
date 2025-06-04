@@ -341,15 +341,24 @@ export const authApi = {
     }
   },
 
-  register: async (name: string, email: string, password: string, isExpertRegistration: boolean = false): Promise<AuthResponse> => {
+  register: async (name: string, email: string, password: string, isExpertRegistration: boolean = false, userRole: 'user' | 'expert' = 'user'): Promise<AuthResponse> => {
     try {
       // Use the appropriate registration endpoint based on user type
       const endpoint = isExpertRegistration ? 'register/' : 'user/register/';
-      const response = await api.post<any>(endpoint, {
+      
+      // Prepare the request data
+      const requestData: any = {
         name,
         email,
         password,
-      });
+      };
+      
+      // For the unified user registration endpoint, include the role
+      if (!isExpertRegistration) {
+        requestData.role = userRole;
+      }
+      
+      const response = await api.post<any>(endpoint, requestData);
 
       // Email verification flow - response will just have user data and message
       if (response.data.message && response.data.message.includes('verify')) {

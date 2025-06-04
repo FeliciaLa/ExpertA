@@ -43,7 +43,7 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string, isExpertLogin?: boolean) => Promise<{ success: boolean; message?: string }>;
   signOut: () => void;
-  register: (name: string, email: string, password: string, isExpertRegistration?: boolean) => Promise<{ success: boolean; message?: string }>;
+  register: (name: string, email: string, password: string, isExpertRegistration?: boolean, userRole?: 'user' | 'expert') => Promise<{ success: boolean; message?: string }>;
   error: string | null;
   clearError: () => void;
   refreshExpert: () => Promise<ExpertData>;
@@ -293,11 +293,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const register = async (name: string, email: string, password: string, isExpertRegistration = false) => {
+  const register = async (name: string, email: string, password: string, isExpertRegistration = false, userRole?: 'user' | 'expert') => {
     setIsLoading(true);
     try {
       // Pass the isExpertRegistration parameter to determine the correct endpoint
-      const response = await authApi.register(name, email, password, isExpertRegistration);
+      const response = await authApi.register(name, email, password, isExpertRegistration, userRole);
       
       // For registration with email verification, we don't log in automatically
       // Check message for verification notification

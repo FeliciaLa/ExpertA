@@ -61,9 +61,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   };
 
-  const handleRegister = async (name: string, email: string, password: string, isExpertRegistration: boolean) => {
+  const handleRegister = async (name: string, email: string, password: string, isExpertRegistration: boolean, userRole?: 'user' | 'expert') => {
     try {
-      const result = await register(name, email, password, isExpertRegistration);
+      const result = await register(name, email, password, isExpertRegistration, userRole);
       if (result.success) {
         // If there's a verification message, don't navigate
         if (result.message && result.message.includes("verify")) {
@@ -205,7 +205,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         open={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         onSignIn={(email, password, isExpertLogin) => handleSignIn(email, password, isExpertLogin)}
-        onRegister={(name, email, password, isExpertRegistration) => handleRegister(name, email, password, isExpertRegistration)}
+        onRegister={(name, email, password, isExpertRegistration, userRole) => handleRegister(name, email, password, isExpertRegistration, userRole)}
       />
       
       <Container component="main" sx={{ mt: 4 }}>

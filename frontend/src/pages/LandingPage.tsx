@@ -45,9 +45,9 @@ const LandingPage: React.FC = () => {
     }
   };
 
-  const handleRegister = async (name: string, email: string, password: string, isExpertRegistration: boolean): Promise<{ success: boolean; message?: string }> => {
+  const handleRegister = async (name: string, email: string, password: string, isExpertRegistration: boolean, userRole?: 'user' | 'expert'): Promise<{ success: boolean; message?: string }> => {
     try {
-      await register(name, email, password);
+      await register(name, email, password, isExpertRegistration, userRole);
       return { success: true };
     } catch (error) {
       // Error is handled by the dialog
