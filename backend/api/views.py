@@ -1452,6 +1452,82 @@ class UserProfileUpdateView(APIView):
             print(traceback.format_exc())
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class UserProfileDeleteView(APIView):
+    """
+    API endpoint for deleting user profile.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "DELETE, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
+    
+    def delete(self, request):
+        try:
+            print("UserProfileDeleteView - Request data:", request.data)
+            print("UserProfileDeleteView - Request headers:", request.headers)
+            
+            # Token-based authentication
+            auth_header = request.headers.get('Authorization', '')
+            print(f"Delete view - Authorization header: {auth_header[:15]}...")
+            
+            if not auth_header.startswith('Bearer '):
+                print("Delete view - ERROR: No Bearer token in Authorization header")
+                return Response({"error": "Invalid authorization header format"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            token = auth_header.split(' ')[1]
+            print(f"Delete view - Extracted token: {token[:10]}...")
+            
+            # Verify token and extract user ID
+            import jwt
+            from django.conf import settings
+            
+            try:
+                decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"], options={"verify_signature": True})
+                print(f"Delete view - Decoded token: {decoded_token}")
+                
+                user_id = decoded_token.get('user_id')
+                if not user_id:
+                    print("Delete view - ERROR: No user_id in token payload")
+                    return Response({"error": "Invalid token - missing user ID"}, status=status.HTTP_401_UNAUTHORIZED)
+                
+                # Find user by ID
+                user = User.objects.get(id=user_id)
+                print(f"Delete view - Found user: {user.email} - {user.id} - role: {user.role}")
+                
+            except jwt.DecodeError as e:
+                print(f"Delete view - JWT decode error: {str(e)}")
+                return Response({"error": "Invalid token format"}, status=status.HTTP_401_UNAUTHORIZED)
+            except jwt.ExpiredSignatureError:
+                print("Delete view - JWT token expired")
+                return Response({"error": "Token has expired"}, status=status.HTTP_401_UNAUTHORIZED)
+            except User.DoesNotExist:
+                print(f"Delete view - User with ID {user_id} not found")
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Delete the user
+            user_email = user.email
+            user.delete()
+            print(f"Delete view - User {user_email} deleted successfully")
+            
+            # Return success response
+            response = Response({"message": f"User account {user_email} has been permanently deleted"})
+            
+            # Add CORS headers to response
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            return response
+                
+        except Exception as e:
+            import traceback
+            print(f"Error in UserProfileDeleteView: {str(e)}")
+            print(traceback.format_exc())
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class PublicExpertListView(APIView):
     """
     Public API endpoint for listing all experts without authentication.

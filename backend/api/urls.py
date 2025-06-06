@@ -17,6 +17,7 @@ from .views import (
     UserRegistrationView,
     UserProfileView,
     UserProfileUpdateView,
+    UserProfileDeleteView,
     PublicExpertListView,
     EmailVerificationView
 )
@@ -150,6 +151,7 @@ urlpatterns = [
     path('login/', EmailTokenObtainPairView.as_view(), name='login'),
     path('user/profile/', UserProfileView.as_view(), name='user-profile'),
     path('user/profile/update/', UserProfileUpdateView.as_view(), name='user-profile-update'),
+    path('user/profile/delete/', UserProfileDeleteView.as_view(), name='user-profile-delete'),
     path('user/profile/direct/<str:user_id>/', UserProfileView.as_view(), name='user-profile-direct'),
     
     # Email verification - now generic for both users and experts
