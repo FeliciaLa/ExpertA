@@ -16,17 +16,33 @@ class ExpertProfileDetailSerializer(serializers.ModelSerializer):
         ]
 
 class ExpertProfileSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='get_full_name', read_only=True)
+    name = serializers.CharField(source='name', read_only=True)
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
     profile = ExpertProfileDetailSerializer(read_only=True)
     
     class Meta:
-        model = Expert
+        model = User
         fields = [
             'id', 'name', 'first_name', 'last_name', 'email', 'bio', 'specialties', 'title',
             'onboarding_completed', 'onboarding_completed_at', 'total_training_messages',
             'last_training_at', 'profile', 'profile_image'
         ]
         read_only_fields = ['id', 'name', 'email', 'onboarding_completed', 'onboarding_completed_at']
+    
+    def get_first_name(self, obj):
+        """Split the name field to get first name"""
+        if obj.name:
+            name_parts = obj.name.split()
+            return name_parts[0] if name_parts else ''
+        return ''
+    
+    def get_last_name(self, obj):
+        """Split the name field to get last name"""
+        if obj.name:
+            name_parts = obj.name.split()
+            return ' '.join(name_parts[1:]) if len(name_parts) > 1 else ''
+        return ''
 
 class ExpertSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
