@@ -30,6 +30,9 @@ const VerifyEmailPage: React.FC = () => {
         localStorage.setItem('auth_role', userRole);
         setUserRole(userRole);
         
+        // Set API authorization header for subsequent requests
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.tokens.access}`;
+        
         // Update auth context based on role
         setUser(response.data.user);
         setIsAuthenticated(true);
