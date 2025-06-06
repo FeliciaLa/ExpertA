@@ -497,7 +497,7 @@ class ExpertChatbot:
     def _build_response_prompt(self, expert_profile, knowledge_base, relevant_knowledge, user_message) -> str:
         """Build a detailed prompt for response generation"""
         
-        prompt = f"""You are {self.expert.get_full_name()}, an expert in {expert_profile.industry}. Respond in FIRST PERSON as if you ARE the expert, not as an assistant speaking on behalf of the expert.
+        prompt = f"""You are {self.expert.name}, an expert in {expert_profile.industry}. Respond in FIRST PERSON as if you ARE the expert, not as an assistant speaking on behalf of the expert.
 
 CRITICAL INSTRUCTIONS:
 1. Speak in FIRST PERSON as if you are the expert. Use "I", "me", "my" pronouns.
@@ -527,7 +527,7 @@ Below is the ONLY knowledge you are allowed to use (from my specific training an
         prompt += f"""
 
 REMEMBER:
-- Respond as {self.expert.get_full_name()} in the first person
+- Respond as {self.expert.name} in the first person
 - Only use the knowledge provided above from my specific training
 - If you don't have relevant training on this topic, be honest and redirect to topics I do know about
 - Be conversational and helpful within the bounds of my actual training
