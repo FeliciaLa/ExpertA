@@ -453,7 +453,7 @@ class ChatView(APIView):
             return Response({
                 "answer": response,
                 "expert_id": expert.id,
-                "expert_name": expert.get_full_name()
+                "expert_name": expert.name or expert.email
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -976,24 +976,25 @@ class ExpertListView(APIView):
     def get(self, request):
         try:
             experts = Expert.objects.filter(is_superuser=False, is_staff=False)
-            # Convert expert data manually to avoid UUID issues
-            expert_data = []
+            # Manually serialize the data to avoid UUID conversion issues
+            data = []
             for expert in experts:
-                # Debug each expert's ID
-                print(f"Expert ID in ExpertListView: {expert.id}")
+                # Debug - print expert ID
+                print(f"Expert ID (raw): {expert.id}")
+                print(f"Expert ID (str): {str(expert.id)}")
                 
-                data = {
-                    'id': str(expert.id),
-                    'name': expert.get_full_name() or expert.username,
+                expert_data = {
+                    'id': str(expert.id),  # Ensure ID is explicitly converted to string
+                    'name': expert.name or expert.email,
                     'email': expert.email,
                     'specialties': getattr(expert, 'specialties', ''),
                     'bio': getattr(expert, 'bio', ''),
                     'title': getattr(expert, 'title', ''),
                     'profile_image': expert.profile_image.url if hasattr(expert, 'profile_image') and expert.profile_image else None,
                 }
-                expert_data.append(data)
+                data.append(expert_data)
             
-            response = Response(expert_data)
+            response = Response(data)
             # Add CORS headers
             response["Access-Control-Allow-Origin"] = "*"
             response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
@@ -1176,7 +1177,7 @@ class ExpertChatbotView(APIView):
             print(f"\n=== Expert Data Debug ===")
             print(f"Expert ID: {expert.id}")
             print(f"Expert Email: {expert.email}")
-            print(f"Expert Name: {expert.get_full_name()}")
+            print(f"Expert Name: {expert.name or expert.email}")
             print(f"Expert Bio: {expert.bio}")
             print(f"Expert Specialties: {expert.specialties}")
             print(f"Onboarding Completed: {expert.onboarding_completed}")
@@ -1224,7 +1225,7 @@ class ExpertChatbotView(APIView):
             
             return Response({
                 'expert_id': expert.id,
-                'expert_name': expert.get_full_name(),
+                'expert_name': expert.name or expert.email,
                 'answer': response
             })
             
@@ -1250,7 +1251,7 @@ class PublicExpertDetailView(APIView):
             expert = Expert.objects.get(id=expert_id)
             return Response({
                 'id': expert.id,
-                'name': expert.get_full_name(),
+                'name': expert.name or expert.email,
                 'email': expert.email,
                 'title': getattr(expert, 'title', ''),
                 'specialties': expert.specialties,
@@ -1722,9 +1723,9 @@ class PublicExpertListView(APIView):
                 
                 expert_data = {
                     'id': str(expert.id),  # Ensure ID is explicitly converted to string
-                'name': expert.get_full_name() or expert.username,
-                'email': expert.email,
-                'specialties': getattr(expert, 'specialties', ''),
+                    'name': expert.name or expert.email,
+                    'email': expert.email,
+                    'specialties': getattr(expert, 'specialties', ''),
                     'bio': getattr(expert, 'bio', ''),
                     'title': getattr(expert, 'title', ''),
                     'profile_image': expert.profile_image.url if hasattr(expert, 'profile_image') and expert.profile_image else None,
