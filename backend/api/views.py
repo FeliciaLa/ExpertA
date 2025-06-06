@@ -1854,7 +1854,9 @@ class PasswordResetRequestView(APIView):
                 from django.core.mail import send_mail
                 from django.conf import settings
                 
-                reset_url = f"{request.scheme}://{request.get_host()}/reset-password/{uid}/{token}/"
+                # Use frontend URL for password reset
+                frontend_url = "https://expert-a.vercel.app"
+                reset_url = f"{frontend_url}/reset-password/{uid}/{token}/"
                 
                 subject = f"Password Reset for {settings.SITE_NAME if hasattr(settings, 'SITE_NAME') else 'ExpertA'}"
                 message = f"""
