@@ -606,8 +606,8 @@ export const debugLogin = async (email: string, password: string) => {
     const endpoints = [
       '/login/',
       '/api/login/',
-      'http://localhost:8000/login/',
-      'http://localhost:8000/api/login/'
+      `${baseUrl}/login/`,
+      `${baseUrl}/api/login/`
     ];
     
     let lastError = null;
