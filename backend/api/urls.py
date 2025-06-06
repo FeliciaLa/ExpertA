@@ -30,7 +30,7 @@ from .jwt_views import CustomTokenRefreshView
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from .models import Expert
+from .models import User
 
 # Simple test endpoint that doesn't require authentication
 @api_view(['GET', 'OPTIONS'])
@@ -63,11 +63,11 @@ def public_experts_direct(request):
         try:
             print("=== DEBUG: public_experts_direct called ===")
             # Query the User model, which is the Expert model in this case
-            experts = Expert.objects.filter(is_superuser=False, is_staff=False, is_active=True)
+            experts = User.objects.filter(is_superuser=False, is_staff=False, is_active=True)
             print(f"DEBUG: Found {experts.count()} experts with filter")
             
             # Debug: Print all users for comparison
-            all_users = Expert.objects.all()
+            all_users = User.objects.all()
             print(f"DEBUG: Total users in database: {all_users.count()}")
             for user in all_users:
                 print(f"DEBUG: User {user.email} - is_superuser={user.is_superuser}, is_staff={user.is_staff}, is_active={user.is_active}")
