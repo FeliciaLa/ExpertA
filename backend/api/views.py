@@ -770,10 +770,23 @@ class ExpertProfileView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
+
     def get(self, request):
         expert = request.user
         serializer = ExpertProfileSerializer(expert)
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        
+        # Add CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
 
 class ExpertProfileUpdateView(APIView):
     """
@@ -781,6 +794,14 @@ class ExpertProfileUpdateView(APIView):
     """
     permission_classes = [IsAuthenticated]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+    
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "PUT, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
     
     def put(self, request):
         expert = request.user
@@ -801,7 +822,12 @@ class ExpertProfileUpdateView(APIView):
         
         # Return updated profile
         serializer = ExpertProfileSerializer(expert)
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        
+        # Add CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
 
 class ProfileImageUploadView(APIView):
     """
@@ -810,25 +836,46 @@ class ProfileImageUploadView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
     
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
+    
     def post(self, request):
         if 'profile_image' not in request.FILES:
-            return Response(
+            response = Response(
                 {'error': 'No image provided'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        else:
+            expert = request.user
+            expert.profile_image = request.FILES['profile_image']
+            expert.save()
             
-        expert = request.user
-        expert.profile_image = request.FILES['profile_image']
-        expert.save()
+            serializer = ExpertProfileSerializer(expert)
+            response = Response(serializer.data)
         
-        serializer = ExpertProfileSerializer(expert)
-        return Response(serializer.data)
+        # Add CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
 
 class ExpertProfileDeleteView(APIView):
     """
     API endpoint for deleting expert profile.
     """
     permission_classes = [IsAuthenticated]
+    
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "DELETE, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
     
     def delete(self, request):
         try:
@@ -856,13 +903,21 @@ class ExpertProfileDeleteView(APIView):
                 print(f"Delete view - WARNING: Expert {expert_email} still exists in database after deletion attempt")
                 message = f"Profile deletion completed, but account may still exist. Please contact support if you experience login issues."
             
-            return Response({"message": message})
+            response = Response({"message": message})
+            
+            # Add CORS headers to response
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            return response
                 
         except Exception as e:
             import traceback
             print(f"Error in ExpertProfileDeleteView: {str(e)}")
             print(traceback.format_exc())
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response = Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            return response
 
 class ExpertListView(APIView):
     """
@@ -1594,7 +1649,10 @@ class UserProfileDeleteView(APIView):
             import traceback
             print(f"Error in UserProfileDeleteView: {str(e)}")
             print(traceback.format_exc())
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response = Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            return response
 
 class PublicExpertListView(APIView):
     """
