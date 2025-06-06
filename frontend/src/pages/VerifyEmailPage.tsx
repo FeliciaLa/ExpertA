@@ -8,11 +8,12 @@ import { useAuth } from '../contexts/AuthContext';
 const VerifyEmailPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { setUser, setIsAuthenticated, setIsUser } = useAuth();
+  const { setUser, setIsAuthenticated, setIsUser, setIsExpert } = useAuth();
   
   const [isLoading, setIsLoading] = useState(true);
   const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>('user');
 
   useEffect(() => {
     const verifyEmail = async () => {
@@ -23,12 +24,23 @@ const VerifyEmailPage: React.FC = () => {
         // Save user data and tokens
         localStorage.setItem('tokens', JSON.stringify(response.data.tokens));
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        localStorage.setItem('auth_role', 'user');
         
-        // Update auth context
+        // Determine role and set appropriate auth role
+        const userRole = response.data.user.role || 'user';
+        localStorage.setItem('auth_role', userRole);
+        setUserRole(userRole);
+        
+        // Update auth context based on role
         setUser(response.data.user);
         setIsAuthenticated(true);
-        setIsUser(true);
+        
+        if (userRole === 'expert') {
+          setIsExpert(true);
+          setIsUser(false);
+        } else {
+          setIsExpert(false);
+          setIsUser(true);
+        }
         
         setIsVerified(true);
       } catch (error: any) {
@@ -45,11 +57,22 @@ const VerifyEmailPage: React.FC = () => {
       setError('Invalid verification token');
       setIsLoading(false);
     }
-  }, [token, setUser, setIsAuthenticated, setIsUser]);
+  }, [token, setUser, setIsAuthenticated, setIsUser, setIsExpert]);
 
   const handleGoToHome = () => {
-    // Navigate to the experts page after verification
-    navigate('/experts');
+    // Navigate based on user role after verification
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      if (parsedUser.role === 'expert') {
+        navigate('/expert');
+      } else {
+        navigate('/experts');
+      }
+    } else {
+      // Fallback to experts page
+      navigate('/experts');
+    }
   };
 
   const handleGoToLogin = () => {
@@ -83,7 +106,7 @@ const VerifyEmailPage: React.FC = () => {
               Your email has been successfully verified and your account is now active.
             </Typography>
             <Button variant="contained" color="primary" onClick={handleGoToHome}>
-              Browse Experts
+              {userRole === 'expert' ? 'Go to Expert Dashboard' : 'Browse Experts'}
             </Button>
           </Box>
         ) : (
