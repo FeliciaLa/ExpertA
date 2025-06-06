@@ -399,7 +399,12 @@ class TrainingChatView(RateLimitMixin, APIView):
     def _generate_ai_response(self, message, history, profile, is_initial=False, should_skip_topic=False):
         """Generate AI response using OpenAI"""
         try:
-            client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            # Initialize OpenAI client with explicit parameters to avoid proxies issue
+            import openai
+            client = openai.OpenAI(
+                api_key=settings.OPENAI_API_KEY,
+                timeout=30.0,
+            )
 
             # Analyze conversation state
             conversation_length = len(history)
