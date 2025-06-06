@@ -59,6 +59,10 @@ export const ExpertDetailPage: React.FC = () => {
         setLoading(true);
         setError(null);
         
+        // Debug: Log the exact URL we're about to call
+        console.log('API call URL:', `experts/${expertId}/`);
+        console.log('API baseURL:', api.defaults.baseURL);
+        
         const response = await api.get(`experts/${expertId}/`);
         console.log('Expert details response:', response.data);
         

@@ -45,11 +45,11 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
 
 class ExpertSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
-    name = serializers.CharField(source='get_full_name', read_only=True)
+    name = serializers.CharField(source='name', read_only=True)
     profile = ExpertProfileDetailSerializer(read_only=True)
     
     class Meta:
-        model = Expert
+        model = User
         fields = [
             'id', 'name', 'email', 'specialties', 'bio', 'title', 
             'onboarding_completed', 'profile_image', 'profile'
