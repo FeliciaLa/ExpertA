@@ -105,12 +105,29 @@ const api = axios.create({
 // Add request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
+    // List of endpoints that don't require authentication
+    const publicEndpoints = [
+      'register/',
+      'user/register/',
+      'login/',
+      'verify-email/',
+      'public-experts/',
+      'test/'
+    ];
+    
+    // Check if this is a public endpoint
+    const isPublicEndpoint = publicEndpoints.some(endpoint => 
+      config.url?.includes(endpoint)
+    );
+    
     const tokens = localStorage.getItem('tokens');
     console.log('API Request Interceptor - URL:', config.url);
     console.log('API Request Interceptor - Full URL:', `${config.baseURL}${config.url}`);
     console.log('API Request Interceptor - Method:', config.method?.toUpperCase());
+    console.log('API Request Interceptor - Is public endpoint:', isPublicEndpoint);
     
-    if (tokens) {
+    // Only add auth headers for non-public endpoints
+    if (!isPublicEndpoint && tokens) {
       try {
         const parsedTokens = JSON.parse(tokens);
         
@@ -125,6 +142,8 @@ api.interceptors.request.use(
         // If token is invalid, clear it
         localStorage.removeItem('tokens');
       }
+    } else if (isPublicEndpoint) {
+      console.log('API Request Interceptor - Skipping auth for public endpoint');
     } else {
       console.log('API Request Interceptor - No tokens found in localStorage');
     }
