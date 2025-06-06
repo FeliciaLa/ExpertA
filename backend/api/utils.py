@@ -80,4 +80,4 @@ def is_token_expired(created_at, expiry_hours=24):
         return True
     
     expiry_time = created_at + timedelta(hours=expiry_hours)
-    return datetime.now() > expiry_time 
+    return timezone.now() > expiry_time 
