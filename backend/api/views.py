@@ -427,11 +427,11 @@ class ChatView(APIView):
 
             # Get the expert
             try:
-                expert = Expert.objects.get(id=expert_id)
+                expert = User.objects.get(id=expert_id)
                 print(f"\n=== Processing chat request ===")
                 print(f"Expert ID: {expert_id}")
                 print(f"Expert email: {expert.email}")
-            except Expert.DoesNotExist:
+            except User.DoesNotExist:
                 print(f"Expert not found: {expert_id}")
                 return Response({
                     "error": "Expert not found"
@@ -1048,14 +1048,14 @@ class ExpertDetailView(APIView):
     
     def get(self, request, pk):
         try:
-            expert = Expert.objects.get(pk=pk)
+            expert = User.objects.get(pk=pk)  # Use User model instead of Expert
             serializer = ExpertSerializer(expert)
             response = Response(serializer.data)
             # Add CORS headers to response
             response["Access-Control-Allow-Origin"] = "*"
             response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
             return response
-        except Expert.DoesNotExist:
+        except User.DoesNotExist:  # Update exception type
             response = Response(
                 {'error': 'Expert not found'},
                 status=status.HTTP_404_NOT_FOUND
@@ -1196,7 +1196,7 @@ class ExpertChatbotView(APIView):
                 return Response({"error": "Token has expired"}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Get the expert
-            expert = Expert.objects.get(id=expert_id)
+            expert = User.objects.get(id=expert_id)  # Use User model instead of Expert
             print(f"\n=== Expert Data Debug ===")
             print(f"Expert ID: {expert.id}")
             print(f"Expert Email: {expert.email}")
@@ -1252,7 +1252,7 @@ class ExpertChatbotView(APIView):
                 'answer': response
             })
             
-        except Expert.DoesNotExist:
+        except User.DoesNotExist:
             return Response({
                 'error': 'Expert not found'
             }, status=status.HTTP_404_NOT_FOUND)
@@ -1271,7 +1271,7 @@ class PublicExpertDetailView(APIView):
 
     def get(self, request, expert_id):
         try:
-            expert = Expert.objects.get(id=expert_id)
+            expert = User.objects.get(id=expert_id)  # Use User model instead of Expert
             return Response({
                 'id': expert.id,
                 'name': expert.name or expert.email,
@@ -1289,7 +1289,7 @@ class PublicExpertDetailView(APIView):
                     'tools_technologies': getattr(expert.profile, 'tools_technologies', None),
                 } if hasattr(expert, 'profile') else None
             })
-        except Expert.DoesNotExist:
+        except User.DoesNotExist:  # Update exception type
             return Response({
                 'error': 'Expert not found'
             }, status=status.HTTP_404_NOT_FOUND)
