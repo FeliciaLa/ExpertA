@@ -220,8 +220,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       // Use api instance which has interceptors for token refresh
       try {
-        console.log("Fetching profile from /api/user/profile/");
-        const response = await api.get('/api/user/profile/', config);
+        console.log("Fetching profile from user/profile/");
+        const response = await api.get('user/profile/', config);
         console.log("Profile response:", response.data);
         
         if (response.data) {
@@ -255,7 +255,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.log('Attempting to fetch user profile directly using ID:', parsedUser.id);
             try {
               // Use a direct URL without tokens - this should match the backend URL pattern
-              const directResponse = await api.get(`/api/user/profile/direct/${parsedUser.id}/`, {
+              const directResponse = await api.get(`user/profile/direct/${parsedUser.id}/`, {
                 headers: {
                   'Cache-Control': 'no-cache',
                 }

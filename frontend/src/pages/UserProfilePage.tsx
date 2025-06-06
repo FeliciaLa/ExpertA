@@ -54,7 +54,7 @@ const UserProfilePage: React.FC = () => {
               console.log('Attempting direct profile fetch with stored user ID:', parsedUserData.id);
               
               // Use the direct endpoint that doesn't require token authentication
-              const directResponse = await fetch(`${API_URL}/api/user/profile/direct/${parsedUserData.id}/?nocache=${Date.now()}`, {
+              const directResponse = await fetch(`${API_URL}user/profile/direct/${parsedUserData.id}/?nocache=${Date.now()}`, {
                 method: 'GET',
                 headers: {
                   'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ const UserProfilePage: React.FC = () => {
         console.log('Authorization header being sent:', `Bearer ${tokens.access.substring(0, 15)}...`);
         
         // Make direct fetch with current token
-        const response = await fetch(`${API_URL}/api/user/profile/?nocache=${nocache}`, {
+        const response = await fetch(`${API_URL}user/profile/?nocache=${nocache}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${tokens.access}`,
@@ -140,8 +140,8 @@ const UserProfilePage: React.FC = () => {
             
             // Try to refresh token explicitly
             try {
-              console.log('Attempting to refresh token with endpoint:', `${API_URL}/api/user/token/refresh/`);
-              const refreshResponse = await fetch(`${API_URL}/api/user/token/refresh/`, {
+              console.log('Attempting to refresh token with endpoint:', `${API_URL}token/refresh/`);
+              const refreshResponse = await fetch(`${API_URL}token/refresh/`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -178,7 +178,7 @@ const UserProfilePage: React.FC = () => {
                 const newRandom = Math.random().toString(36).substring(7);
                 const newNocache = `${newTimestamp}-${newRandom}`;
                 
-                const retryResponse = await fetch(`${API_URL}/api/user/profile/?nocache=${newNocache}`, {
+                const retryResponse = await fetch(`${API_URL}user/profile/?nocache=${newNocache}`, {
                   method: 'GET',
                   headers: {
                     'Authorization': `Bearer ${refreshData.access}`,
@@ -223,7 +223,7 @@ const UserProfilePage: React.FC = () => {
                     console.log('Using direct access endpoint with user ID:', parsedUserData.id);
                     
                     // Use the direct endpoint that doesn't require token authentication
-                    const directResponse = await fetch(`${API_URL}/api/user/profile/direct/${parsedUserData.id}/?nocache=${Date.now()}`, {
+                    const directResponse = await fetch(`${API_URL}user/profile/direct/${parsedUserData.id}/?nocache=${Date.now()}`, {
                       method: 'GET',
                       headers: {
                         'Content-Type': 'application/json',
@@ -329,7 +329,7 @@ const UserProfilePage: React.FC = () => {
       });
       
       // Make a direct fetch request without token authentication
-      const response = await fetch(`${API_URL}/api/user/profile/update/`, {
+      const response = await fetch(`${API_URL}user/profile/update/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
