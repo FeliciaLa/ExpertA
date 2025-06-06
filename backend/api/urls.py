@@ -61,21 +61,12 @@ def public_experts_direct(request):
         response = JsonResponse({'message': 'CORS preflight request handled'})
     else:
         try:
-            print("=== DEBUG: public_experts_direct called ===")
             # Query the User model, which is the Expert model in this case
             experts = User.objects.filter(is_superuser=False, is_staff=False, is_active=True)
-            print(f"DEBUG: Found {experts.count()} experts with filter")
-            
-            # Debug: Print all users for comparison
-            all_users = User.objects.all()
-            print(f"DEBUG: Total users in database: {all_users.count()}")
-            for user in all_users:
-                print(f"DEBUG: User {user.email} - is_superuser={user.is_superuser}, is_staff={user.is_staff}, is_active={user.is_active}")
             
             # Manually serialize the data
             data = []
             for expert in experts:
-                print(f"DEBUG: Processing expert {expert.email}")
                 expert_data = {
                     'id': str(expert.id),
                     'name': expert.name or expert.email,  # Use same logic as PublicExpertListView
@@ -86,9 +77,7 @@ def public_experts_direct(request):
                     'profile_image': expert.profile_image.url if hasattr(expert, 'profile_image') and expert.profile_image else None,
                 }
                 data.append(expert_data)
-                print(f"DEBUG: Added expert data: {expert_data}")
                 
-            print(f"DEBUG: Final data array length: {len(data)}")
             response = JsonResponse(data, safe=False)
         except Exception as e:
             import traceback
