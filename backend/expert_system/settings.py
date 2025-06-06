@@ -335,7 +335,7 @@ LOGIN_REDIRECT_URL = '/api/expert-form/'
 AUTH_USER_MODEL = 'api.Expert'
 
 # Frontend URL for email verification
-FRONTEND_URL = 'http://127.0.0.1:5175'
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://expert-zynclh313-felicia-lammertings-projects.vercel.app')
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
