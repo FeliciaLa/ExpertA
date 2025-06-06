@@ -9,8 +9,31 @@ class KnowledgeTrainer:
     
     def __init__(self, expert):
         self.expert = expert
-        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = self._create_openai_client()
         self.index = init_pinecone()
+
+    def _create_openai_client(self):
+        """Create OpenAI client with proper error handling"""
+        try:
+            # Clean import and explicit initialization
+            from openai import OpenAI as OpenAIClient
+            import httpx
+            
+            # Create httpx client explicitly to avoid proxy issues
+            http_client = httpx.Client(
+                timeout=30.0,
+                trust_env=False  # Don't trust environment proxy settings
+            )
+            
+            # Initialize with explicit http_client to avoid automatic client creation
+            client = OpenAIClient(
+                api_key=settings.OPENAI_API_KEY,
+                http_client=http_client
+            )
+            return client
+        except Exception as e:
+            print(f"Failed to create OpenAI client in KnowledgeTrainer: {str(e)}")
+            raise e
 
     def get_next_question(self):
         """Generate the next question based on current knowledge state."""

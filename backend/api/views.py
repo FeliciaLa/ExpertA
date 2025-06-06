@@ -52,6 +52,29 @@ class TrainingView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [TrainingRateThrottle]
     
+    def _create_openai_client(self):
+        """Create OpenAI client with proper error handling"""
+        try:
+            # Clean import and explicit initialization
+            from openai import OpenAI as OpenAIClient
+            import httpx
+            
+            # Create httpx client explicitly to avoid proxy issues
+            http_client = httpx.Client(
+                timeout=30.0,
+                trust_env=False  # Don't trust environment proxy settings
+            )
+            
+            # Initialize with explicit http_client to avoid automatic client creation
+            client = OpenAIClient(
+                api_key=settings.OPENAI_API_KEY,
+                http_client=http_client
+            )
+            return client
+        except Exception as e:
+            print(f"Failed to create OpenAI client in TrainingView: {str(e)}")
+            raise e
+
     def handle_throttled_request(self, request, wait=None):
         """Custom handling of throttled requests"""
         if wait:
@@ -138,7 +161,7 @@ Generate a specific technical question that:
 Question:"""
 
         try:
-            response = OpenAI(api_key=settings.OPENAI_API_KEY).chat.completions.create(
+            response = self._create_openai_client().chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": f"You are an expert interviewer specializing in {expertise}. Generate specific technical questions based on the context provided."},
@@ -620,7 +643,7 @@ class KnowledgeEntryView(APIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             # Initialize OpenAI client
-            client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            client = self._create_openai_client()
             
             # Generate new embedding
             try:

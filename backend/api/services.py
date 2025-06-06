@@ -11,8 +11,31 @@ class KnowledgeProcessor:
     
     def __init__(self, expert):
         self.expert = expert
-        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = self._create_openai_client()
         self.index = init_pinecone()
+        
+    def _create_openai_client(self):
+        """Create OpenAI client with proper error handling"""
+        try:
+            # Clean import and explicit initialization
+            from openai import OpenAI as OpenAIClient
+            import httpx
+            
+            # Create httpx client explicitly to avoid proxy issues
+            http_client = httpx.Client(
+                timeout=30.0,
+                trust_env=False  # Don't trust environment proxy settings
+            )
+            
+            # Initialize with explicit http_client to avoid automatic client creation
+            client = OpenAIClient(
+                api_key=settings.OPENAI_API_KEY,
+                http_client=http_client
+            )
+            return client
+        except Exception as e:
+            print(f"Failed to create OpenAI client in KnowledgeProcessor: {str(e)}")
+            raise e
         
     @transaction.atomic
     def process_training_message(self, message: TrainingMessage):
@@ -270,7 +293,7 @@ class ExpertChatbot:
         
         self.expert = expert
         print("Setting up OpenAI client...")
-        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = self._create_openai_client()
         print("OpenAI client initialized")
         
         print("Initializing Pinecone...")
@@ -280,6 +303,29 @@ class ExpertChatbot:
         if not self.index:
             print("Failed to initialize Pinecone")
             raise Exception("Failed to initialize vector database. Please check your Pinecone API key and settings.")
+    
+    def _create_openai_client(self):
+        """Create OpenAI client with proper error handling"""
+        try:
+            # Clean import and explicit initialization
+            from openai import OpenAI as OpenAIClient
+            import httpx
+            
+            # Create httpx client explicitly to avoid proxy issues
+            http_client = httpx.Client(
+                timeout=30.0,
+                trust_env=False  # Don't trust environment proxy settings
+            )
+            
+            # Initialize with explicit http_client to avoid automatic client creation
+            client = OpenAIClient(
+                api_key=settings.OPENAI_API_KEY,
+                http_client=http_client
+            )
+            return client
+        except Exception as e:
+            print(f"Failed to create OpenAI client in ExpertChatbot: {str(e)}")
+            raise e
     
     def get_response(self, user_message: str) -> str:
         """Generate a response using the expert's knowledge base"""
