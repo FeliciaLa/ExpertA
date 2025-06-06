@@ -390,7 +390,24 @@ const UserProfilePage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
+      console.log('Starting profile deletion...');
+      
+      // Check if we have tokens
+      const tokensStr = localStorage.getItem('tokens');
+      if (!tokensStr) {
+        throw new Error('No authentication tokens found. Please log in again.');
+      }
+      
+      const tokens = JSON.parse(tokensStr);
+      if (!tokens.access) {
+        throw new Error('No access token found. Please log in again.');
+      }
+      
+      console.log('Using access token for deletion:', tokens.access.substring(0, 20) + '...');
+      
       await userApi.deleteProfile();
+      
+      console.log('Profile deletion successful');
       
       // Clear all user data from localStorage
       localStorage.removeItem('tokens');
@@ -410,9 +427,28 @@ const UserProfilePage: React.FC = () => {
       }, 2000);
       
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to delete profile';
-      setError(errorMessage);
       console.error('Profile deletion error:', err);
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      
+      let errorMessage = 'Failed to delete profile';
+      
+      if (err.response?.status === 401) {
+        errorMessage = 'Authentication expired. Please log in again and try deleting your profile.';
+      } else if (err.response?.status === 403) {
+        errorMessage = 'You do not have permission to delete this profile.';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Profile not found.';
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

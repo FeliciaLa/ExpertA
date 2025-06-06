@@ -1456,7 +1456,7 @@ class UserProfileDeleteView(APIView):
     """
     API endpoint for deleting user profile.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Changed from IsAuthenticated to AllowAny
     
     def options(self, request, *args, **kwargs):
         # Handle CORS preflight requests
@@ -1469,11 +1469,11 @@ class UserProfileDeleteView(APIView):
     def delete(self, request):
         try:
             print("UserProfileDeleteView - Request data:", request.data)
-            print("UserProfileDeleteView - Request headers:", request.headers)
+            print("UserProfileDeleteView - Request headers:", dict(request.headers))
             
             # Token-based authentication
             auth_header = request.headers.get('Authorization', '')
-            print(f"Delete view - Authorization header: {auth_header[:15]}...")
+            print(f"Delete view - Authorization header: {auth_header[:20] if auth_header else 'None'}...")
             
             if not auth_header.startswith('Bearer '):
                 print("Delete view - ERROR: No Bearer token in Authorization header")
