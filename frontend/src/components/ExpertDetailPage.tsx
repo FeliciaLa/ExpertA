@@ -59,7 +59,7 @@ export const ExpertDetailPage: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        const response = await api.get(`/api/experts/${expertId}/`);
+        const response = await api.get(`experts/${expertId}/`);
         console.log('Expert details response:', response.data);
         
         // Validate that we received valid data with an ID
