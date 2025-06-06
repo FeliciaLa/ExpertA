@@ -396,15 +396,24 @@ class TrainingChatView(RateLimitMixin, APIView):
             print(f"No profile found for expert {expert.email}")
             return None
 
+    def _create_openai_client(self):
+        """Create OpenAI client with proper error handling"""
+        try:
+            # Clean import and explicit initialization
+            from openai import OpenAI as OpenAIClient
+            
+            # Initialize with minimal parameters to avoid conflicts
+            client = OpenAIClient(api_key=settings.OPENAI_API_KEY)
+            return client
+        except Exception as e:
+            print(f"Failed to create OpenAI client: {str(e)}")
+            raise e
+
     def _generate_ai_response(self, message, history, profile, is_initial=False, should_skip_topic=False):
         """Generate AI response using OpenAI"""
         try:
-            # Initialize OpenAI client with explicit parameters to avoid proxies issue
-            import openai
-            client = openai.OpenAI(
-                api_key=settings.OPENAI_API_KEY,
-                timeout=30.0,
-            )
+            # Create OpenAI client using helper function
+            client = self._create_openai_client()
 
             # Analyze conversation state
             conversation_length = len(history)
