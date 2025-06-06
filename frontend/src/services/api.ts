@@ -105,7 +105,9 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const tokens = localStorage.getItem('tokens');
-    console.log('API Request to:', config.url);
+    console.log('API Request Interceptor - URL:', config.url);
+    console.log('API Request Interceptor - Full URL:', `${config.baseURL}${config.url}`);
+    console.log('API Request Interceptor - Method:', config.method?.toUpperCase());
     
     if (tokens) {
       try {
@@ -113,21 +115,24 @@ api.interceptors.request.use(
         
         if (parsedTokens && parsedTokens.access) {
           config.headers.Authorization = `Bearer ${parsedTokens.access}`;
-          console.log('Adding auth token:', `Bearer ${parsedTokens.access.substring(0, 10)}...`);
+          console.log('API Request Interceptor - Added auth token:', `Bearer ${parsedTokens.access.substring(0, 10)}...`);
         } else {
-          console.log('No access token found in tokens object', parsedTokens);
+          console.log('API Request Interceptor - No access token found in tokens object', parsedTokens);
         }
       } catch (error) {
-        console.error('Error parsing tokens:', error);
+        console.error('API Request Interceptor - Error parsing tokens:', error);
         // If token is invalid, clear it
         localStorage.removeItem('tokens');
       }
     } else {
-      console.log('No tokens found in localStorage');
+      console.log('API Request Interceptor - No tokens found in localStorage');
     }
+    
+    console.log('API Request Interceptor - Final headers:', config.headers);
     return config;
   },
   (error) => {
+    console.error('API Request Interceptor - Error:', error);
     return Promise.reject(error);
   }
 );
@@ -452,9 +457,34 @@ export const expertApi = {
 
   getProfile: async () => {
     try {
+      console.log('ExpertApi.getProfile - Starting request...');
+      console.log('ExpertApi.getProfile - API URL:', API_URL);
+      console.log('ExpertApi.getProfile - Full URL:', `${API_URL}profile/`);
+      
+      // Check if we have auth headers
+      const tokens = localStorage.getItem('tokens');
+      console.log('ExpertApi.getProfile - Tokens in localStorage:', tokens ? 'Present' : 'Not found');
+      
+      if (tokens) {
+        try {
+          const parsedTokens = JSON.parse(tokens);
+          console.log('ExpertApi.getProfile - Access token present:', parsedTokens.access ? 'Yes' : 'No');
+        } catch (e) {
+          console.log('ExpertApi.getProfile - Error parsing tokens:', e);
+        }
+      }
+      
       const response = await api.get('profile/');
+      console.log('ExpertApi.getProfile - Success response:', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('ExpertApi.getProfile - Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
       throw error;
     }
   },
