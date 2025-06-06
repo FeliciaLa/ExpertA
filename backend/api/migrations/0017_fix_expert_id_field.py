@@ -15,12 +15,19 @@ class Migration(migrations.Migration):
             # Forward SQL - recreate the experts table with UUID primary key
             """
             -- First, backup existing experts data if any
-            CREATE TEMP TABLE experts_backup AS SELECT * FROM experts;
+            DO $$
+            BEGIN
+                IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'experts') THEN
+                    CREATE TEMP TABLE experts_backup AS SELECT * FROM experts;
+                END IF;
+            END $$;
             
-            -- Drop the existing table
-            DROP TABLE experts CASCADE;
+            -- Drop the existing tables if they exist
+            DROP TABLE IF EXISTS experts_groups CASCADE;
+            DROP TABLE IF EXISTS experts_user_permissions CASCADE;
+            DROP TABLE IF EXISTS experts CASCADE;
             
-            -- Recreate the table with UUID primary key
+            -- Recreate the experts table with UUID primary key
             CREATE TABLE experts (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 password VARCHAR(128) NOT NULL,
@@ -45,7 +52,7 @@ class Migration(migrations.Migration):
                 verification_token_created_at TIMESTAMPTZ
             );
             
-            -- Recreate the groups and permissions junction tables
+            -- Create the groups and permissions junction tables
             CREATE TABLE experts_groups (
                 id BIGSERIAL PRIMARY KEY,
                 expert_id UUID NOT NULL REFERENCES experts(id) ON DELETE CASCADE,
@@ -92,6 +99,20 @@ class Migration(migrations.Migration):
                 last_training_at TIMESTAMPTZ,
                 verification_token VARCHAR(100),
                 verification_token_created_at TIMESTAMPTZ
+            );
+            
+            CREATE TABLE experts_groups (
+                id BIGSERIAL PRIMARY KEY,
+                expert_id BIGINT NOT NULL REFERENCES experts(id) ON DELETE CASCADE,
+                group_id INTEGER NOT NULL REFERENCES auth_group(id) ON DELETE CASCADE,
+                UNIQUE(expert_id, group_id)
+            );
+            
+            CREATE TABLE experts_user_permissions (
+                id BIGSERIAL PRIMARY KEY,
+                expert_id BIGINT NOT NULL REFERENCES experts(id) ON DELETE CASCADE,
+                permission_id INTEGER NOT NULL REFERENCES auth_permission(id) ON DELETE CASCADE,
+                UNIQUE(expert_id, permission_id)
             );
             """
         ),
