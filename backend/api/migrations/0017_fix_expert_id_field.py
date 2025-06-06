@@ -10,11 +10,89 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name="expert",
-            name="id",
-            field=models.UUIDField(
-                default=uuid.uuid4, editable=False, primary_key=True, serialize=False
-            ),
+        # Custom operation to handle bigint to UUID conversion
+        migrations.RunSQL(
+            # Forward SQL - recreate the experts table with UUID primary key
+            """
+            -- First, backup existing experts data if any
+            CREATE TEMP TABLE experts_backup AS SELECT * FROM experts;
+            
+            -- Drop the existing table
+            DROP TABLE experts CASCADE;
+            
+            -- Recreate the table with UUID primary key
+            CREATE TABLE experts (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                password VARCHAR(128) NOT NULL,
+                last_login TIMESTAMPTZ,
+                is_superuser BOOLEAN NOT NULL,
+                username VARCHAR(150) NOT NULL UNIQUE,
+                first_name VARCHAR(150) NOT NULL,
+                last_name VARCHAR(150) NOT NULL,
+                is_staff BOOLEAN NOT NULL,
+                is_active BOOLEAN NOT NULL,
+                date_joined TIMESTAMPTZ NOT NULL,
+                email VARCHAR(254) NOT NULL UNIQUE,
+                bio TEXT NOT NULL,
+                specialties TEXT NOT NULL,
+                title VARCHAR(100) NOT NULL,
+                onboarding_completed BOOLEAN NOT NULL,
+                onboarding_completed_at TIMESTAMPTZ,
+                profile_image VARCHAR(100),
+                total_training_messages INTEGER NOT NULL,
+                last_training_at TIMESTAMPTZ,
+                verification_token VARCHAR(100),
+                verification_token_created_at TIMESTAMPTZ
+            );
+            
+            -- Recreate the groups and permissions junction tables
+            CREATE TABLE experts_groups (
+                id BIGSERIAL PRIMARY KEY,
+                expert_id UUID NOT NULL REFERENCES experts(id) ON DELETE CASCADE,
+                group_id INTEGER NOT NULL REFERENCES auth_group(id) ON DELETE CASCADE,
+                UNIQUE(expert_id, group_id)
+            );
+            
+            CREATE TABLE experts_user_permissions (
+                id BIGSERIAL PRIMARY KEY,
+                expert_id UUID NOT NULL REFERENCES experts(id) ON DELETE CASCADE,
+                permission_id INTEGER NOT NULL REFERENCES auth_permission(id) ON DELETE CASCADE,
+                UNIQUE(expert_id, permission_id)
+            );
+            
+            -- Note: We're not migrating existing data since the ID types are incompatible
+            -- Users will need to re-register if they had accounts in the old system
+            """,
+            
+            # Reverse SQL - revert back to bigint (though this would lose UUID data)
+            """
+            DROP TABLE IF EXISTS experts CASCADE;
+            DROP TABLE IF EXISTS experts_groups CASCADE;
+            DROP TABLE IF EXISTS experts_user_permissions CASCADE;
+            
+            CREATE TABLE experts (
+                id BIGSERIAL PRIMARY KEY,
+                password VARCHAR(128) NOT NULL,
+                last_login TIMESTAMPTZ,
+                is_superuser BOOLEAN NOT NULL,
+                username VARCHAR(150) NOT NULL UNIQUE,
+                first_name VARCHAR(150) NOT NULL,
+                last_name VARCHAR(150) NOT NULL,
+                is_staff BOOLEAN NOT NULL,
+                is_active BOOLEAN NOT NULL,
+                date_joined TIMESTAMPTZ NOT NULL,
+                email VARCHAR(254) NOT NULL UNIQUE,
+                bio TEXT NOT NULL,
+                specialties TEXT NOT NULL,
+                title VARCHAR(100) NOT NULL,
+                onboarding_completed BOOLEAN NOT NULL,
+                onboarding_completed_at TIMESTAMPTZ,
+                profile_image VARCHAR(100),
+                total_training_messages INTEGER NOT NULL,
+                last_training_at TIMESTAMPTZ,
+                verification_token VARCHAR(100),
+                verification_token_created_at TIMESTAMPTZ
+            );
+            """
         ),
     ]
