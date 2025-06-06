@@ -779,14 +779,41 @@ class ExpertProfileView(APIView):
         return response
 
     def get(self, request):
-        expert = request.user
-        serializer = ExpertProfileSerializer(expert)
-        response = Response(serializer.data)
+        print(f"\n=== ExpertProfileView DEBUG ===")
+        print(f"Request user: {request.user}")
+        print(f"User ID: {getattr(request.user, 'id', 'No ID')}")
+        print(f"User email: {getattr(request.user, 'email', 'No email')}")
+        print(f"User is_authenticated: {request.user.is_authenticated}")
+        print(f"User is_active: {getattr(request.user, 'is_active', 'No is_active')}")
+        print(f"User role: {getattr(request.user, 'role', 'No role')}")
         
-        # Add CORS headers to response
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
+        # Check authorization header
+        auth_header = request.headers.get('Authorization', '')
+        print(f"Authorization header present: {bool(auth_header)}")
+        print(f"Authorization header starts with Bearer: {auth_header.startswith('Bearer ')}")
+        
+        if not request.user.is_authenticated:
+            print(f"ERROR: User is not authenticated!")
+            return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        expert = request.user
+        print(f"Expert object: {expert}")
+        
+        try:
+            serializer = ExpertProfileSerializer(expert)
+            print(f"Serializer data: {serializer.data}")
+            response = Response(serializer.data)
+            
+            # Add CORS headers to response
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            print(f"Returning success response")
+            return response
+        except Exception as e:
+            print(f"ERROR in serializer: {str(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ExpertProfileUpdateView(APIView):
     """
