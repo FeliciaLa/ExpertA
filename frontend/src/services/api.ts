@@ -594,6 +594,11 @@ export const userApi = {
   updateProfile: async (profileData: any): Promise<UserData> => {
     const response = await api.put('user/profile/update/', profileData);
     return response.data;
+  },
+
+  deleteProfile: async (): Promise<{ message: string }> => {
+    const response = await api.delete('user/profile/delete/');
+    return response.data;
   }
 };
 

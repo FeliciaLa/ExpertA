@@ -22,10 +22,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from '../contexts/AuthContext';
 import { userApi } from '../services/api';
 import { API_URL } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const UserProfilePage: React.FC = () => {
   const { user, setUser, isUser, isExpert } = useAuth();
+  const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -382,6 +385,39 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
+  const handleDeleteProfile = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      await userApi.deleteProfile();
+      
+      // Clear all user data from localStorage
+      localStorage.removeItem('tokens');
+      localStorage.removeItem('user');
+      localStorage.removeItem('auth_role');
+      
+      // Reset auth context
+      setUser(null);
+      
+      // Show success message and redirect to home
+      setSuccessMessage('Your profile has been successfully deleted.');
+      setIsDeleteDialogOpen(false);
+      
+      // Redirect to home page after a short delay
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+      
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete profile';
+      setError(errorMessage);
+      console.error('Profile deletion error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Determine role text
   const userRole = isExpert ? 'Expert' : isUser ? 'User' : 'Guest';
 
@@ -555,6 +591,13 @@ const UserProfilePage: React.FC = () => {
         </DialogContent>
         
         <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(true)}
+            color="error"
+            sx={{ mr: 'auto' }}
+          >
+            Delete Profile
+          </Button>
           <Button onClick={() => setIsEditDialogOpen(false)}>
             Cancel
           </Button>
@@ -564,6 +607,57 @@ const UserProfilePage: React.FC = () => {
             disabled={isLoading}
           >
             {isLoading ? 'Updating...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog 
+        open={isDeleteDialogOpen} 
+        onClose={() => setIsDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: 'error.main' }}>
+          Delete Profile
+        </DialogTitle>
+        
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Are you sure you want to delete your profile? This action is permanent and cannot be undone.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            All your account data will be permanently deleted, including:
+          </Typography>
+          <Box component="ul" sx={{ mt: 1, mb: 2 }}>
+            <Typography component="li" variant="body2" color="text.secondary">
+              Your profile information
+            </Typography>
+            <Typography component="li" variant="body2" color="text.secondary">
+              Your account history
+            </Typography>
+            <Typography component="li" variant="body2" color="text.secondary">
+              All associated data
+            </Typography>
+          </Box>
+          {error && (
+            <Typography color="error" sx={{ mt: 2 }}>
+              {error}
+            </Typography>
+          )}
+        </DialogContent>
+        
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => setIsDeleteDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="contained"
+            color="error"
+            onClick={handleDeleteProfile}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Deleting...' : 'Delete My Profile'}
           </Button>
         </DialogActions>
       </Dialog>
