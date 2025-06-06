@@ -61,8 +61,12 @@ def public_experts_direct(request):
         response = JsonResponse({'message': 'CORS preflight request handled'})
     else:
         try:
-            # Query the User model, which is the Expert model in this case
-            experts = User.objects.filter(is_superuser=False, is_staff=False, is_active=True)
+            # Query the User model, only return users with expert role
+            experts = User.objects.filter(
+                role=User.Role.EXPERT,
+                is_active=True,
+                onboarding_completed=True  # Only show experts who have completed onboarding
+            )
             
             # Manually serialize the data
             data = []
