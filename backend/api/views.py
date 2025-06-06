@@ -934,6 +934,13 @@ class EmailTokenObtainPairView(TokenObtainPairView):
                 print(f"User not found for email: {email}")
                 return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
             
+            # Check if user is active
+            if not user.is_active:
+                print(f"User {email} is inactive - likely not email verified")
+                return Response({
+                    "error": "Account not activated. Please check your email for verification instructions, or register again if needed."
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
             if not user.check_password(password):
                 print(f"Invalid password for user: {email}")
                 return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -1511,11 +1518,30 @@ class UserProfileDeleteView(APIView):
             
             # Delete the user
             user_email = user.email
+            user_id = user.id
+            
+            print(f"Delete view - About to delete user: {user_email} (ID: {user_id})")
+            
+            # Check if user exists before deletion
+            users_before = User.objects.filter(email=user_email).count()
+            print(f"Delete view - Users with email {user_email} before deletion: {users_before}")
+            
+            # Delete the user and all related objects
             user.delete()
-            print(f"Delete view - User {user_email} deleted successfully")
+            
+            # Verify deletion
+            users_after = User.objects.filter(email=user_email).count()
+            print(f"Delete view - Users with email {user_email} after deletion: {users_after}")
+            
+            if users_after == 0:
+                print(f"Delete view - User {user_email} successfully deleted from database")
+                message = f"User account {user_email} has been permanently deleted. You can register again with the same email if needed."
+            else:
+                print(f"Delete view - WARNING: User {user_email} still exists in database after deletion attempt")
+                message = f"Profile deletion completed, but account may still exist. Please contact support if you experience login issues."
             
             # Return success response
-            response = Response({"message": f"User account {user_email} has been permanently deleted"})
+            response = Response({"message": message})
             
             # Add CORS headers to response
             response["Access-Control-Allow-Origin"] = "*"
