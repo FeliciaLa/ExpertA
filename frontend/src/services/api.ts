@@ -55,14 +55,15 @@ export interface ExpertProfileData {
 export interface ExpertData {
   id: string;
   email: string;
-  name?: string;
-  first_name?: string;
-  last_name?: string;
+  name: string;
+  first_name?: string; // Legacy field for backward compatibility
+  last_name?: string;  // Legacy field for backward compatibility
   bio?: string;
   specialties?: string;
   title?: string;
   onboarding_completed?: boolean;
   profile_image?: string;
+  profile?: ExpertProfileData;
 }
 
 export interface LoginResponse {
@@ -441,8 +442,7 @@ export const authApi = {
 
 export const expertApi = {
   updateProfile: async (profileData: {
-    first_name?: string;
-    last_name?: string;
+    name?: string;
     bio?: string;
     specialties?: string;
     title?: string;

@@ -23,8 +23,7 @@ import { expertApi, API_URL } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 interface ProfileData {
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string;
   bio: string;
   specialties: string;
@@ -53,10 +52,9 @@ const ExpertProfile: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ProfileData>({
-    first_name: expert?.first_name || '',
-    last_name: expert?.last_name || '',
+    name: expert?.name || '',
     email: expert?.email || '',
-    bio: '',
+    bio: expert?.bio || '',
     specialties: expert?.specialties || '',
     title: expert?.title || 'Expert',
     profile_image: expert?.profile_image || '',
@@ -116,8 +114,7 @@ const ExpertProfile: React.FC = () => {
   const handleSave = async () => {
     try {
       const data = await expertApi.updateProfile({
-        first_name: profile.first_name,
-        last_name: profile.last_name,
+        name: profile.name,
         bio: profile.bio,
         specialties: profile.specialties,
         title: profile.title,
@@ -265,7 +262,7 @@ const ExpertProfile: React.FC = () => {
               bgcolor: 'primary.main' 
             }}
           >
-            {profile.first_name ? profile.first_name[0] : ''}
+            {profile.name ? profile.name[0] : ''}
           </Avatar>
           
           {isEditing && (
@@ -307,26 +304,15 @@ const ExpertProfile: React.FC = () => {
             placeholder="e.g., Data Scientist, Marketing Expert, etc."
           />
           
-          <Box display="flex" gap={2} mb={2}>
-            <TextField
-              label="First Name"
-              value={profile.first_name}
-              onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
-              disabled={!isEditing}
-              fullWidth
-              variant="outlined"
-              size="small"
-            />
-            <TextField
-              label="Last Name"
-              value={profile.last_name}
-              onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
-              disabled={!isEditing}
-              fullWidth
-              variant="outlined"
-              size="small"
-            />
-          </Box>
+          <TextField
+            label="Name"
+            value={profile.name}
+            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+            disabled={!isEditing}
+            fullWidth
+            variant="outlined"
+            size="small"
+          />
           
           <TextField
             label="Email"

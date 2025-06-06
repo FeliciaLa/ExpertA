@@ -835,15 +835,16 @@ class ExpertProfileUpdateView(APIView):
         
         # Extract valid fields from request data
         valid_data = {}
-        for field in ['bio', 'specialties', 'title']:
+        for field in ['bio', 'specialties', 'title', 'name']:
             if field in request.data:
                 valid_data[field] = request.data[field]
         
-        # Handle first_name and last_name by combining them into name
+        # Handle first_name and last_name by combining them into name (for backward compatibility)
         first_name = request.data.get('first_name', '').strip()
         last_name = request.data.get('last_name', '').strip()
         
-        if first_name or last_name:
+        # Only process first_name/last_name if no direct name was provided
+        if 'name' not in valid_data and (first_name or last_name):
             # Combine first and last name
             name_parts = [first_name, last_name]
             combined_name = ' '.join(part for part in name_parts if part)
