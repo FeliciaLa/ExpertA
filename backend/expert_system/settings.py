@@ -333,7 +333,7 @@ LOGGING = {
 LOGIN_REDIRECT_URL = '/api/expert-form/'
 
 # Custom user model
-AUTH_USER_MODEL = 'api.Expert'
+AUTH_USER_MODEL = 'api.User'
 
 # Frontend URL for email verification
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://expert-zynclh313-felicia-lammertings-projects.vercel.app')
