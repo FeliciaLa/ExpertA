@@ -998,7 +998,7 @@ class ExpertListView(APIView):
     
     def get(self, request):
         try:
-            experts = Expert.objects.filter(is_superuser=False, is_staff=False)
+            experts = Expert.objects.filter(is_superuser=False, is_staff=False, is_active=True)
             # Manually serialize the data to avoid UUID conversion issues
             data = []
             for expert in experts:
@@ -1735,7 +1735,7 @@ class PublicExpertListView(APIView):
     def get(self, request):
         try:
             # Query the User model, which is the Expert model in this case
-            experts = Expert.objects.filter(is_superuser=False, is_staff=False)
+            experts = Expert.objects.filter(is_superuser=False, is_staff=False, is_active=True)
             
             # Manually serialize the data to avoid UUID conversion issues
             data = []

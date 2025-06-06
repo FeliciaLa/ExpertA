@@ -62,7 +62,7 @@ def public_experts_direct(request):
     else:
         try:
             # Query the User model, which is the Expert model in this case
-            experts = Expert.objects.filter(is_superuser=False, is_staff=False)
+            experts = Expert.objects.filter(is_superuser=False, is_staff=False, is_active=True)
             
             # Manually serialize the data
             data = []
