@@ -609,13 +609,14 @@ export const debugLogin = async (email: string, password: string) => {
   try {
     // Try multiple endpoints with fetch API
     const endpoints = [
-      '/login/',
+      `${baseUrl}/api/login/`,
       '/api/login/',
       `${baseUrl}/login/`,
-      `${baseUrl}/api/login/`
+      '/login/'
     ];
     
     let lastError = null;
+    let lastErrorMessage = null;
     let successResponse = null;
     
     for (const endpoint of endpoints) {
@@ -632,8 +633,25 @@ export const debugLogin = async (email: string, password: string) => {
         
         if (!response.ok) {
           console.log(`Endpoint ${endpoint} failed with status: ${response.status}`);
-          const text = await response.text();
-          console.log('Response text:', text);
+          
+          // Try to extract error message from response
+          try {
+            const errorData = await response.json();
+            console.log('Error response data:', errorData);
+            
+            // Extract the specific error message from backend
+            if (errorData.error) {
+              lastErrorMessage = errorData.error;
+            } else if (errorData.detail) {
+              lastErrorMessage = errorData.detail;
+            } else if (errorData.message) {
+              lastErrorMessage = errorData.message;
+            }
+          } catch (jsonError) {
+            console.log('Could not parse error response as JSON');
+            const text = await response.text();
+            console.log('Response text:', text);
+          }
           continue;
         }
         
@@ -649,6 +667,11 @@ export const debugLogin = async (email: string, password: string) => {
     
     if (successResponse) {
       return successResponse;
+    }
+    
+    // Throw the actual backend error message if we have it
+    if (lastErrorMessage) {
+      throw new Error(lastErrorMessage);
     }
     
     throw lastError || new Error('All login endpoints failed');

@@ -932,7 +932,9 @@ class EmailTokenObtainPairView(TokenObtainPairView):
             user = User.objects.filter(email=email).first()
             if not user:
                 print(f"User not found for email: {email}")
-                return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({
+                    "error": "No account found with this email address. Please check your email or register a new account."
+                }, status=status.HTTP_401_UNAUTHORIZED)
             
             # Check if user is active
             if not user.is_active:
