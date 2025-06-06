@@ -18,7 +18,7 @@ const VerifyEmailPage: React.FC = () => {
     const verifyEmail = async () => {
       try {
         setIsLoading(true);
-        const response = await api.get(`/api/verify-email/${token}/`);
+        const response = await api.get(`verify-email/${token}/`);
         
         // Save user data and tokens
         localStorage.setItem('tokens', JSON.stringify(response.data.tokens));
