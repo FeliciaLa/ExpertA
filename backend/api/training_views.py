@@ -401,9 +401,19 @@ class TrainingChatView(RateLimitMixin, APIView):
         try:
             # Clean import and explicit initialization
             from openai import OpenAI as OpenAIClient
+            import httpx
             
-            # Initialize with minimal parameters to avoid conflicts
-            client = OpenAIClient(api_key=settings.OPENAI_API_KEY)
+            # Create httpx client explicitly to avoid proxy issues
+            http_client = httpx.Client(
+                timeout=30.0,
+                trust_env=False  # Don't trust environment proxy settings
+            )
+            
+            # Initialize with explicit http_client to avoid automatic client creation
+            client = OpenAIClient(
+                api_key=settings.OPENAI_API_KEY,
+                http_client=http_client
+            )
             return client
         except Exception as e:
             print(f"Failed to create OpenAI client: {str(e)}")
