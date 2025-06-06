@@ -233,11 +233,11 @@ class KnowledgeProcessor:
             # Create a unique ID for this chunk
             entry_id = f"doc_{document_id}_chunk_{i}"
             
-            # Prepare metadata
+            # Prepare metadata - ensure all values are proper types for Pinecone
             metadata = {
-                "expert_id": self.expert.id,
+                "expert_id": str(self.expert.id),  # Convert UUID to string
                 "source": "document",
-                "document_id": document_id,
+                "document_id": str(document_id),  # Ensure document_id is string
                 "chunk_index": i,
                 "content_type": "text",
             }
@@ -262,6 +262,16 @@ class KnowledgeProcessor:
             )
             embedding = embedding_response.data[0].embedding[:1024]
             
+            # Ensure all metadata values are properly formatted for Pinecone
+            safe_metadata = {}
+            for key, value in metadata.items():
+                if key == 'expert_id':
+                    safe_metadata[key] = str(value)  # Always convert expert_id to string
+                elif hasattr(value, '__str__'):
+                    safe_metadata[key] = str(value) if not isinstance(value, (str, int, float, bool)) else value
+                else:
+                    safe_metadata[key] = value
+            
             # Add to Pinecone
             self.index.upsert(
                 vectors=[{
@@ -272,7 +282,7 @@ class KnowledgeProcessor:
                         'expert_id': str(self.expert.id),
                         'text': text[:1000],  # Store partial text if too long
                         'created_at': str(timezone.now()),
-                        **metadata
+                        **safe_metadata
                     }
                 }]
             )
