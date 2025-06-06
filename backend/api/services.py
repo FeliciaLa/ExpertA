@@ -437,7 +437,7 @@ class ExpertChatbot:
             relevant_knowledge = []
             for match in query_response.matches:
                 print(f"\nMatch score: {match.score}")
-                if match.score >= 0.1:  # Lower threshold for more matches
+                if match.score >= 0.05:  # Very low threshold to be more inclusive
                     knowledge_text = match.metadata.get('text', '')
                     topic = match.metadata.get('topic', 'General')
                     context_depth = match.metadata.get('context_depth', 1)
@@ -461,7 +461,8 @@ class ExpertChatbot:
             
             if not relevant_knowledge:
                 print("\nNo relevant knowledge found")
-                return f"As an expert in {expert_profile.industry}, I don't have specific knowledge to answer this question. Could you try asking me something more specific about {expert_profile.key_skills}?"
+                # Don't require perfect matches - let the AI work with general expertise  
+                # return f"As an expert in {expert_profile.industry}, I don't have specific knowledge to answer this question. Could you try asking me something more specific about {expert_profile.key_skills}?"
             
             # Build prompt for response generation
             print("\nBuilding response prompt...")
@@ -498,36 +499,35 @@ class ExpertChatbot:
         
         prompt = f"""You are {self.expert.get_full_name()}, an expert in {expert_profile.industry}. Respond in FIRST PERSON as if you ARE the expert, not as an assistant speaking on behalf of the expert.
 
-CRITICAL INSTRUCTIONS:
+INSTRUCTIONS:
 1. Speak in FIRST PERSON as if you are the expert. Use "I", "me", "my" pronouns.
-2. You must ONLY use the knowledge explicitly provided below. DO NOT use any external knowledge or make assumptions.
-3. If the provided knowledge doesn't contain enough information to answer the question, respond with: "I don't have specific knowledge about this topic. This wasn't covered in my areas of expertise."
-4. Never make up or infer information that isn't explicitly stated in the provided knowledge.
-5. If you're unsure, err on the side of saying you don't have the knowledge.
-6. Your responses should sound natural and conversational, like a real expert would speak.
-7. Use your specific expertise and background to frame your answers, but don't add facts not in your knowledge base.
+2. Draw from both your general expertise in {expert_profile.industry} AND the specific knowledge provided below.
+3. Use the provided knowledge as your primary source, but you can supplement with general industry knowledge.
+4. If you have relevant expertise but no specific knowledge provided, you can still provide helpful general guidance.
+5. Be confident and authoritative in your responses - you are an expert in this field.
+6. Make your responses practical, actionable, and valuable.
+7. If asked about something completely outside your expertise area, then mention that it's not your specialty.
 
-Below is the ONLY knowledge you are allowed to use:
-"""
+Your specific knowledge and training:"""
         
         # Add relevant knowledge
         if relevant_knowledge:
             for knowledge in sorted(relevant_knowledge, key=lambda x: x['score'], reverse=True):
-                prompt += f"\nEXPERT KNOWLEDGE:\n{knowledge['text']}\n"
+                prompt += f"\n\nSPECIFIC KNOWLEDGE:\n{knowledge['text']}"
         
         # Add training summary if available
         if knowledge_base and knowledge_base.training_summary:
-            prompt += f"\nMY BACKGROUND AND APPROACH:\n{knowledge_base.training_summary}\n"
+            prompt += f"\n\nYOUR BACKGROUND:\n{knowledge_base.training_summary}"
         
         prompt += f"""
-REMEMBER:
-- Respond as {self.expert.get_full_name()} in the first person
-- Only use the knowledge provided above
-- Do not add any information not explicitly stated in your knowledge
-- If you don't have relevant knowledge, say so clearly
-- Do not use any general knowledge or assumptions
-- Be conversational and natural in your responses
 
-The user's question is: """ + user_message
+REMEMBER:
+- You are {self.expert.get_full_name()}, an expert in {expert_profile.industry}
+- Respond confidently and helpfully
+- Use both your specific knowledge above AND your general expertise
+- Be practical and actionable in your advice
+- Speak naturally as an expert would speak
+
+The user's question is: {user_message}"""
         
         return prompt 
