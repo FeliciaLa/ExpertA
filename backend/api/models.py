@@ -65,7 +65,7 @@ class Expert(AbstractUser):
 
 class ExpertProfile(models.Model):
     """Model to store expert profile information from onboarding"""
-    expert = models.OneToOneField(Expert, on_delete=models.CASCADE, related_name='profile')
+    expert = models.OneToOneField('User', on_delete=models.CASCADE, related_name='profile')
     industry = models.CharField(max_length=255)
     years_of_experience = models.IntegerField()
     key_skills = models.TextField()
@@ -85,7 +85,7 @@ class ExpertProfile(models.Model):
 
 class TrainingMessage(models.Model):
     """Stores messages from the training conversation"""
-    expert = models.ForeignKey('Expert', on_delete=models.CASCADE, related_name='training_messages')
+    expert = models.ForeignKey('User', on_delete=models.CASCADE, related_name='training_messages')
     role = models.CharField(max_length=10)  # 'ai' or 'expert'
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -97,7 +97,7 @@ class TrainingMessage(models.Model):
 
 class ExpertKnowledgeBase(models.Model):
     """Stores processed knowledge from expert training conversations"""
-    expert = models.OneToOneField('Expert', on_delete=models.CASCADE, related_name='knowledge_base')
+    expert = models.OneToOneField('User', on_delete=models.CASCADE, related_name='knowledge_base')
     last_updated = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     
@@ -106,6 +106,9 @@ class ExpertKnowledgeBase(models.Model):
     context_vectors = models.JSONField(default=dict)  # For semantic search
     training_summary = models.TextField(blank=True)   # Overall summary of expertise
     
+    class Meta:
+        db_table = 'expert_knowledge_bases'
+
     def __str__(self):
         return f"Knowledge Base for {self.expert.email}"
 
@@ -143,7 +146,7 @@ class OnboardingQuestion(models.Model):
 
 class OnboardingAnswer(models.Model):
     """Model to store expert's answers to onboarding questions"""
-    expert = models.ForeignKey(Expert, on_delete=models.CASCADE, related_name='onboarding_answers')
+    expert = models.ForeignKey('User', on_delete=models.CASCADE, related_name='onboarding_answers')
     question = models.ForeignKey(OnboardingQuestion, on_delete=models.CASCADE)
     answer = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -158,7 +161,7 @@ class OnboardingAnswer(models.Model):
 
 class TrainingSession(models.Model):
     """Model to store training sessions"""
-    expert = models.ForeignKey(Expert, on_delete=models.CASCADE, related_name='training_sessions')
+    expert = models.ForeignKey('User', on_delete=models.CASCADE, related_name='training_sessions')
     expertise = models.CharField(max_length=255)
     phase = models.CharField(max_length=20, choices=[('initial', 'Initial'), ('specific', 'Specific')])
     created_at = models.DateTimeField(auto_now_add=True)
@@ -204,7 +207,7 @@ class Document(models.Model):
         ('failed', 'Failed'),
     )
     
-    expert = models.ForeignKey(Expert, on_delete=models.CASCADE, related_name='documents')
+    expert = models.ForeignKey('User', on_delete=models.CASCADE, related_name='documents')
     file = models.FileField(upload_to=document_upload_path)
     filename = models.CharField(max_length=255)
     file_size = models.IntegerField()  # Size in bytes
