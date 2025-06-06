@@ -312,6 +312,7 @@ const ExpertProfile: React.FC = () => {
             fullWidth
             variant="outlined"
             size="small"
+            sx={{ mb: 2 }}
           />
           
           <TextField
