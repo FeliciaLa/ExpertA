@@ -1819,3 +1819,142 @@ class EmailVerificationView(APIView):
                 {"error": "Email verification failed"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+class PasswordResetRequestView(APIView):
+    """
+    API endpoint for requesting password reset.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    
+    def post(self, request):
+        try:
+            email = request.data.get('email', '').strip()
+            
+            if not email:
+                return Response({
+                    "error": "Email is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Find user with this email
+            user = User.objects.filter(email=email).first()
+            
+            # Always return success to prevent email enumeration
+            # But only send email if user exists
+            if user and user.is_active:
+                # Generate password reset token
+                from django.contrib.auth.tokens import default_token_generator
+                from django.utils.http import urlsafe_base64_encode
+                from django.utils.encoding import force_bytes
+                
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                
+                # Send password reset email
+                from django.core.mail import send_mail
+                from django.conf import settings
+                
+                reset_url = f"{request.scheme}://{request.get_host()}/reset-password/{uid}/{token}/"
+                
+                subject = f"Password Reset for {settings.SITE_NAME if hasattr(settings, 'SITE_NAME') else 'ExpertA'}"
+                message = f"""
+Hello {user.name},
+
+You have requested a password reset for your account.
+
+Please click the following link to reset your password:
+{reset_url}
+
+If you did not request this password reset, please ignore this email.
+
+The link will expire in 24 hours.
+
+Best regards,
+The ExpertA Team
+                """
+                
+                try:
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user.email],
+                        fail_silently=False,
+                    )
+                    print(f"Password reset email sent to {user.email}")
+                except Exception as e:
+                    print(f"Error sending password reset email: {e}")
+                    return Response({
+                        "error": "Failed to send password reset email"
+                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            return Response({
+                "message": "If an account with that email exists, we've sent password reset instructions."
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"Password reset request error: {e}")
+            return Response({
+                "error": "Failed to process password reset request"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PasswordResetConfirmView(APIView):
+    """
+    API endpoint for confirming password reset with new password.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    
+    def post(self, request, uidb64, token):
+        try:
+            new_password = request.data.get('new_password', '')
+            confirm_password = request.data.get('confirm_password', '')
+            
+            if not new_password or not confirm_password:
+                return Response({
+                    "error": "Both password fields are required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if new_password != confirm_password:
+                return Response({
+                    "error": "Passwords do not match"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if len(new_password) < 8:
+                return Response({
+                    "error": "Password must be at least 8 characters long"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Decode the user ID
+            from django.utils.http import urlsafe_base64_decode
+            from django.utils.encoding import force_str
+            from django.contrib.auth.tokens import default_token_generator
+            
+            try:
+                uid = force_str(urlsafe_base64_decode(uidb64))
+                user = User.objects.get(pk=uid)
+            except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+                return Response({
+                    "error": "Invalid password reset link"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if token is valid
+            if not default_token_generator.check_token(user, token):
+                return Response({
+                    "error": "Invalid or expired password reset link"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Reset the password
+            user.set_password(new_password)
+            user.save()
+            
+            return Response({
+                "message": "Password has been reset successfully. You can now sign in with your new password."
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"Password reset confirm error: {e}")
+            return Response({
+                "error": "Failed to reset password"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

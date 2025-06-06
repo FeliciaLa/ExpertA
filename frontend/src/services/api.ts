@@ -112,6 +112,8 @@ api.interceptors.request.use(
       'login/',
       'verify-email/',
       'public-experts/',
+      'password-reset/',
+      'password-reset-confirm/',
       'test/'
     ];
     
@@ -455,6 +457,19 @@ export const authApi = {
 
   getExpertProfile: async (): Promise<ExpertData> => {
     const response = await api.get<ExpertData>('profile/');
+    return response.data;
+  },
+
+  requestPasswordReset: async (email: string): Promise<{ message: string }> => {
+    const response = await api.post('password-reset/', { email });
+    return response.data;
+  },
+
+  confirmPasswordReset: async (uidb64: string, token: string, newPassword: string, confirmPassword: string): Promise<{ message: string }> => {
+    const response = await api.post(`password-reset-confirm/${uidb64}/${token}/`, {
+      new_password: newPassword,
+      confirm_password: confirmPassword
+    });
     return response.data;
   },
 };

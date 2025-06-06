@@ -20,7 +20,9 @@ from .views import (
     UserProfileDeleteView,
     PublicExpertListView,
     EmailVerificationView,
-    ExpertProfileDeleteView
+    ExpertProfileDeleteView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView
 )
 from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView
 from .document_views import DocumentListView, DocumentUploadView, DocumentDeleteView
@@ -158,6 +160,10 @@ urlpatterns = [
     
     # Email verification - now generic for both users and experts
     path('verify-email/<str:token>/', EmailVerificationView.as_view(), name='verify-email'),
+    
+    # Password reset endpoints
+    path('password-reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('password-reset-confirm/<str:uidb64>/<str:token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 ]
 
 # Ensure the public-experts endpoint is added

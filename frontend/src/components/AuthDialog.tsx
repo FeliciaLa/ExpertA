@@ -19,6 +19,7 @@ import {
   Radio,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import ForgotPasswordDialog from './ForgotPasswordDialog';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -70,6 +71,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -103,6 +105,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     setError('');
     setIsSubmitting(false);
     setSuccessMessage(null);
+    setShowForgotPassword(false);
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -250,6 +253,21 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
                   disabled={isSubmitting}
                 />
                 
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+                  <Link
+                    component="button"
+                    variant="body2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowForgotPassword(true);
+                    }}
+                    disabled={isSubmitting}
+                    sx={{ textDecoration: 'none' }}
+                  >
+                    Forgot your password?
+                  </Link>
+                </Box>
+                
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                   <Button onClick={onClose} color="inherit" disabled={isSubmitting}>
                     Cancel
@@ -360,6 +378,11 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
           </form>
         </TabPanel>
       </DialogContent>
+      
+      <ForgotPasswordDialog
+        open={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </Dialog>
   );
 };

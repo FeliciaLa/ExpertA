@@ -17,6 +17,7 @@ import OnboardingReview from './components/OnboardingReview';
 import DocumentUpload from './components/DocumentUpload';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import TrainingPage from './pages/TrainingPage';
+import PasswordResetPage from './pages/PasswordResetPage';
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -57,6 +58,7 @@ function AppRoutes() {
       <Route path="/experts" element={<Layout><ExpertList /></Layout>} />
       <Route path="/experts/:expertId" element={<Layout><ExpertDetailPage /></Layout>} />
       <Route path="/verify-email/:token" element={<Layout><VerifyEmailPage /></Layout>} />
+      <Route path="/reset-password/:uidb64/:token" element={<Layout><PasswordResetPage /></Layout>} />
       
       {/* Expert routes */}
       <Route path="/expert/*" element={
