@@ -78,15 +78,38 @@ const ExpertProfile: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
+      // Check if we have authentication tokens
+      const tokens = localStorage.getItem('tokens');
+      if (!tokens) {
+        setError('Authentication required. Please log out and log in again.');
+        return;
+      }
+
+      try {
+        const parsedTokens = JSON.parse(tokens);
+        if (!parsedTokens.access) {
+          setError('Invalid authentication. Please log out and log in again.');
+          return;
+        }
+      } catch (e) {
+        setError('Corrupted authentication data. Please log out and log in again.');
+        return;
+      }
+
       const data = await expertApi.getProfile();
       setProfile({
         ...data,
         title: data.title || 'Expert',
         bio: data.bio || '',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch profile:', error);
-      setError('Failed to fetch profile');
+      
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        setError('Authentication expired or invalid. Please log out and log in again to refresh your session.');
+      } else {
+        setError('Failed to fetch profile');
+      }
     }
   };
 
@@ -187,6 +210,22 @@ const ExpertProfile: React.FC = () => {
 
   const handleCloseDeleteDialog = () => {
     setIsDeleteDialogOpen(false);
+  };
+
+  const handleClearAuthentication = () => {
+    // Clear all authentication data
+    localStorage.removeItem('tokens');
+    localStorage.removeItem('user');
+    localStorage.removeItem('auth_role');
+    
+    // Reset auth context
+    setUser(null);
+    setIsAuthenticated(false);
+    setIsExpert(false);
+    setIsUser(false);
+    
+    // Redirect to home page to re-login
+    navigate('/');
   };
 
   return (
@@ -320,6 +359,19 @@ const ExpertProfile: React.FC = () => {
         <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
           <Alert onClose={() => setError(null)} severity="error">
             {error}
+            {(error.includes('Authentication') || error.includes('log out and log in')) && (
+              <Box sx={{ mt: 1 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  onClick={handleClearAuthentication}
+                  sx={{ mt: 1 }}
+                >
+                  Clear Authentication & Re-login
+                </Button>
+              </Box>
+            )}
           </Alert>
         </Snackbar>
       )}
