@@ -474,6 +474,11 @@ export const expertApi = {
       throw error;
     }
   },
+
+  deleteProfile: async (): Promise<{ message: string }> => {
+    const response = await api.delete('profile/delete/');
+    return response.data;
+  }
 };
 
 export const trainingService = {

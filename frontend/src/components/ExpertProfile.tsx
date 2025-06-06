@@ -11,11 +11,16 @@ import {
   Avatar,
   Button,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { useAuth } from '../contexts/AuthContext';
 import { expertApi, API_URL } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfileData {
   first_name: string;
@@ -38,11 +43,14 @@ interface ProfileData {
 }
 
 const ExpertProfile: React.FC = () => {
-  const { expert } = useAuth();
+  const { expert, setUser, setIsAuthenticated, setIsExpert, setIsUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ProfileData>({
     first_name: expert?.first_name || '',
@@ -143,19 +151,66 @@ const ExpertProfile: React.FC = () => {
     return `${baseUrl}${profile.profile_image}`;
   };
 
+  const handleDeleteProfile = async () => {
+    try {
+      setIsDeleting(true);
+      setError(null);
+      
+      await expertApi.deleteProfile();
+      
+      // Clear all local storage
+      localStorage.removeItem('tokens');
+      localStorage.removeItem('user');
+      localStorage.removeItem('auth_role');
+      
+      // Reset auth context
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsExpert(false);
+      setIsUser(false);
+      
+      // Redirect to home page
+      navigate('/');
+      
+    } catch (error: any) {
+      console.error('Delete profile error:', error);
+      setError(error.response?.data?.error || 'Failed to delete profile');
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const handleOpenDeleteDialog = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
+
   return (
     <Paper sx={{ p: 3, mb: 4, backgroundColor: 'white' }}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
         <Typography variant="h6" color="primary">
           My Profile
         </Typography>
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" gap={1}>
           <IconButton 
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
             color="primary"
           >
             {isEditing ? <SaveIcon /> : <EditIcon />}
           </IconButton>
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            onClick={handleOpenDeleteDialog}
+            sx={{ ml: 1 }}
+          >
+            Delete Profile
+          </Button>
         </Box>
       </Box>
 
@@ -276,6 +331,38 @@ const ExpertProfile: React.FC = () => {
           </Alert>
         </Snackbar>
       )}
+
+      {/* Delete Profile Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onClose={handleCloseDeleteDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Delete Profile</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" paragraph>
+            Are you sure you want to permanently delete your expert profile? This action cannot be undone.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            This will:
+          </Typography>
+          <Typography variant="body2" color="text.secondary" component="div" sx={{ ml: 2, mt: 1 }}>
+            • Delete all your profile information<br/>
+            • Remove your expert account permanently<br/>
+            • Sign you out of the application<br/>
+            • Allow you to register again with the same email if needed
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteProfile} 
+            color="error" 
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? <CircularProgress size={20} /> : 'Delete Profile'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

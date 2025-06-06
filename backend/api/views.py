@@ -824,6 +824,46 @@ class ProfileImageUploadView(APIView):
         serializer = ExpertProfileSerializer(expert)
         return Response(serializer.data)
 
+class ExpertProfileDeleteView(APIView):
+    """
+    API endpoint for deleting expert profile.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def delete(self, request):
+        try:
+            expert = request.user
+            expert_email = expert.email
+            expert_id = expert.id
+            
+            print(f"Delete view - About to delete expert: {expert_email} (ID: {expert_id})")
+            
+            # Check if expert exists before deletion
+            experts_before = User.objects.filter(email=expert_email).count()
+            print(f"Delete view - Experts with email {expert_email} before deletion: {experts_before}")
+            
+            # Delete the expert and all related objects
+            expert.delete()
+            
+            # Verify deletion
+            experts_after = User.objects.filter(email=expert_email).count()
+            print(f"Delete view - Experts with email {expert_email} after deletion: {experts_after}")
+            
+            if experts_after == 0:
+                print(f"Delete view - Expert {expert_email} successfully deleted from database")
+                message = f"Expert account {expert_email} has been permanently deleted. You can register again with the same email if needed."
+            else:
+                print(f"Delete view - WARNING: Expert {expert_email} still exists in database after deletion attempt")
+                message = f"Profile deletion completed, but account may still exist. Please contact support if you experience login issues."
+            
+            return Response({"message": message})
+                
+        except Exception as e:
+            import traceback
+            print(f"Error in ExpertProfileDeleteView: {str(e)}")
+            print(traceback.format_exc())
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class ExpertListView(APIView):
     """
     API endpoint for listing experts.
