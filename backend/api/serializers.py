@@ -45,7 +45,7 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
 
 class ExpertSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
-    name = serializers.CharField(source='name', read_only=True)
+    name = serializers.CharField(read_only=True)
     profile = ExpertProfileDetailSerializer(read_only=True)
     
     class Meta:
