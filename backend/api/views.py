@@ -732,6 +732,15 @@ class ExpertRegistrationView(APIView):
     API endpoint for expert registration.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []  # No authentication required for registration
+
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
 
     def post(self, request):
         try:
@@ -789,10 +798,11 @@ class ExpertRegistrationView(APIView):
 
 class ExpertProfileView(APIView):
     """
-    API endpoint for getting the current expert's profile.
+    API endpoint for retrieving expert profile information.
     """
     permission_classes = [IsAuthenticated]
-
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    
     def options(self, request, *args, **kwargs):
         # Handle CORS preflight requests
         response = Response()
@@ -800,7 +810,7 @@ class ExpertProfileView(APIView):
         response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
         response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
         return response
-
+    
     def get(self, request):
         print(f"\n=== ExpertProfileView DEBUG ===")
         print(f"Request user: {request.user}")
@@ -1839,6 +1849,8 @@ class PublicExpertListView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
             response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            return response
 
 class EmailVerificationView(APIView):
     """
