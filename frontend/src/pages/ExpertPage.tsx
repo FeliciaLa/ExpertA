@@ -2,33 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { Container, Paper, Box, Typography, Button, Divider } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ExpertProfile from '../components/ExpertProfile';
-import { ExpertOnboarding } from '../components/ExpertOnboarding';
+import { SimpleExpertSetup } from '../components/SimpleExpertSetup';
 import OnboardingReview from '../components/OnboardingReview';
 import { useAuth } from '../contexts/AuthContext';
 
 const ExpertPage: React.FC = () => {
   const { expert } = useAuth();
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
   const [showReview, setShowReview] = useState(false);
   
-  const needsOnboarding = !expert?.onboarding_completed;
-  const hasCompletedOnboarding = expert?.onboarding_completed;
+  const needsSetup = !expert?.onboarding_completed;
+  const hasCompletedSetup = expert?.onboarding_completed;
 
   // Check for openProfileSetup flag in session storage on component mount
   useEffect(() => {
     const shouldOpenSetup = sessionStorage.getItem('openProfileSetup');
-    if (shouldOpenSetup === 'true' && needsOnboarding) {
-      setShowOnboarding(true);
+    if (shouldOpenSetup === 'true' && needsSetup) {
+      setShowSetup(true);
       // Clear the flag
       sessionStorage.removeItem('openProfileSetup');
     }
-  }, [needsOnboarding]);
+  }, [needsSetup]);
 
   return (
     <Container maxWidth="lg">
       <ExpertProfile />
       
-      {hasCompletedOnboarding && (
+      {hasCompletedSetup && (
         <Paper 
           sx={{ 
             p: 2, 
@@ -46,48 +46,46 @@ const ExpertPage: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <CheckCircleIcon sx={{ mr: 1 }} />
             <Typography variant="subtitle1">
-              Profile Setup
+              Expert Profile Complete
             </Typography>
           </Box>
         </Paper>
       )}
       
-      {hasCompletedOnboarding && showReview && (
+      {hasCompletedSetup && showReview && (
         <OnboardingReview />
       )}
       
-      {needsOnboarding && !showOnboarding && (
+      {needsSetup && !showSetup && (
         <Paper sx={{ p: 3, mt: 3, mb: 4 }}>
           <Typography variant="h6" color="primary" gutterBottom>
-            Complete Your Expert Profile Setup
+            Complete Your Expert Profile
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="body1" paragraph>
-            To train your AI assistant effectively, we need more information about your expertise. 
-            Please complete the profile setup questionnaire to provide details about your background, 
-            methodologies, and specializations.
+            To start training your AI assistant, we need to understand your expertise. 
+            Complete your profile with information about your background, skills, and experience.
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            This step is required before you can begin AI training. The information you provide
-            helps the AI understand your expertise better.
+            This takes just a few minutes and helps the AI learn your unique perspective and knowledge.
           </Typography>
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
             <Button 
               variant="contained" 
               color="primary"
               size="large"
-              onClick={() => setShowOnboarding(true)}
+              onClick={() => setShowSetup(true)}
             >
-              Start Profile Setup
+              Complete Profile
             </Button>
           </Box>
         </Paper>
       )}
 
-      {needsOnboarding && showOnboarding && (
-        <Paper sx={{ p: 3, mt: 3, mb: 4 }}>
-          <ExpertOnboarding onComplete={() => window.location.reload()} />
-        </Paper>
+      {needsSetup && showSetup && (
+        <Box sx={{ mt: 3, mb: 4 }}>
+          <SimpleExpertSetup onComplete={() => window.location.reload()} />
+        </Box>
       )}
     </Container>
   );

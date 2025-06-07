@@ -15,6 +15,7 @@ import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/api';
+import { OnboardingInstructions } from './OnboardingInstructions';
 
 interface Message {
   id: number;
@@ -35,6 +36,8 @@ export const TrainingChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [hasStartedTraining, setHasStartedTraining] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -69,29 +72,14 @@ export const TrainingChat: React.FC = () => {
       );
       
       if (filteredMessages.length === 0) {
-        // No messages yet, automatically start the training
-        console.log('Starting new training conversation...');
-        try {
-          const initialResponse = await trainingService.sendMessage('START_TRAINING');
-          console.log('Received initial AI response:', initialResponse);
-          if (initialResponse.message) {
-            setMessages([initialResponse.message]);
-          } else {
-            console.error('No message in initial response:', initialResponse);
-            enqueueSnackbar('Failed to start training conversation', { 
-              variant: 'error',
-              autoHideDuration: 4000
-            });
-          }
-        } catch (error) {
-          console.error('Error starting training:', error);
-          enqueueSnackbar('Failed to start training conversation', { 
-            variant: 'error',
-            autoHideDuration: 4000
-          });
-        }
+        // No messages yet, show instructions first
+        setShowInstructions(true);
+        setHasStartedTraining(false);
       } else {
+        // Has existing messages, skip instructions
         setMessages(filteredMessages);
+        setShowInstructions(false);
+        setHasStartedTraining(true);
       }
     } catch (error: any) {
       console.error('Error fetching chat history:', error);
@@ -109,6 +97,54 @@ export const TrainingChat: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const startTrainingSession = async () => {
+    setShowInstructions(false);
+    setLoading(true);
+    
+    try {
+      console.log('Starting new training conversation...');
+      const initialResponse = await trainingService.sendMessage('START_TRAINING');
+      console.log('Received initial AI response:', initialResponse);
+      if (initialResponse.message) {
+        setMessages([initialResponse.message]);
+        setHasStartedTraining(true);
+      } else {
+        console.error('No message in initial response:', initialResponse);
+        enqueueSnackbar('Failed to start training conversation', { 
+          variant: 'error',
+          autoHideDuration: 4000
+        });
+      }
+    } catch (error) {
+      console.error('Error starting training:', error);
+      enqueueSnackbar('Failed to start training conversation', { 
+        variant: 'error',
+        autoHideDuration: 4000
+      });
+      setShowInstructions(true); // Show instructions again on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkipInstructions = () => {
+    setShowInstructions(false);
+    setHasStartedTraining(true);
+    // Don't start training automatically, just show empty chat
+  };
+
+  // Show instructions if we haven't started training yet
+  if (showInstructions && !hasStartedTraining) {
+    return (
+      <Box sx={{ maxWidth: 1000, mx: 'auto', p: 3 }}>
+        <OnboardingInstructions 
+          onStart={startTrainingSession}
+          onSkip={handleSkipInstructions}
+        />
+      </Box>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

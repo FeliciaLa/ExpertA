@@ -116,8 +116,27 @@ export const TrainingStatus: React.FC = () => {
                 AI Training Session
               </Typography>
               <Typography color="textSecondary" sx={{ mb: 2 }}>
-                Teach the AI by answering focused questions about your field. The AI will learn from your insights to better replicate your expertise.
+                Train your AI assistant through an interactive conversation. The AI will ask you questions about your expertise, and your responses will teach it to think and respond like you.
               </Typography>
+              
+              <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1, mb: 2 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  How it works:
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  • The AI asks targeted questions about your field and experience
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  • You provide detailed answers sharing your knowledge and approach
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  • The AI learns from your responses to better represent your expertise
+                </Typography>
+                <Typography variant="body2">
+                  • Takes about 10-15 minutes and can be paused anytime
+                </Typography>
+              </Box>
+              
               {expert.total_training_messages > 0 ? (
                 <Typography color="info.main" sx={{ mt: 2 }}>
                   In Progress - {expert.total_training_messages} training messages exchanged
@@ -126,10 +145,12 @@ export const TrainingStatus: React.FC = () => {
                   )}
                 </Typography>
               ) : expert.onboarding_completed ? (
-                <Box sx={{ mt: 2 }}></Box>
+                <Typography color="success.main" sx={{ mt: 2 }}>
+                  Ready to start your first training session
+                </Typography>
               ) : (
-                <Typography color="text.secondary" sx={{ mt: 2 }}>
-                  Ready to start - Complete profile setup first
+                <Typography color="warning.main" sx={{ mt: 2 }}>
+                  Complete your expert profile first to begin training
                 </Typography>
               )}
             </Box>
@@ -140,8 +161,10 @@ export const TrainingStatus: React.FC = () => {
                 color="primary"
                 size="large"
                 onClick={handleStartTraining}
+                disabled={!expert.onboarding_completed}
               >
-                {!expert.onboarding_completed ? 'Complete Profile Setup First' : 'Continue to Training'}
+                {!expert.onboarding_completed ? 'Complete Profile Setup First' : 
+                 expert.total_training_messages > 0 ? 'Continue Training Session' : 'Start Training Session'}
               </Button>
             </Box>
           </Box>

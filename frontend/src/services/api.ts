@@ -62,8 +62,11 @@ export interface ExpertData {
   specialties?: string;
   title?: string;
   onboarding_completed?: boolean;
+  onboarding_completed_at?: string;
   profile_image?: string;
   profile?: ExpertProfileData;
+  total_training_messages?: number;
+  last_training_at?: string;
 }
 
 export interface LoginResponse {
@@ -542,6 +545,16 @@ export const expertApi = {
   deleteProfile: async (): Promise<{ message: string }> => {
     const response = await api.delete('profile/delete/');
     return response.data;
+  },
+
+  completeOnboarding: async (profileData: ExpertProfileData) => {
+    try {
+      // Create the expert profile directly via a new endpoint
+      const response = await api.post('profile/complete-onboarding/', profileData);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 };
 

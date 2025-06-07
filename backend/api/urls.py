@@ -22,7 +22,8 @@ from .views import (
     EmailVerificationView,
     ExpertProfileDeleteView,
     PasswordResetRequestView,
-    PasswordResetConfirmView
+    PasswordResetConfirmView,
+    ExpertOnboardingCompleteView
 )
 from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView
 from .document_views import DocumentListView, DocumentUploadView, DocumentDeleteView
@@ -132,6 +133,7 @@ urlpatterns = [
     path('profile/update/', ExpertProfileUpdateView.as_view(), name='expert-profile-update'),
     path('profile/upload-image/', ProfileImageUploadView.as_view(), name='profile-image-upload'),
     path('profile/delete/', ExpertProfileDeleteView.as_view(), name='expert-profile-delete'),
+    path('profile/complete-onboarding/', ExpertOnboardingCompleteView.as_view(), name='expert-onboarding-complete'),
     path('experts/', ExpertListView.as_view(), name='expert-list'),
     path('public-experts/', PublicExpertListView.as_view(), name='public-expert-list'),
     path('public-experts-direct/', public_experts_direct, name='public-experts-direct'),  # Direct function view with CORS

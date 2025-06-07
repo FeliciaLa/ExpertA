@@ -966,20 +966,85 @@ class ExpertProfileDeleteView(APIView):
                 message = f"Profile deletion completed, but account may still exist. Please contact support if you experience login issues."
             
             response = Response({"message": message})
-            
-            # Add CORS headers to response
             response["Access-Control-Allow-Origin"] = "*"
-            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
             return response
                 
         except Exception as e:
+            print(f"Delete view - Error deleting expert: {str(e)}")
             import traceback
-            print(f"Error in ExpertProfileDeleteView: {str(e)}")
-            print(traceback.format_exc())
-            response = Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(f"Delete view - Traceback: {traceback.format_exc()}")
+            
+            response = Response({
+                "error": f"Failed to delete expert profile: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             response["Access-Control-Allow-Origin"] = "*"
-            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
             return response
+
+class ExpertOnboardingCompleteView(APIView):
+    """
+    API endpoint for completing expert onboarding with profile data directly.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            expert = request.user
+            profile_data = request.data
+            
+            # Validate required fields
+            required_fields = ['industry', 'years_of_experience', 'key_skills', 'background']
+            for field in required_fields:
+                if field not in profile_data:
+                    return Response({
+                        'error': f'Missing required field: {field}'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Create or update the expert profile
+            profile, created = ExpertProfile.objects.update_or_create(
+                expert=expert,
+                defaults={
+                    'industry': profile_data.get('industry', ''),
+                    'years_of_experience': profile_data.get('years_of_experience', 0),
+                    'key_skills': profile_data.get('key_skills', ''),
+                    'typical_problems': profile_data.get('typical_problems', ''),
+                    'background': profile_data.get('background', ''),
+                    'certifications': profile_data.get('certifications', ''),
+                    'methodologies': profile_data.get('methodologies', ''),
+                    'tools_technologies': profile_data.get('tools_technologies', '')
+                }
+            )
+            
+            # Mark onboarding as complete
+            expert.onboarding_completed = True
+            expert.onboarding_completed_at = timezone.now()
+            expert.save()
+            
+            # Initialize knowledge base
+            knowledge_base, kb_created = ExpertKnowledgeBase.objects.get_or_create(
+                expert=expert,
+                defaults={
+                    'knowledge_areas': {
+                        profile_data.get('industry', 'General'): 100,
+                        'Professional Experience': profile_data.get('years_of_experience', 0),
+                    },
+                    'training_summary': f"Expert in {profile_data.get('industry', 'their field')} with {profile_data.get('years_of_experience', 0)} years of experience. Skills: {profile_data.get('key_skills', '')}"
+                }
+            )
+            
+            return Response({
+                'status': 'success',
+                'message': 'Onboarding completed successfully',
+                'profile_created': created,
+                'knowledge_base_created': kb_created
+            })
+            
+        except Exception as e:
+            print(f"Error completing onboarding: {str(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            return Response({
+                'error': 'Failed to complete onboarding'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ExpertListView(APIView):
     """
