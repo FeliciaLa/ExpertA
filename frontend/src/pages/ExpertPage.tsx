@@ -4,12 +4,14 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ExpertProfile from '../components/ExpertProfile';
 import { SimpleExpertSetup } from '../components/SimpleExpertSetup';
 import OnboardingReview from '../components/OnboardingReview';
+import { ExpertWelcomeDialog } from '../components/ExpertWelcomeDialog';
 import { useAuth } from '../contexts/AuthContext';
 
 const ExpertPage: React.FC = () => {
   const { expert } = useAuth();
   const [showSetup, setShowSetup] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   
   const needsSetup = !expert?.onboarding_completed;
   const hasCompletedSetup = expert?.onboarding_completed;
@@ -23,6 +25,23 @@ const ExpertPage: React.FC = () => {
       sessionStorage.removeItem('openProfileSetup');
     }
   }, [needsSetup]);
+
+  // Check if we should show the welcome dialog for new experts
+  useEffect(() => {
+    if (expert?.id) {
+      const hasSeenWelcome = localStorage.getItem(`expert_welcome_seen_${expert.id}`);
+      if (!hasSeenWelcome) {
+        setShowWelcomeDialog(true);
+      }
+    }
+  }, [expert?.id]);
+
+  const handleWelcomeDialogClose = () => {
+    setShowWelcomeDialog(false);
+    if (expert?.id) {
+      localStorage.setItem(`expert_welcome_seen_${expert.id}`, 'true');
+    }
+  };
 
   return (
     <Container maxWidth="lg">
@@ -87,6 +106,12 @@ const ExpertPage: React.FC = () => {
           <SimpleExpertSetup onComplete={() => window.location.reload()} />
         </Box>
       )}
+
+      <ExpertWelcomeDialog
+        open={showWelcomeDialog}
+        onClose={handleWelcomeDialogClose}
+        expertName={expert?.name}
+      />
     </Container>
   );
 };
