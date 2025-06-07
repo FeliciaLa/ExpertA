@@ -18,6 +18,8 @@ import DocumentUpload from './components/DocumentUpload';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import TrainingPage from './pages/TrainingPage';
 import PasswordResetPage from './pages/PasswordResetPage';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -59,6 +61,8 @@ function AppRoutes() {
       <Route path="/experts/:expertId" element={<Layout><ExpertDetailPage /></Layout>} />
       <Route path="/verify-email/:token" element={<Layout><VerifyEmailPage /></Layout>} />
       <Route path="/reset-password/:uidb64/:token" element={<Layout><PasswordResetPage /></Layout>} />
+      <Route path="/terms" element={<Layout><TermsOfService /></Layout>} />
+      <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
       
       {/* Expert routes */}
       <Route path="/expert/*" element={

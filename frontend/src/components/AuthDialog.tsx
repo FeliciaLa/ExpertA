@@ -17,6 +17,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Checkbox
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ForgotPasswordDialog from './ForgotPasswordDialog';
@@ -72,6 +73,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -106,6 +108,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     setIsSubmitting(false);
     setSuccessMessage(null);
     setShowForgotPassword(false);
+    setAcceptTerms(false);
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -154,9 +157,15 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
       return;
     }
 
+    if (!acceptTerms) {
+      setError('You must accept the Terms of Service and Privacy Policy to register');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setError('');
+      setSuccessMessage('');
       // Use the selected role or expertRegisterOnly prop to determine registration type
       const isExpertRegistration = expertRegisterOnly || userRole === 'expert';
       const result = await onRegister(name, email, password, isExpertRegistration, userRole);
@@ -359,6 +368,44 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
                 disabled={isSubmitting}
                 error={confirmPassword !== '' && password !== confirmPassword}
                 helperText={confirmPassword !== '' && password !== confirmPassword ? 'Passwords do not match' : ''}
+              />
+              
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    disabled={isSubmitting}
+                  />
+                }
+                label={
+                  <Typography variant="body2">
+                    I accept the{' '}
+                    <Link
+                      component="button"
+                      variant="body2"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open('/terms', '_blank');
+                      }}
+                      sx={{ textDecoration: 'underline' }}
+                    >
+                      Terms of Service
+                    </Link>
+                    {' '}and{' '}
+                    <Link
+                      component="button"
+                      variant="body2"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open('/privacy', '_blank');
+                      }}
+                      sx={{ textDecoration: 'underline' }}
+                    >
+                      Privacy Policy
+                    </Link>
+                  </Typography>
+                }
               />
               
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>

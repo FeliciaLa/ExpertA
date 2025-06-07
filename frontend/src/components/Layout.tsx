@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Box, Container, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, Container, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton, Link } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -208,9 +208,64 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         onRegister={(name, email, password, isExpertRegistration, userRole) => handleRegister(name, email, password, isExpertRegistration, userRole)}
       />
       
-      <Container component="main" sx={{ mt: 4 }}>
+      <Container component="main" sx={{ mt: 4, mb: 8 }}>
         {children}
       </Container>
+      
+      {/* Footer */}
+      <Box 
+        component="footer" 
+        sx={{ 
+          backgroundColor: 'grey.100', 
+          py: 3, 
+          mt: 'auto',
+          borderTop: '1px solid',
+          borderColor: 'grey.300'
+        }}
+      >
+        <Container maxWidth="lg">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2
+          }}>
+            <Typography variant="body2" color="text.secondary">
+              © 2024 ExpertA. All rights reserved.
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 3 }}>
+              <Link 
+                component="button"
+                variant="body2" 
+                color="text.secondary"
+                onClick={() => navigate('/terms')}
+                sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              >
+                Terms of Service
+              </Link>
+              <Link 
+                component="button"
+                variant="body2" 
+                color="text.secondary"
+                onClick={() => navigate('/privacy')}
+                sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              >
+                Privacy Policy
+              </Link>
+              <Link 
+                component="button"
+                variant="body2" 
+                color="text.secondary"
+                onClick={() => window.open('mailto:support@expert-a.com')}
+                sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              >
+                Contact
+              </Link>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
     </>
   );
 };
