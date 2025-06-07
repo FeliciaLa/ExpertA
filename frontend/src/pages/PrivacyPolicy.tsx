@@ -10,7 +10,7 @@ const PrivacyPolicy: React.FC = () => {
         </Typography>
         
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-          Effective Date: {new Date().toLocaleDateString()}
+          Effective Date: June 6, 2024
         </Typography>
 
         <Box sx={{ '& > *': { mb: 3 } }}>
