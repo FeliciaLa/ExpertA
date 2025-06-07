@@ -257,7 +257,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 component="button"
                 variant="body2" 
                 color="text.secondary"
-                onClick={() => window.open('mailto:support@expert-a.com')}
+                onClick={() => window.open('mailto:a00938724@gmail.com')}
                 sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
               >
                 Contact

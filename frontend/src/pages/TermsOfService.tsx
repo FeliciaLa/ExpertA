@@ -130,7 +130,7 @@ const TermsOfService: React.FC = () => {
               11. Contact Information
             </Typography>
             <Typography variant="body1" paragraph>
-              If you have questions about these Terms, please contact us at support@expert-a.com.
+              If you have questions about these Terms, please contact us at a00938724@gmail.com.
             </Typography>
           </Box>
         </Box>

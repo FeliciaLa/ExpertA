@@ -168,7 +168,7 @@ const PrivacyPolicy: React.FC = () => {
               If you have questions about this Privacy Policy or our data practices, please contact us at:
             </Typography>
             <Typography variant="body1" paragraph>
-              Email: privacy@expert-a.com<br />
+              Email: a00938724@gmail.com<br />
               Address: [Your Business Address]
             </Typography>
           </Box>
