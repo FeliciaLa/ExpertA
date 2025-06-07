@@ -30,6 +30,7 @@ const ExpertPage: React.FC = () => {
   useEffect(() => {
     if (expert?.id) {
       const hasSeenWelcome = localStorage.getItem(`expert_welcome_seen_${expert.id}`);
+      console.log('Welcome dialog check:', { expertId: expert.id, hasSeenWelcome, showWelcomeDialog });
       if (!hasSeenWelcome) {
         setShowWelcomeDialog(true);
       }
@@ -43,9 +44,26 @@ const ExpertPage: React.FC = () => {
     }
   };
 
+  // Temporary function to manually show welcome dialog for testing
+  const showWelcomeManually = () => {
+    setShowWelcomeDialog(true);
+  };
+
   return (
     <Container maxWidth="lg">
       <ExpertProfile />
+      
+      {/* Temporary button for testing welcome dialog */}
+      <Box sx={{ mb: 2, textAlign: 'center' }}>
+        <Button 
+          variant="outlined" 
+          color="secondary" 
+          onClick={showWelcomeManually}
+          size="small"
+        >
+          Show Welcome Dialog (Test)
+        </Button>
+      </Box>
       
       {hasCompletedSetup && (
         <Paper 
