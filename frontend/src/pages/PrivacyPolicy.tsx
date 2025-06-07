@@ -6,7 +6,7 @@ const PrivacyPolicy: React.FC = () => {
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper sx={{ p: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
-          Expert A — Privacy Policy
+          📑 Expert A — Privacy Policy
         </Typography>
         
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
@@ -20,7 +20,7 @@ const PrivacyPolicy: React.FC = () => {
             </Typography>
             <Typography variant="body1" paragraph>
               We collect information you provide directly to us, such as when you create an account, 
-              upload training materials, or communicate with experts through our platform.
+              upload training materials, or communicate through our Platform.
             </Typography>
             <Typography variant="body1" paragraph>
               <strong>Personal Information:</strong> Name, email address, profile information, and payment details.
@@ -29,7 +29,7 @@ const PrivacyPolicy: React.FC = () => {
               <strong>Content:</strong> Training documents, chat conversations, and expert knowledge materials.
             </Typography>
             <Typography variant="body1" paragraph>
-              <strong>Usage Data:</strong> Information about how you use our platform, including log data and analytics.
+              <strong>Usage Data:</strong> Information about how you use our Platform, including log data and analytics.
             </Typography>
           </Box>
 
@@ -55,11 +55,11 @@ const PrivacyPolicy: React.FC = () => {
               3. Information Sharing
             </Typography>
             <Typography variant="body1" paragraph>
-              We do not sell, trade, or rent your personal information to third parties. We may share 
-              information in the following circumstances:
+              We do not sell, trade, or rent your personal information to third parties. We may share information:
             </Typography>
             <Typography component="ul" sx={{ pl: 3 }}>
-              <Typography component="li">With experts when you engage their services</Typography>
+              <Typography component="li">With experts when users engage their services</Typography>
+              <Typography component="li">With users when they interact with experts' chatbots (responses may be stored)</Typography>
               <Typography component="li">With service providers who assist in platform operations</Typography>
               <Typography component="li">When required by law or to protect our rights</Typography>
               <Typography component="li">In connection with a business transfer or acquisition</Typography>
@@ -71,13 +71,15 @@ const PrivacyPolicy: React.FC = () => {
               4. AI Training and Data Processing
             </Typography>
             <Typography variant="body1" paragraph>
-              Expert-uploaded content is used to train AI models specific to each expert. This data is:
+              <strong>For Experts:</strong> Expert-uploaded content is used to train AI models specific to each expert's chatbot. This data is:
             </Typography>
             <Typography component="ul" sx={{ pl: 3 }}>
               <Typography component="li">Processed using secure third-party AI services (OpenAI)</Typography>
               <Typography component="li">Stored in encrypted vector databases</Typography>
-              <Typography component="li">Used only for the specific expert's chatbot</Typography>
-              <Typography component="li">Not shared between different experts</Typography>
+              <Typography component="li">Used only for the specific expert's chatbot and not shared with other experts</Typography>
+            </Typography>
+            <Typography variant="body1" paragraph>
+              <strong>For Users:</strong> Your questions and interactions with experts' chatbots may be stored for quality and safety purposes. This data is not shared with other users.
             </Typography>
           </Box>
 
@@ -109,6 +111,9 @@ const PrivacyPolicy: React.FC = () => {
               <Typography component="li">Export your data in a portable format</Typography>
               <Typography component="li">Opt out of non-essential communications</Typography>
               <Typography component="li">Request correction of inaccurate information</Typography>
+            </Typography>
+            <Typography variant="body1" paragraph>
+              To exercise these rights, please contact us at a00938724@gmail.com.
             </Typography>
           </Box>
 
@@ -145,7 +150,7 @@ const PrivacyPolicy: React.FC = () => {
               9. Children's Privacy
             </Typography>
             <Typography variant="body1" paragraph>
-              Our platform is not intended for users under 16 years of age. We do not knowingly collect 
+              Our Platform is not intended for users under 16 years of age. We do not knowingly collect 
               personal information from children under 16.
             </Typography>
           </Box>
@@ -156,7 +161,7 @@ const PrivacyPolicy: React.FC = () => {
             </Typography>
             <Typography variant="body1" paragraph>
               We may update this Privacy Policy from time to time. We will notify you of any material 
-              changes by email or through our platform.
+              changes by email or through our Platform.
             </Typography>
           </Box>
 

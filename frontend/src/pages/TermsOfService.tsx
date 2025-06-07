@@ -51,7 +51,7 @@ const TermsOfService: React.FC = () => {
               4. Account Registration
             </Typography>
             <Typography variant="body1" paragraph>
-              To access and use the chatbot services, you must create an account and provide accurate 
+              To access and use the Platform, you must create an account and provide accurate 
               and complete information. You are responsible for maintaining the confidentiality of your 
               login credentials.
             </Typography>
@@ -89,9 +89,12 @@ const TermsOfService: React.FC = () => {
               7. Payment Terms
             </Typography>
             <Typography variant="body1" paragraph>
-              Some experts may charge fees for their consultation services. Payment processing is handled 
+              <strong>For Users:</strong> Some experts may charge fees for their consultation services. Payment processing is handled 
               through secure third-party providers. All fees are clearly displayed before any transaction. 
               Refunds are subject to our refund policy and expert discretion.
+            </Typography>
+            <Typography variant="body1" paragraph>
+              <strong>For Experts:</strong> If you offer paid services, you agree to the revenue-sharing terms defined separately by the Platform. Payments are processed through Stripe Connect, and you are responsible for any applicable taxes or reporting obligations.
             </Typography>
           </Box>
 
@@ -101,7 +104,7 @@ const TermsOfService: React.FC = () => {
             </Typography>
             <Typography variant="body1" paragraph>
               The Platform and its services are provided "as is" without warranties. We are not liable 
-              for any damages arising from your use of the Platform or interactions with experts.
+              for any damages arising from your use of the Platform, chatbot outputs, or interactions between users and experts. Chatbots do not provide professional advice and should not be relied upon as such.
             </Typography>
           </Box>
 
@@ -120,7 +123,7 @@ const TermsOfService: React.FC = () => {
               10. Changes to Terms
             </Typography>
             <Typography variant="body1" paragraph>
-              We may update these Terms from time to time. We will notify users of significant changes 
+              We may update these Terms from time to time. We will notify users and experts of significant changes 
               via email or platform notifications.
             </Typography>
           </Box>
@@ -130,7 +133,10 @@ const TermsOfService: React.FC = () => {
               11. Contact Information
             </Typography>
             <Typography variant="body1" paragraph>
-              If you have questions about these Terms, please contact us at a00938724@gmail.com.
+              If you have questions about these Terms, please contact us at:
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Email: a00938724@gmail.com
             </Typography>
           </Box>
         </Box>
