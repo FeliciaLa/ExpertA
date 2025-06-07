@@ -18,7 +18,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import ModelSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import Expert, TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User
+from .models import Expert, TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile
 from .serializers import ExpertSerializer, ExpertProfileSerializer, UserSerializer, UserRegistrationSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
