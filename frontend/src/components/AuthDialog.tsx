@@ -302,7 +302,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
                     <FormControlLabel 
                       value="user" 
                       control={<Radio disabled={isSubmitting} />} 
-                      label="Regular User"
+                      label="User"
                       disabled={isSubmitting}
                     />
                     <FormControlLabel 

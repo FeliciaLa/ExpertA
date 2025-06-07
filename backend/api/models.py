@@ -277,7 +277,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Role(models.TextChoices):
         ADMIN = 'admin', 'Administrator'
         EXPERT = 'expert', 'Expert'
-        USER = 'user', 'Regular User'
+        USER = 'user', 'User'
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=255, unique=True)
