@@ -66,7 +66,7 @@ class Expert(AbstractUser):
 class ExpertProfile(models.Model):
     """Model to store expert profile information from onboarding"""
     expert = models.OneToOneField('User', on_delete=models.CASCADE, related_name='profile')
-    industry = models.CharField(max_length=255)
+    industry = models.TextField()
     years_of_experience = models.IntegerField()
     key_skills = models.TextField()
     typical_problems = models.TextField()
