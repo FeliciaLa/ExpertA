@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("api", "0025_fix_expert_profile_industry_field"),
+        ("api", "0024_fix_training_tables_uuid"),
     ]
 
     operations = [
