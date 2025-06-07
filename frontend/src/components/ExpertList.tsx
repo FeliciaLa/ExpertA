@@ -314,7 +314,7 @@ export const ExpertList: React.FC = () => {
             <Grid item xs={12} sm={6} md={4} key={expert.id}>
               <Card 
                 sx={{ 
-                  height: '100%', 
+                  height: 420, // Fixed height for all cards
                   display: 'flex', 
                   flexDirection: 'column',
                   transition: 'transform 0.2s, box-shadow 0.2s',
@@ -326,44 +326,87 @@ export const ExpertList: React.FC = () => {
                 }}
                 onClick={() => handleExpertClick(expert.id)}
               >
-                <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  p: 3
+                }}>
                   <Avatar
                     src={getProfileImageUrl(expert.profile_image)}
                     sx={{
-                      width: 120,
-                      height: 120,
+                      width: 80,
+                      height: 80,
                       bgcolor: 'primary.main',
-                      fontSize: '3rem',
+                      fontSize: '2rem',
                       mx: 'auto',
                       mb: 2
                     }}
                   >
                     {expert.name[0]}
                   </Avatar>
-                  <Typography gutterBottom variant="h5" component="div">
+                  
+                  <Typography gutterBottom variant="h6" component="div" sx={{ 
+                    fontWeight: 600,
+                    minHeight: '1.5rem'
+                  }}>
                     {expert.name}
                   </Typography>
+                  
                   {expert.title && (
-                    <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                    <Typography variant="subtitle2" color="primary" gutterBottom sx={{
+                      minHeight: '1.25rem',
+                      mb: 1
+                    }}>
                       {expert.title}
                     </Typography>
                   )}
+                  
                   {expert.specialties && (
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{
+                      mb: 2,
+                      minHeight: '2.5rem',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
                       {expert.specialties}
                     </Typography>
                   )}
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    sx={{ mt: 3 }}
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click
-                      handleChatButtonClick(e, expert.id);
-                    }}
-                  >
-                    Chat with {expert.name.split(' ')[0]}'s AI
-                  </Button>
+                  
+                  {expert.bio && (
+                    <Typography variant="body2" color="text.secondary" sx={{
+                      mb: 2,
+                      flexGrow: 1,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      fontSize: '0.875rem',
+                      lineHeight: 1.4
+                    }}>
+                      {expert.bio}
+                    </Typography>
+                  )}
+                  
+                  <Box sx={{ mt: 'auto' }}>
+                    <Button 
+                      variant="contained" 
+                      color="primary" 
+                      size="medium"
+                      fullWidth
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        handleChatButtonClick(e, expert.id);
+                      }}
+                    >
+                      Chat with {expert.name.split(' ')[0]}'s AI
+                    </Button>
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
