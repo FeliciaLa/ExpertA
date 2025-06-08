@@ -57,7 +57,7 @@ export const TrainingStatus: React.FC = () => {
     if (!expert) return 'not_started';
     
     if (!expert.onboarding_completed) return 'not_started';
-    return expert.total_training_messages > 0 ? 'in_progress' : 'not_started';
+    return (expert.total_training_messages || 0) > 0 ? 'in_progress' : 'not_started';
   };
 
   const handleStartTraining = () => {
@@ -110,8 +110,12 @@ export const TrainingStatus: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={tabIndex} index={1}>
-          <Box sx={{ p: 3 }}>
-            <Box sx={{ mb: 3 }}>
+          <Box sx={{ p: 3, minHeight: '400px', bgcolor: 'background.paper' }}>
+            <Typography variant="h4" color="error" gutterBottom>
+              DEBUG: Q&A Training Tab Content
+            </Typography>
+            
+            <Box sx={{ mb: 3, border: '2px solid red', p: 2 }}>
               <Typography variant="h6" color="primary" gutterBottom>
                 AI Training Session
               </Typography>
@@ -137,14 +141,18 @@ export const TrainingStatus: React.FC = () => {
                 </Typography>
               </Box>
               
-              {expert.total_training_messages > 0 ? (
+              <Typography variant="body1" color="info.main" sx={{ mt: 2, p: 2, bgcolor: 'info.light' }}>
+                DEBUG: Expert data - {expert ? `Name: ${expert.name}, Onboarding: ${expert.onboarding_completed}, Messages: ${expert.total_training_messages || 0}` : 'No expert data'}
+              </Typography>
+              
+              {(expert?.total_training_messages || 0) > 0 ? (
                 <Typography color="info.main" sx={{ mt: 2 }}>
-                  In Progress - {expert.total_training_messages} training messages exchanged
+                  In Progress - {expert.total_training_messages || 0} training messages exchanged
                   {expert.last_training_at && (
                     <span> (Last session: {new Date(expert.last_training_at).toLocaleDateString()})</span>
                   )}
                 </Typography>
-              ) : expert.onboarding_completed ? (
+              ) : expert?.onboarding_completed ? (
                 <Typography color="success.main" sx={{ mt: 2 }}>
                   Ready to start your first training session
                 </Typography>
@@ -155,16 +163,17 @@ export const TrainingStatus: React.FC = () => {
               )}
             </Box>
 
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', border: '2px solid blue', p: 2 }}>
               <Button
                 variant="contained"
                 color="primary"
                 size="large"
                 onClick={handleStartTraining}
-                disabled={!expert.onboarding_completed}
+                disabled={!expert?.onboarding_completed}
+                sx={{ minHeight: '50px', fontSize: '16px' }}
               >
-                {!expert.onboarding_completed ? 'Complete Profile Setup First' : 
-                 expert.total_training_messages > 0 ? 'Continue Training Session' : 'Start Training Session'}
+                {!expert?.onboarding_completed ? 'Complete Profile Setup First' : 
+                 (expert?.total_training_messages || 0) > 0 ? 'Continue Training Session' : 'Start Training Session'}
               </Button>
             </Box>
           </Box>
