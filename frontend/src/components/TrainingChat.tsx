@@ -13,7 +13,8 @@ import {
 } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+// Temporarily comment out useAuth to test
+// import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/api';
 import { OnboardingInstructions } from './OnboardingInstructions';
 
@@ -41,7 +42,12 @@ export const TrainingChat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const { isAuthenticated, expert } = useAuth();
+  // Temporarily comment out useAuth to test
+  // const { isAuthenticated, expert } = useAuth();
+  
+  // Mock values for testing
+  const isAuthenticated = true;
+  const expert = { onboarding_completed: true };
 
   useEffect(() => {
     if (!isAuthenticated) {
