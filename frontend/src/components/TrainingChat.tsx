@@ -161,6 +161,23 @@ export const TrainingChat: React.FC = () => {
     }
   };
 
+  const handleNewTopic = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      const response = await trainingService.sendMessage('SKIP_TOPIC');
+      if (response.message) {
+        setMessages(prev => [...prev, response.message]);
+      }
+    } catch (error) {
+      console.error('Error skipping topic:', error);
+      showError('Failed to skip topic');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <Box sx={{ p: 3 }}>
@@ -264,7 +281,15 @@ export const TrainingChat: React.FC = () => {
             disabled={loading}
             sx={{ mb: 1 }}
           />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleNewTopic}
+              disabled={loading}
+            >
+              New Topic
+            </Button>
             <Button
               type="submit"
               variant="contained"
