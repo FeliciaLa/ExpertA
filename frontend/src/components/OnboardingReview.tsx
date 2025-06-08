@@ -249,10 +249,6 @@ export const OnboardingReview: React.FC = () => {
         
         {expertProfile ? (
           <>
-            <Alert severity="info" sx={{ mb: 2 }}>
-              Your expert profile was completed using our simplified setup process. Here's your information:
-            </Alert>
-            
             {renderEditableField('title', 'Professional Title', expertProfile.title || '')}
             {renderEditableField('bio', 'Bio', expertProfile.bio || '', true)}
             {renderEditableField('specialties', 'Specialties', expertProfile.specialties || '', true)}
