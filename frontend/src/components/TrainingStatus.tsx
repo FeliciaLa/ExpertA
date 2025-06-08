@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import DocumentUpload from './DocumentUpload';
+import { DocumentUpload } from './DocumentUpload';
 import ChatIcon from '@mui/icons-material/Chat';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 
