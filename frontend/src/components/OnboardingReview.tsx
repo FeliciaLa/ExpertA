@@ -17,7 +17,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import { trainingService } from '../services/api';
+import { trainingService, expertApi } from '../services/api';
 
 interface OnboardingAnswer {
   id: number;
@@ -30,13 +30,18 @@ interface OnboardingAnswer {
   created_at: string;
 }
 
-interface TrainingMessage {
-  id: number;
-  role: 'ai' | 'expert';
-  content: string;
-  created_at: string;
-  context_depth: number;
-  knowledge_area: string;
+interface ExpertProfileData {
+  title?: string;
+  bio?: string;
+  specialties?: string;
+  industry?: string;
+  years_of_experience?: number;
+  key_skills?: string;
+  typical_problems?: string;
+  background?: string;
+  certifications?: string;
+  methodologies?: string;
+  tools_technologies?: string;
 }
 
 interface OnboardingAnswersResponse {
@@ -47,7 +52,7 @@ interface OnboardingAnswersResponse {
 
 export const OnboardingReview: React.FC = () => {
   const [answers, setAnswers] = useState<OnboardingAnswer[]>([]);
-  const [trainingMessages, setTrainingMessages] = useState<TrainingMessage[]>([]);
+  const [expertProfile, setExpertProfile] = useState<ExpertProfileData | null>(null);
   const [onboardingType, setOnboardingType] = useState<'detailed' | 'simplified'>('detailed');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,9 +71,9 @@ export const OnboardingReview: React.FC = () => {
       setAnswers(response.answers || []);
       setOnboardingType(response.onboarding_type || 'detailed');
       
-      // If simplified onboarding, fetch training messages instead
+      // If simplified onboarding, fetch expert profile data instead
       if (response.onboarding_type === 'simplified' || response.answers.length === 0) {
-        await fetchTrainingMessages();
+        await fetchExpertProfile();
       }
     } catch (error: any) {
       console.error('Error fetching answers:', error);
@@ -78,15 +83,12 @@ export const OnboardingReview: React.FC = () => {
     }
   };
 
-  const fetchTrainingMessages = async () => {
+  const fetchExpertProfile = async () => {
     try {
-      const response = await trainingService.getChatHistory();
-      const expertMessages = response.messages.filter((msg: TrainingMessage) => 
-        msg.role === 'expert' && msg.content !== 'START_TRAINING'
-      );
-      setTrainingMessages(expertMessages);
+      const response = await expertApi.getProfile();
+      setExpertProfile(response.profile || response);
     } catch (error: any) {
-      console.error('Error fetching training messages:', error);
+      console.error('Error fetching expert profile:', error);
       // Don't set error here as this is secondary data
     }
   };
@@ -136,41 +138,96 @@ export const OnboardingReview: React.FC = () => {
     return (
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h6" color="primary" gutterBottom>
-          Training Q&A Answers
+          Expert Profile Information
         </Typography>
         <Divider sx={{ mb: 2 }} />
         
-        {trainingMessages.length > 0 ? (
+        {expertProfile ? (
           <>
             <Alert severity="info" sx={{ mb: 2 }}>
-              Your expertise is being captured through AI training conversations. Here are your responses:
+              Your expert profile was completed using our simplified setup process. Here's your information:
             </Alert>
             
-            {trainingMessages.map((message, index) => (
-              <Box key={message.id} sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+            {expertProfile.title && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
                 <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Training Response #{index + 1}
+                  Professional Title
                 </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {message.knowledge_area && (
-                    <Chip 
-                      label={message.knowledge_area} 
-                      size="small" 
-                      color="primary" 
-                      variant="outlined"
-                      sx={{ mr: 1, mb: 1 }}
-                    />
-                  )}
-                  {new Date(message.created_at).toLocaleDateString()}
-                </Typography>
-                <Typography variant="body1" sx={{ mt: 1 }}>
-                  {message.content}
+                <Typography variant="body1">
+                  {expertProfile.title}
                 </Typography>
               </Box>
-            ))}
+            )}
+
+            {expertProfile.bio && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Bio
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.bio}
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.specialties && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Specialties
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.specialties}
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.industry && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Industry
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.industry}
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.years_of_experience && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Years of Experience
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.years_of_experience} years
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.key_skills && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Key Skills
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.key_skills}
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.background && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Background
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.background}
+                </Typography>
+              </Box>
+            )}
             
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              Continue training in the Q&A Training tab to provide more detailed responses and improve your AI assistant.
+              This information helps the AI understand your expertise and respond appropriately to users. 
+              You can edit your profile information in the profile settings.
             </Typography>
           </>
         ) : (
