@@ -138,8 +138,18 @@ export const OnboardingReview: React.FC = () => {
   };
 
   const handleEditField = (fieldName: string, currentValue: string) => {
+    console.log('handleEditField called:', fieldName, currentValue);
     setEditingField(fieldName);
-    setEditValue(currentValue || '');
+    
+    // Handle special case for years_of_experience which has a formatted display value
+    if (fieldName === 'years_of_experience') {
+      // Extract the actual experience level from the formatted string
+      const experienceOptions = ['1-2 years', '3-5 years', '6-10 years', '11-15 years', '16-20 years', '20+ years'];
+      const currentExperience = experienceOptions.find(option => currentValue.includes(option.split('-')[0])) || experienceOptions[0];
+      setEditValue(currentExperience);
+    } else {
+      setEditValue(currentValue || '');
+    }
   };
 
   const handleSave = async (answerId: number) => {
@@ -175,18 +185,48 @@ export const OnboardingReview: React.FC = () => {
       } else {
         // Profile fields - need to update the profile object
         updateData.profile = {
-          ...expertProfile,
-          [editingField]: editingField === 'years_of_experience' ? parseInt(editValue) || 0 : editValue
+          ...expertProfile
         };
+        
+        // Handle years_of_experience specially
+        if (editingField === 'years_of_experience') {
+          const experienceMap: { [key: string]: number } = {
+            '1-2 years': 2,
+            '3-5 years': 5,
+            '6-10 years': 10,
+            '11-15 years': 15,
+            '16-20 years': 20,
+            '20+ years': 25
+          };
+          updateData.profile[editingField] = experienceMap[editValue] || 2;
+        } else {
+          updateData.profile[editingField] = editValue;
+        }
       }
 
       await expertApi.updateProfile(updateData);
       
       // Update local state
-      setExpertProfile(prev => prev ? {
-        ...prev,
-        [editingField]: editingField === 'years_of_experience' ? parseInt(editValue) || 0 : editValue
-      } : null);
+      if (editingField === 'years_of_experience') {
+        const experienceMap: { [key: string]: number } = {
+          '1-2 years': 2,
+          '3-5 years': 5,
+          '6-10 years': 10,
+          '11-15 years': 15,
+          '16-20 years': 20,
+          '20+ years': 25
+        };
+        const numericValue = experienceMap[editValue] || 2;
+        setExpertProfile(prev => prev ? {
+          ...prev,
+          years_of_experience: numericValue
+        } : null);
+      } else {
+        setExpertProfile(prev => prev ? {
+          ...prev,
+          [editingField]: editValue
+        } : null);
+      }
       
       setEditingField(null);
       setEditValue('');
@@ -245,6 +285,18 @@ export const OnboardingReview: React.FC = () => {
     }
   };
 
+  // Helper function to get the proper display value for years_of_experience
+  const getExperienceDisplayValue = (yearsOfExperience: number | undefined) => {
+    if (!yearsOfExperience) return '1-2 years';
+    
+    if (yearsOfExperience <= 2) return '1-2 years';
+    if (yearsOfExperience <= 5) return '3-5 years';
+    if (yearsOfExperience <= 10) return '6-10 years';
+    if (yearsOfExperience <= 15) return '11-15 years';
+    if (yearsOfExperience <= 20) return '16-20 years';
+    return '20+ years';
+  };
+
   const renderEditableTextField = (
     fieldName: string,
     label: string,
@@ -256,6 +308,7 @@ export const OnboardingReview: React.FC = () => {
     options?: string[]
   ) => {
     const isEditing = editingField === fieldName;
+    console.log(`Rendering ${fieldName}: isEditing=${isEditing}, editingField=${editingField}`);
     
     return (
       <Box>
@@ -370,7 +423,7 @@ export const OnboardingReview: React.FC = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              {renderEditableTextField('years_of_experience', 'Years of Experience', `${expertProfile.years_of_experience || 0}-${(expertProfile.years_of_experience || 0) + 2} years`, false, 1, undefined, true, EXPERIENCE_LEVELS)}
+              {renderEditableTextField('years_of_experience', 'Years of Experience', getExperienceDisplayValue(expertProfile.years_of_experience), false, 1, undefined, true, EXPERIENCE_LEVELS)}
             </Grid>
 
             {/* Skills */}
