@@ -2,21 +2,16 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Paper,
   Divider,
   CircularProgress,
   Alert,
   TextField,
   Button,
-  Snackbar,
+  Grid,
+  MenuItem,
   Chip
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
 import { trainingService, expertApi } from '../services/api';
 
 interface OnboardingAnswer {
@@ -31,6 +26,7 @@ interface OnboardingAnswer {
 }
 
 interface ExpertProfileData {
+  name?: string;
   title?: string;
   bio?: string;
   specialties?: string;
@@ -50,6 +46,32 @@ interface OnboardingAnswersResponse {
   onboarding_type?: 'detailed' | 'simplified';
 }
 
+const INDUSTRIES = [
+  'Technology & Software',
+  'Marketing & Advertising', 
+  'Finance & Banking',
+  'Healthcare & Medicine',
+  'Education & Training',
+  'Consulting & Strategy',
+  'Design & Creative',
+  'Sales & Business Development',
+  'Operations & Management',
+  'Legal & Compliance',
+  'Real Estate',
+  'Manufacturing',
+  'Retail & E-commerce',
+  'Other'
+];
+
+const EXPERIENCE_LEVELS = [
+  '1-2 years',
+  '3-5 years', 
+  '6-10 years',
+  '11-15 years',
+  '16-20 years',
+  '20+ years'
+];
+
 export const OnboardingReview: React.FC = () => {
   const [answers, setAnswers] = useState<OnboardingAnswer[]>([]);
   const [expertProfile, setExpertProfile] = useState<ExpertProfileData | null>(null);
@@ -60,10 +82,18 @@ export const OnboardingReview: React.FC = () => {
   const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [skillInput, setSkillInput] = useState('');
+  const [keySkills, setKeySkills] = useState<string[]>([]);
 
   useEffect(() => {
     fetchAnswers();
   }, []);
+
+  useEffect(() => {
+    if (expertProfile?.key_skills) {
+      setKeySkills(expertProfile.key_skills.split(', ').filter(skill => skill.trim()));
+    }
+  }, [expertProfile]);
 
   const fetchAnswers = async () => {
     try {
@@ -89,6 +119,7 @@ export const OnboardingReview: React.FC = () => {
       const response = await expertApi.getProfile();
       // The response has both top-level fields (title, bio, specialties) and nested profile fields
       const combinedProfile = {
+        name: response.name,
         title: response.title,
         bio: response.bio,
         specialties: response.specialties,
@@ -133,9 +164,14 @@ export const OnboardingReview: React.FC = () => {
       // Prepare the update data based on the field being edited
       let updateData: any = {};
       
-      if (['title', 'bio', 'specialties'].includes(editingField)) {
+      if (['name', 'title', 'bio', 'specialties'].includes(editingField)) {
         // Top-level fields
-        updateData[editingField] = editValue;
+        if (editingField === 'specialties') {
+          // Update specialties with skills format
+          updateData[editingField] = `${keySkills.join(', ')}\n\nMethodologies: ${expertProfile.methodologies || ''}\nTools: ${expertProfile.tools_technologies || ''}`;
+        } else {
+          updateData[editingField] = editValue;
+        }
       } else {
         // Profile fields - need to update the profile object
         updateData.profile = {
@@ -168,58 +204,83 @@ export const OnboardingReview: React.FC = () => {
     setEditValue('');
   };
 
-  const renderEditableField = (fieldName: string, label: string, value: string, multiline: boolean = false) => {
+  const handleAddSkill = () => {
+    if (skillInput.trim() && !keySkills.includes(skillInput.trim())) {
+      const newSkills = [...keySkills, skillInput.trim()];
+      setKeySkills(newSkills);
+      setSkillInput('');
+      
+      // Update the profile immediately
+      if (expertProfile) {
+        const updatedProfile = {
+          ...expertProfile,
+          key_skills: newSkills.join(', ')
+        };
+        setExpertProfile(updatedProfile);
+        
+        // Save to backend
+        expertApi.updateProfile({
+          specialties: `${newSkills.join(', ')}\n\nMethodologies: ${expertProfile.methodologies || ''}\nTools: ${expertProfile.tools_technologies || ''}`
+        });
+      }
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    const newSkills = keySkills.filter(skill => skill !== skillToRemove);
+    setKeySkills(newSkills);
+    
+    // Update the profile immediately
+    if (expertProfile) {
+      const updatedProfile = {
+        ...expertProfile,
+        key_skills: newSkills.join(', ')
+      };
+      setExpertProfile(updatedProfile);
+      
+      // Save to backend
+      expertApi.updateProfile({
+        specialties: `${newSkills.join(', ')}\n\nMethodologies: ${expertProfile.methodologies || ''}\nTools: ${expertProfile.tools_technologies || ''}`
+      });
+    }
+  };
+
+  const renderEditableTextField = (
+    fieldName: string,
+    label: string,
+    value: string,
+    multiline: boolean = false,
+    rows: number = 1,
+    placeholder?: string,
+    select?: boolean,
+    options?: string[]
+  ) => {
     const isEditing = editingField === fieldName;
     
     return (
-      <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-        <Typography variant="subtitle2" color="primary" gutterBottom>
-          {label}
-        </Typography>
-        
-        {isEditing ? (
-          <Box sx={{ mt: 1 }}>
-            <TextField
-              fullWidth
-              multiline={multiline}
-              rows={multiline ? 4 : 1}
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              variant="outlined"
-              sx={{ mb: 2 }}
-            />
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button 
-                variant="contained" 
-                size="small"
-                onClick={handleSaveField}
-              >
-                Save
-              </Button>
-              <Button 
-                variant="outlined" 
-                size="small"
-                onClick={handleCancel}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Box>
-        ) : (
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="body1" paragraph>
-              {value || 'Not specified'}
-            </Typography>
-            <Button 
-              variant="outlined" 
-              size="small"
-              onClick={() => handleEditField(fieldName, value)}
-            >
-              Edit
-            </Button>
-          </Box>
-        )}
-      </Box>
+      <TextField
+        fullWidth
+        label={label}
+        value={isEditing ? editValue : value || ''}
+        onChange={(e) => isEditing ? setEditValue(e.target.value) : handleEditField(fieldName, value)}
+        onBlur={isEditing ? handleSaveField : undefined}
+        multiline={multiline}
+        rows={multiline ? rows : 1}
+        placeholder={placeholder}
+        variant="outlined"
+        select={select && !isEditing}
+        InputProps={{
+          readOnly: !isEditing,
+          style: { cursor: isEditing ? 'text' : 'pointer' }
+        }}
+        onClick={() => !isEditing && handleEditField(fieldName, value)}
+      >
+        {select && options && !isEditing && options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </TextField>
     );
   };
 
@@ -241,47 +302,113 @@ export const OnboardingReview: React.FC = () => {
 
   if (answers.length === 0 && onboardingType === 'simplified') {
     return (
-      <Paper sx={{ p: 3, mt: 3 }}>
-        <Typography variant="h6" color="primary" gutterBottom>
+      <Paper sx={{ p: 4, maxWidth: 800, mx: 'auto' }}>
+        <Typography variant="h4" gutterBottom color="primary">
           Expert Profile Information
         </Typography>
-        <Divider sx={{ mb: 2 }} />
         
-        {expertProfile ? (
-          <>
-            {renderEditableField('title', 'Professional Title', expertProfile.title || '')}
-            {renderEditableField('bio', 'Bio', expertProfile.bio || '', true)}
-            {renderEditableField('specialties', 'Specialties', expertProfile.specialties || '', true)}
-            {renderEditableField('industry', 'Industry', expertProfile.industry || '')}
-            {renderEditableField('years_of_experience', 'Years of Experience', expertProfile.years_of_experience?.toString() || '')}
-            {renderEditableField('key_skills', 'Key Skills', expertProfile.key_skills || '', true)}
-            {renderEditableField('background', 'Background', expertProfile.background || '', true)}
-            {renderEditableField('typical_problems', 'Typical Problems I Help Solve', expertProfile.typical_problems || '', true)}
-            {renderEditableField('certifications', 'Certifications', expertProfile.certifications || '', true)}
-            {renderEditableField('methodologies', 'Methodologies', expertProfile.methodologies || '')}
-            {renderEditableField('tools_technologies', 'Tools & Technologies', expertProfile.tools_technologies || '')}
-            
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              This information helps the AI understand your expertise and respond appropriately to users. 
-              You can edit your profile information in the profile settings.
-            </Typography>
-          </>
-        ) : (
-          <>
-            <Alert severity="success" sx={{ mb: 2 }}>
-              Your expert profile was completed using our simplified setup process.
-            </Alert>
-            
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Your profile includes your professional title, bio, industry, experience level, and key skills. 
-              This information helps the AI understand your expertise and respond appropriately to users.
-            </Typography>
-            
-            <Typography variant="body2" color="text.secondary">
-              To provide more detailed information about your expertise, you can participate in the Q&A training session 
-              where the AI will ask you specific questions about your field.
-            </Typography>
-          </>
+        <Typography variant="body1" paragraph color="text.secondary">
+          Review and edit your expert profile information. Click on any field to edit it.
+        </Typography>
+
+        <Divider sx={{ my: 3 }} />
+
+        {expertProfile && (
+          <Grid container spacing={3}>
+            {/* Basic Information */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Basic Information
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              {renderEditableTextField('name', 'Full Name', expertProfile.name || '')}
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              {renderEditableTextField('title', 'Professional Title', expertProfile.title || '', false, 1, 'e.g., Senior Marketing Manager, Data Scientist')}
+            </Grid>
+
+            <Grid item xs={12}>
+              {renderEditableTextField('bio', 'Professional Bio', expertProfile.bio || '', true, 3, 'Describe your background, experience, and what makes you unique as an expert...')}
+            </Grid>
+
+            {/* Experience & Expertise */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                Experience & Expertise
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              {renderEditableTextField('industry', 'Industry', expertProfile.industry || '', false, 1, undefined, true, INDUSTRIES)}
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              {renderEditableTextField('years_of_experience', 'Years of Experience', `${expertProfile.years_of_experience || 0}-${(expertProfile.years_of_experience || 0) + 2} years`, false, 1, undefined, true, EXPERIENCE_LEVELS)}
+            </Grid>
+
+            {/* Skills */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Key Skills
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Add a skill"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+                  placeholder="e.g., Project Management, Python, SEO"
+                  variant="outlined"
+                  size="small"
+                />
+                <Button onClick={handleAddSkill} variant="outlined">
+                  Add
+                </Button>
+              </Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {keySkills.map((skill) => (
+                  <Chip
+                    key={skill}
+                    label={skill}
+                    onDelete={() => handleRemoveSkill(skill)}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Grid>
+
+            {/* Additional Details */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                Additional Details
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              {renderEditableTextField('methodologies', 'Methodologies & Frameworks', expertProfile.methodologies || '', false, 1, 'e.g., Agile, Design Thinking, LEAN')}
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              {renderEditableTextField('tools_technologies', 'Tools & Technologies', expertProfile.tools_technologies || '', false, 1, 'e.g., Salesforce, Adobe Creative Suite, Python')}
+            </Grid>
+
+            {success && (
+              <Grid item xs={12}>
+                <Alert severity="success">{success}</Alert>
+              </Grid>
+            )}
+
+            {error && (
+              <Grid item xs={12}>
+                <Alert severity="error">{error}</Alert>
+              </Grid>
+            )}
+          </Grid>
         )}
       </Paper>
     );
