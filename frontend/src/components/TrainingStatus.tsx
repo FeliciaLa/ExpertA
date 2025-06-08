@@ -4,10 +4,6 @@ import {
   Paper,
   Typography,
   Button,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
   CircularProgress,
   Tabs,
   Tab
@@ -46,34 +42,52 @@ function TabPanel(props: TabPanelProps) {
 
 export const TrainingStatus: React.FC = () => {
   const navigate = useNavigate();
-  const { expert } = useAuth();
   const [tabIndex, setTabIndex] = useState(0);
+  
+  // Simplified auth usage
+  let expert = null;
+  let authError = null;
+  
+  try {
+    const auth = useAuth();
+    expert = auth.expert;
+  } catch (error) {
+    console.error('Auth error:', error);
+    authError = error;
+  }
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
-  const getStepStatus = () => {
-    if (!expert) return 'not_started';
-    
-    if (!expert.onboarding_completed) return 'not_started';
-    return (expert.total_training_messages || 0) > 0 ? 'in_progress' : 'not_started';
-  };
-
   const handleStartTraining = () => {
     if (!expert?.onboarding_completed) {
-      // If profile is not completed, redirect to expert profile
       navigate('/expert');
     } else {
-      // If profile is completed, go to training chat
       navigate('/train/chat');
     }
   };
 
+  // Show error if auth failed
+  if (authError) {
+    return (
+      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+        <Typography variant="h4" color="error" gutterBottom>
+          Authentication Error
+        </Typography>
+        <Typography color="error">
+          {authError.toString()}
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Show loading if no expert data
   if (!expert) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
         <CircularProgress />
+        <Typography sx={{ ml: 2 }}>Loading expert data...</Typography>
       </Box>
     );
   }
@@ -111,56 +125,27 @@ export const TrainingStatus: React.FC = () => {
 
         <TabPanel value={tabIndex} index={1}>
           <Box sx={{ p: 3, minHeight: '400px', bgcolor: 'background.paper' }}>
-            <Typography variant="h4" color="error" gutterBottom>
-              DEBUG: Q&A Training Tab Content
+            <Typography variant="h4" color="success.main" gutterBottom>
+              ✅ SIMPLIFIED Q&A Training Tab
             </Typography>
             
-            <Box sx={{ mb: 3, border: '2px solid red', p: 2 }}>
+            <Box sx={{ mb: 3, border: '2px solid green', p: 2, bgcolor: 'success.light' }}>
               <Typography variant="h6" color="primary" gutterBottom>
                 AI Training Session
               </Typography>
               <Typography color="textSecondary" sx={{ mb: 2 }}>
-                Train your AI assistant through an interactive conversation. The AI will ask you questions about your expertise, and your responses will teach it to think and respond like you.
+                Train your AI assistant through an interactive conversation.
               </Typography>
-              
-              <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1, mb: 2 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  How it works:
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  • The AI asks targeted questions about your field and experience
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  • You provide detailed answers sharing your knowledge and approach
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  • The AI learns from your responses to better represent your expertise
-                </Typography>
-                <Typography variant="body2">
-                  • Takes about 10-15 minutes and can be paused anytime
-                </Typography>
-              </Box>
               
               <Typography variant="body1" color="info.main" sx={{ mt: 2, p: 2, bgcolor: 'info.light' }}>
-                DEBUG: Expert data - {expert ? `Name: ${expert.name}, Onboarding: ${expert.onboarding_completed}, Messages: ${expert.total_training_messages || 0}` : 'No expert data'}
+                DEBUG: Expert data loaded successfully!
+                <br />
+                Name: {expert.name}
+                <br />
+                Onboarding: {expert.onboarding_completed ? 'Completed' : 'Not completed'}
+                <br />
+                Messages: {expert.total_training_messages || 0}
               </Typography>
-              
-              {(expert?.total_training_messages || 0) > 0 ? (
-                <Typography color="info.main" sx={{ mt: 2 }}>
-                  In Progress - {expert.total_training_messages || 0} training messages exchanged
-                  {expert.last_training_at && (
-                    <span> (Last session: {new Date(expert.last_training_at).toLocaleDateString()})</span>
-                  )}
-                </Typography>
-              ) : expert?.onboarding_completed ? (
-                <Typography color="success.main" sx={{ mt: 2 }}>
-                  Ready to start your first training session
-                </Typography>
-              ) : (
-                <Typography color="warning.main" sx={{ mt: 2 }}>
-                  Complete your expert profile first to begin training
-                </Typography>
-              )}
             </Box>
 
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', border: '2px solid blue', p: 2 }}>
@@ -169,11 +154,11 @@ export const TrainingStatus: React.FC = () => {
                 color="primary"
                 size="large"
                 onClick={handleStartTraining}
-                disabled={!expert?.onboarding_completed}
+                disabled={!expert.onboarding_completed}
                 sx={{ minHeight: '50px', fontSize: '16px' }}
               >
-                {!expert?.onboarding_completed ? 'Complete Profile Setup First' : 
-                 (expert?.total_training_messages || 0) > 0 ? 'Continue Training Session' : 'Start Training Session'}
+                {!expert.onboarding_completed ? 'Complete Profile Setup First' : 
+                 (expert.total_training_messages || 0) > 0 ? 'Continue Training Session' : 'Start Training Session'}
               </Button>
             </Box>
           </Box>
