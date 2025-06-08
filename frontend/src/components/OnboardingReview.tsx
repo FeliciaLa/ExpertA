@@ -58,6 +58,7 @@ export const OnboardingReview: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
+  const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
@@ -105,6 +106,11 @@ export const OnboardingReview: React.FC = () => {
     setEditValue(currentAnswer);
   };
 
+  const handleEditField = (fieldName: string, currentValue: string) => {
+    setEditingField(fieldName);
+    setEditValue(currentValue || '');
+  };
+
   const handleSave = async (answerId: number) => {
     try {
       await trainingService.updateOnboardingAnswer({ question_id: answerId, answer: editValue });
@@ -120,9 +126,101 @@ export const OnboardingReview: React.FC = () => {
     }
   };
 
+  const handleSaveField = async () => {
+    if (!editingField || !expertProfile) return;
+    
+    try {
+      // Prepare the update data based on the field being edited
+      let updateData: any = {};
+      
+      if (['title', 'bio', 'specialties'].includes(editingField)) {
+        // Top-level fields
+        updateData[editingField] = editValue;
+      } else {
+        // Profile fields - need to update the profile object
+        updateData.profile = {
+          ...expertProfile,
+          [editingField]: editingField === 'years_of_experience' ? parseInt(editValue) || 0 : editValue
+        };
+      }
+
+      await expertApi.updateProfile(updateData);
+      
+      // Update local state
+      setExpertProfile(prev => prev ? {
+        ...prev,
+        [editingField]: editingField === 'years_of_experience' ? parseInt(editValue) || 0 : editValue
+      } : null);
+      
+      setEditingField(null);
+      setEditValue('');
+      setSuccess('Profile updated successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to update profile');
+      setTimeout(() => setError(null), 5000);
+    }
+  };
+
   const handleCancel = () => {
     setEditingAnswerId(null);
+    setEditingField(null);
     setEditValue('');
+  };
+
+  const renderEditableField = (fieldName: string, label: string, value: string, multiline: boolean = false) => {
+    const isEditing = editingField === fieldName;
+    
+    return (
+      <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+        <Typography variant="subtitle2" color="primary" gutterBottom>
+          {label}
+        </Typography>
+        
+        {isEditing ? (
+          <Box sx={{ mt: 1 }}>
+            <TextField
+              fullWidth
+              multiline={multiline}
+              rows={multiline ? 4 : 1}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button 
+                variant="contained" 
+                size="small"
+                onClick={handleSaveField}
+              >
+                Save
+              </Button>
+              <Button 
+                variant="outlined" 
+                size="small"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Box>
+        ) : (
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="body1" paragraph>
+              {value || 'Not specified'}
+            </Typography>
+            <Button 
+              variant="outlined" 
+              size="small"
+              onClick={() => handleEditField(fieldName, value)}
+            >
+              Edit
+            </Button>
+          </Box>
+        )}
+      </Box>
+    );
   };
 
   if (loading) {
@@ -155,126 +253,17 @@ export const OnboardingReview: React.FC = () => {
               Your expert profile was completed using our simplified setup process. Here's your information:
             </Alert>
             
-            {expertProfile.title && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Professional Title
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.title}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.bio && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Bio
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.bio}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.specialties && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Specialties
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.specialties}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.industry && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Industry
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.industry}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.years_of_experience && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Years of Experience
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.years_of_experience} years
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.key_skills && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Key Skills
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.key_skills}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.background && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Background
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.background}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.typical_problems && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Typical Problems I Help Solve
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.typical_problems}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.certifications && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Certifications
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.certifications}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.methodologies && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Methodologies
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.methodologies}
-                </Typography>
-              </Box>
-            )}
-
-            {expertProfile.tools_technologies && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant="subtitle2" color="primary" gutterBottom>
-                  Tools & Technologies
-                </Typography>
-                <Typography variant="body1">
-                  {expertProfile.tools_technologies}
-                </Typography>
-              </Box>
-            )}
+            {renderEditableField('title', 'Professional Title', expertProfile.title || '')}
+            {renderEditableField('bio', 'Bio', expertProfile.bio || '', true)}
+            {renderEditableField('specialties', 'Specialties', expertProfile.specialties || '', true)}
+            {renderEditableField('industry', 'Industry', expertProfile.industry || '')}
+            {renderEditableField('years_of_experience', 'Years of Experience', expertProfile.years_of_experience?.toString() || '')}
+            {renderEditableField('key_skills', 'Key Skills', expertProfile.key_skills || '', true)}
+            {renderEditableField('background', 'Background', expertProfile.background || '', true)}
+            {renderEditableField('typical_problems', 'Typical Problems I Help Solve', expertProfile.typical_problems || '', true)}
+            {renderEditableField('certifications', 'Certifications', expertProfile.certifications || '', true)}
+            {renderEditableField('methodologies', 'Methodologies', expertProfile.methodologies || '')}
+            {renderEditableField('tools_technologies', 'Tools & Technologies', expertProfile.tools_technologies || '')}
             
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
               This information helps the AI understand your expertise and respond appropriately to users. 
