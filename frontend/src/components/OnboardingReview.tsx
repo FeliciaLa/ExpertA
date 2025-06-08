@@ -86,7 +86,14 @@ export const OnboardingReview: React.FC = () => {
   const fetchExpertProfile = async () => {
     try {
       const response = await expertApi.getProfile();
-      setExpertProfile(response.profile || response);
+      // The response has both top-level fields (title, bio, specialties) and nested profile fields
+      const combinedProfile = {
+        title: response.title,
+        bio: response.bio,
+        specialties: response.specialties,
+        ...response.profile
+      };
+      setExpertProfile(combinedProfile);
     } catch (error: any) {
       console.error('Error fetching expert profile:', error);
       // Don't set error here as this is secondary data
@@ -221,6 +228,50 @@ export const OnboardingReview: React.FC = () => {
                 </Typography>
                 <Typography variant="body1">
                   {expertProfile.background}
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.typical_problems && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Typical Problems I Help Solve
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.typical_problems}
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.certifications && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Certifications
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.certifications}
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.methodologies && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Methodologies
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.methodologies}
+                </Typography>
+              </Box>
+            )}
+
+            {expertProfile.tools_technologies && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="subtitle2" color="primary" gutterBottom>
+                  Tools & Technologies
+                </Typography>
+                <Typography variant="body1">
+                  {expertProfile.tools_technologies}
                 </Typography>
               </Box>
             )}
