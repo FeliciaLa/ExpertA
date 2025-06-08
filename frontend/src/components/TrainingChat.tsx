@@ -40,7 +40,8 @@ export const TrainingChat: React.FC = () => {
   const [showInstructions, setShowInstructions] = useState(true);
   const [hasStartedTraining, setHasStartedTraining] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { enqueueSnackbar } = useSnackbar();
+  // Temporarily comment out useSnackbar to test
+  // const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   // Temporarily comment out useAuth to test
   // const { isAuthenticated, expert } = useAuth();
@@ -48,6 +49,11 @@ export const TrainingChat: React.FC = () => {
   // Mock values for testing
   const isAuthenticated = true;
   const expert = { onboarding_completed: true };
+  
+  // Mock enqueueSnackbar
+  const enqueueSnackbar = (message: string, options?: any) => {
+    console.log('Snackbar:', message, options);
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
