@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { trainingService } from '../services/api';
 
 interface Message {
   id: number;
@@ -26,6 +27,7 @@ export const TrainingChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { isAuthenticated, expert } = useAuth();
@@ -36,37 +38,127 @@ export const TrainingChat: React.FC = () => {
     alert(message); // Simple alert for now
   };
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/');
+      return;
+    }
+    
+    if (!expert?.onboarding_completed) {
+      navigate('/onboarding');
+      return;
+    }
+
+    // Fetch existing chat history or start new training
+    fetchChatHistory();
+  }, [isAuthenticated, expert?.onboarding_completed, navigate]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const fetchChatHistory = async () => {
+    try {
+      setInitializing(true);
+      const response = await trainingService.getChatHistory();
+      
+      // Filter out any START_TRAINING messages
+      const filteredMessages = response.messages.filter((msg: Message) => 
+        msg.content !== 'START_TRAINING'
+      );
+      
+      if (filteredMessages.length === 0) {
+        // No messages yet, start training automatically
+        await startTrainingSession();
+      } else {
+        // Has existing messages
+        setMessages(filteredMessages);
+      }
+    } catch (error: any) {
+      console.error('Error fetching chat history:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to fetch chat history';
+      
+      if (errorMessage.includes('complete onboarding first')) {
+        navigate('/onboarding');
+      } else {
+        showError(errorMessage);
+      }
+    } finally {
+      setInitializing(false);
+    }
+  };
+
+  const startTrainingSession = async () => {
+    try {
+      console.log('Starting new training conversation...');
+      const initialResponse = await trainingService.sendMessage('START_TRAINING');
+      console.log('Received initial AI response:', initialResponse);
+      
+      if (initialResponse.message) {
+        setMessages([initialResponse.message]);
+      } else {
+        console.error('No message in initial response:', initialResponse);
+        showError('Failed to start training conversation');
+      }
+    } catch (error) {
+      console.error('Error starting training:', error);
+      showError('Failed to start training conversation');
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
 
     const message = input.trim();
     setInput('');
-    
-    // Add user message to display
-    const userMessage: Message = {
-      id: Date.now(),
-      role: 'expert',
-      content: message,
-      created_at: new Date().toISOString(),
-      context_depth: 1,
-      knowledge_area: 'General'
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    
-    // Mock AI response for now
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: Date.now() + 1,
-        role: 'ai',
-        content: `Thank you for sharing: "${message}". This is a test response. The full training functionality will be restored once we ensure stability.`,
+    setLoading(true);
+
+    try {
+      // Add the user's message immediately
+      const userMessage: Message = {
+        id: Date.now(), // Temporary ID
+        role: 'expert',
+        content: message,
         created_at: new Date().toISOString(),
-        context_depth: 1,
-        knowledge_area: 'General'
+        context_depth: messages.length > 0 ? messages[messages.length - 1].context_depth : 1,
+        knowledge_area: messages.length > 0 ? messages[messages.length - 1].knowledge_area : ''
       };
-      setMessages(prev => [...prev, aiMessage]);
-    }, 1000);
+      
+      setMessages(prev => [...prev, userMessage]);
+      
+      const response = await trainingService.sendMessage(message);
+      
+      if (response.message) {
+        // Update messages with server response
+        setMessages(prev => {
+          // Remove temporary user message and add both messages with server IDs
+          const baseMessages = prev.filter(msg => msg.id !== userMessage.id);
+          return [...baseMessages, 
+            {
+              ...userMessage,
+              id: response.message.id - 1 // Use server-assigned ID - 1 for user message
+            },
+            response.message
+          ];
+        });
+      }
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      setInput(message); // Restore the message in case of error
+      
+      // Remove the temporary user message
+      setMessages(prev => prev.filter(msg => msg.id !== Date.now()));
+
+      const errorMessage = error.response?.data?.error || 'Failed to send message';
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -88,6 +180,15 @@ export const TrainingChat: React.FC = () => {
     );
   }
 
+  if (initializing) {
+    return (
+      <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <CircularProgress />
+        <Typography sx={{ ml: 2 }}>Initializing AI training session...</Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
       <Typography variant="h4" gutterBottom>
@@ -96,7 +197,8 @@ export const TrainingChat: React.FC = () => {
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="body1" gutterBottom>
-          Share your expertise through conversation. This is a simplified version while we ensure stability.
+          Share your expertise through natural conversation. The AI will guide you through various topics,
+          starting with broad concepts and gradually exploring specific details.
         </Typography>
       </Paper>
 
@@ -104,36 +206,38 @@ export const TrainingChat: React.FC = () => {
         {/* Messages Container */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
           <List>
-            {messages.map((message, index) => (
-              <React.Fragment key={message.id}>
-                {index > 0 && <Divider />}
-                <ListItem
-                  sx={{
-                    flexDirection: 'column',
-                    alignItems: message.role === 'expert' ? 'flex-end' : 'flex-start',
-                    py: 1
-                  }}
-                >
-                  <Box
+            {messages
+              .filter(msg => msg.content !== 'START_TRAINING')
+              .map((message, index) => (
+                <React.Fragment key={message.id}>
+                  {index > 0 && <Divider />}
+                  <ListItem
                     sx={{
-                      maxWidth: '80%',
-                      bgcolor: message.role === 'expert' ? 'primary.main' : 'grey.100',
-                      color: message.role === 'expert' ? 'white' : 'text.primary',
-                      borderRadius: 2,
-                      p: 2,
-                      mb: 1
+                      flexDirection: 'column',
+                      alignItems: message.role === 'expert' ? 'flex-end' : 'flex-start',
+                      py: 1
                     }}
                   >
-                    <Typography variant="body1">
-                      {message.content}
+                    <Box
+                      sx={{
+                        maxWidth: '80%',
+                        bgcolor: message.role === 'expert' ? 'primary.main' : 'grey.100',
+                        color: message.role === 'expert' ? 'white' : 'text.primary',
+                        borderRadius: 2,
+                        p: 2,
+                        mb: 1
+                      }}
+                    >
+                      <Typography variant="body1">
+                        {message.content}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color="textSecondary">
+                      {new Date(message.created_at).toLocaleTimeString()}
                     </Typography>
-                  </Box>
-                  <Typography variant="caption" color="textSecondary">
-                    {new Date(message.created_at).toLocaleTimeString()}
-                  </Typography>
-                </ListItem>
-              </React.Fragment>
-            ))}
+                  </ListItem>
+                </React.Fragment>
+              ))}
           </List>
           <div ref={messagesEndRef} />
         </Box>
