@@ -14,6 +14,7 @@ import DocumentUpload from './DocumentUpload';
 import ChatIcon from '@mui/icons-material/Chat';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 
+// Force fresh deployment - v2
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
