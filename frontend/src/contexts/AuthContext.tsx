@@ -1,10 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { authApi, ExpertData } from '../services/api';
-import { userApi } from '../services/api';
-import { API_URL } from '../services/api';
-import api from '../services/api';
 import axios from 'axios';
-import { debugLogin } from '../services/api';
+import { authApi, ExpertData, userApi, API_URL, debugLogin } from '../services/api';
+import api from '../services/api';
 
 // Add User interface
 interface UserData {

@@ -44,17 +44,9 @@ export const TrainingStatus: React.FC = () => {
   const navigate = useNavigate();
   const [tabIndex, setTabIndex] = useState(0);
   
-  // Simplified auth usage
-  let expert = null;
-  let authError = null;
-  
-  try {
-    const auth = useAuth();
-    expert = auth.expert;
-  } catch (error) {
-    console.error('Auth error:', error);
-    authError = error;
-  }
+  // Use useAuth hook with proper error handling
+  const auth = useAuth();
+  const expert = auth?.expert || null;
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
@@ -67,20 +59,6 @@ export const TrainingStatus: React.FC = () => {
       navigate('/train/chat');
     }
   };
-
-  // Show error if auth failed
-  if (authError) {
-    return (
-      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
-        <Typography variant="h4" color="error" gutterBottom>
-          Authentication Error
-        </Typography>
-        <Typography color="error">
-          {authError.toString()}
-        </Typography>
-      </Box>
-    );
-  }
 
   // Show loading if no expert data
   if (!expert) {
@@ -125,30 +103,49 @@ export const TrainingStatus: React.FC = () => {
 
         <TabPanel value={tabIndex} index={1}>
           <Box sx={{ p: 3, minHeight: '400px', bgcolor: 'background.paper' }}>
-            <Typography variant="h4" color="success.main" gutterBottom>
-              ✅ SIMPLIFIED Q&A Training Tab
+            <Typography variant="h6" color="primary" gutterBottom>
+              AI Training Session
+            </Typography>
+            <Typography color="textSecondary" sx={{ mb: 2 }}>
+              Train your AI assistant through an interactive conversation. The AI will ask you questions about your expertise, and your responses will teach it to think and respond like you.
             </Typography>
             
-            <Box sx={{ mb: 3, border: '2px solid green', p: 2, bgcolor: 'success.light' }}>
-              <Typography variant="h6" color="primary" gutterBottom>
-                AI Training Session
+            <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1, mb: 2 }}>
+              <Typography variant="subtitle2" color="primary" gutterBottom>
+                How it works:
               </Typography>
-              <Typography color="textSecondary" sx={{ mb: 2 }}>
-                Train your AI assistant through an interactive conversation.
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                • The AI asks targeted questions about your field and experience
               </Typography>
-              
-              <Typography variant="body1" color="info.main" sx={{ mt: 2, p: 2, bgcolor: 'info.light' }}>
-                DEBUG: Expert data loaded successfully!
-                <br />
-                Name: {expert.name}
-                <br />
-                Onboarding: {expert.onboarding_completed ? 'Completed' : 'Not completed'}
-                <br />
-                Messages: {expert.total_training_messages || 0}
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                • You provide detailed answers sharing your knowledge and approach
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                • The AI learns from your responses to better represent your expertise
+              </Typography>
+              <Typography variant="body2">
+                • Takes about 10-15 minutes and can be paused anytime
               </Typography>
             </Box>
+            
+            {(expert.total_training_messages || 0) > 0 ? (
+              <Typography color="info.main" sx={{ mt: 2 }}>
+                In Progress - {expert.total_training_messages || 0} training messages exchanged
+                {expert.last_training_at && (
+                  <span> (Last session: {new Date(expert.last_training_at).toLocaleDateString()})</span>
+                )}
+              </Typography>
+            ) : expert.onboarding_completed ? (
+              <Typography color="success.main" sx={{ mt: 2 }}>
+                Ready to start your first training session
+              </Typography>
+            ) : (
+              <Typography color="warning.main" sx={{ mt: 2 }}>
+                Complete your expert profile first to begin training
+              </Typography>
+            )}
 
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', border: '2px solid blue', p: 2 }}>
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
               <Button
                 variant="contained"
                 color="primary"
