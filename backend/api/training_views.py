@@ -686,9 +686,11 @@ class OnboardingAnswersView(APIView):
                 'created_at': answer.created_at
             })
         
+        # Return empty list if no answers (simplified onboarding was used)
         return Response({
             'answers': result,
-            'total': len(result)
+            'total': len(result),
+            'onboarding_type': 'detailed' if len(result) > 0 else 'simplified'
         })
 
 class KnowledgeProcessingView(APIView):

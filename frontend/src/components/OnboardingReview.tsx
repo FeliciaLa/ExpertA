@@ -30,10 +30,12 @@ interface OnboardingAnswer {
 interface OnboardingAnswersResponse {
   answers: OnboardingAnswer[];
   total: number;
+  onboarding_type?: 'detailed' | 'simplified';
 }
 
 export const OnboardingReview: React.FC = () => {
   const [answers, setAnswers] = useState<OnboardingAnswer[]>([]);
+  const [onboardingType, setOnboardingType] = useState<'detailed' | 'simplified'>('detailed');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -49,6 +51,7 @@ export const OnboardingReview: React.FC = () => {
       setLoading(true);
       const response = await trainingService.getOnboardingAnswers();
       setAnswers(response.answers);
+      setOnboardingType(response.onboarding_type || 'detailed');
     } catch (error: any) {
       console.error('Error fetching onboarding answers:', error);
       setError(error.response?.data?.error || 'Failed to fetch onboarding answers');
@@ -117,11 +120,36 @@ export const OnboardingReview: React.FC = () => {
   }
 
   if (answers.length === 0) {
-    return (
-      <Alert severity="info" sx={{ mt: 2 }}>
-        No completed onboarding answers found.
-      </Alert>
-    );
+    if (onboardingType === 'simplified') {
+      return (
+        <Paper sx={{ p: 3, mt: 3 }}>
+          <Typography variant="h6" color="primary" gutterBottom>
+            Profile Setup Complete
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          
+          <Alert severity="success" sx={{ mb: 2 }}>
+            Your expert profile was completed using our simplified setup process.
+          </Alert>
+          
+          <Typography variant="body2" color="text.secondary" paragraph>
+            Your profile includes your professional title, bio, industry, experience level, and key skills. 
+            This information helps the AI understand your expertise and respond appropriately to users.
+          </Typography>
+          
+          <Typography variant="body2" color="text.secondary">
+            If you'd like to provide more detailed information about your expertise, you can edit your profile 
+            or participate in the detailed Q&A training session.
+          </Typography>
+        </Paper>
+      );
+    } else {
+      return (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          No completed onboarding answers found.
+        </Alert>
+      );
+    }
   }
 
   return (
