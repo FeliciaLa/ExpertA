@@ -258,29 +258,53 @@ export const OnboardingReview: React.FC = () => {
     const isEditing = editingField === fieldName;
     
     return (
-      <TextField
-        fullWidth
-        label={label}
-        value={isEditing ? editValue : value || ''}
-        onChange={(e) => isEditing ? setEditValue(e.target.value) : handleEditField(fieldName, value)}
-        onBlur={isEditing ? handleSaveField : undefined}
-        multiline={multiline}
-        rows={multiline ? rows : 1}
-        placeholder={placeholder}
-        variant="outlined"
-        select={select && !isEditing}
-        InputProps={{
-          readOnly: !isEditing,
-          style: { cursor: isEditing ? 'text' : 'pointer' }
-        }}
-        onClick={() => !isEditing && handleEditField(fieldName, value)}
-      >
-        {select && options && !isEditing && options.map((option) => (
-          <MenuItem key={option} value={option}>
-            {option}
-          </MenuItem>
-        ))}
-      </TextField>
+      <Box>
+        <TextField
+          fullWidth
+          label={label}
+          value={isEditing ? editValue : value || ''}
+          onChange={(e) => {
+            if (isEditing) {
+              setEditValue(e.target.value);
+            }
+          }}
+          multiline={multiline}
+          rows={multiline ? rows : 1}
+          placeholder={placeholder}
+          variant="outlined"
+          select={select && !isEditing}
+          InputProps={{
+            readOnly: !isEditing,
+            style: { cursor: isEditing ? 'text' : 'pointer' }
+          }}
+          onClick={() => !isEditing && handleEditField(fieldName, value)}
+        >
+          {select && options && !isEditing && options.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+        
+        {isEditing && (
+          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            <Button 
+              variant="contained" 
+              size="small"
+              onClick={handleSaveField}
+            >
+              Save
+            </Button>
+            <Button 
+              variant="outlined" 
+              size="small"
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+          </Box>
+        )}
+      </Box>
     );
   };
 
