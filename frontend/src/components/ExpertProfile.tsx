@@ -114,6 +114,7 @@ const ExpertProfile: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
+      console.log('=== FETCH PROFILE START ===');
       // Check if we have authentication tokens
       const tokens = localStorage.getItem('tokens');
       if (!tokens) {
@@ -135,9 +136,9 @@ const ExpertProfile: React.FC = () => {
       const data = await expertApi.getProfile();
       console.log('API Profile data received:', data);
       console.log('Bio from API:', data.bio);
-      console.log('Profile background from API:', data.profile?.background);
+      console.log('Profile from API:', data.profile);
       
-      setProfile({
+      const updatedProfile = {
         ...data,
         title: data.title || 'Expert',
         bio: data.bio || '',
@@ -151,7 +152,11 @@ const ExpertProfile: React.FC = () => {
           methodologies: '',
           tools_technologies: '',
         }
-      });
+      };
+      
+      console.log('Setting profile state to:', updatedProfile);
+      setProfile(updatedProfile);
+      console.log('=== FETCH PROFILE END ===');
     } catch (error: any) {
       console.error('Failed to fetch profile:', error);
       
@@ -176,6 +181,10 @@ const ExpertProfile: React.FC = () => {
 
   const handleSave = async () => {
     try {
+      console.log('=== SAVE DEBUG START ===');
+      console.log('Current profile state:', profile);
+      console.log('Current keySkills:', keySkills);
+      
       // Prepare the update data
       const updateData = {
         name: profile.name,
@@ -194,7 +203,10 @@ const ExpertProfile: React.FC = () => {
         }
       };
 
+      console.log('Update data being sent:', updateData);
+      
       const data = await expertApi.updateProfile(updateData);
+      console.log('API response received:', data);
       
       // Check if profile is sufficiently complete to mark onboarding as done
       const isProfileComplete = 
@@ -205,9 +217,20 @@ const ExpertProfile: React.FC = () => {
         profile.profile?.years_of_experience &&
         keySkills.length > 0;
 
+      console.log('Profile completeness check:', {
+        name: profile.name.trim(),
+        title: profile.title.trim(), 
+        bio: profile.bio.trim(),
+        industry: profile.profile?.industry,
+        years_of_experience: profile.profile?.years_of_experience,
+        keySkillsLength: keySkills.length,
+        isComplete: isProfileComplete
+      });
+
       // If profile is complete and onboarding isn't marked as complete, complete it
       if (isProfileComplete && !expert?.onboarding_completed) {
         try {
+          console.log('Completing onboarding...');
           await expertApi.completeOnboarding({
             industry: profile.profile?.industry || '',
             years_of_experience: profile.profile?.years_of_experience || 0,
@@ -230,10 +253,13 @@ const ExpertProfile: React.FC = () => {
       }
       
       // Refresh the profile data from the server to ensure we have the latest data
+      console.log('Refreshing profile from server...');
       await fetchProfile();
+      console.log('=== SAVE DEBUG END ===');
       setIsEditing(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update profile:', error);
+      console.error('Error details:', error.response?.data);
       setError('Failed to update profile');
     }
   };
