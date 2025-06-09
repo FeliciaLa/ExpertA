@@ -118,7 +118,7 @@ export const SimpleExpertSetup: React.FC<{ onComplete: () => void }> = ({ onComp
         years_of_experience: parseInt(formData.yearsExperience.split('-')[0]) || 1,
         key_skills: formData.keySkills.join(', '),
         typical_problems: `As a ${formData.title} with ${formData.yearsExperience} of experience in ${formData.industry}, I help clients solve complex challenges in my field.`,
-        background: formData.bio,
+        background: '',
         certifications: '',
         methodologies: formData.methodologies,
         tools_technologies: formData.tools

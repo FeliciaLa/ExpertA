@@ -133,6 +133,10 @@ const ExpertProfile: React.FC = () => {
       }
 
       const data = await expertApi.getProfile();
+      console.log('API Profile data received:', data);
+      console.log('Bio from API:', data.bio);
+      console.log('Profile background from API:', data.profile?.background);
+      
       setProfile({
         ...data,
         title: data.title || 'Expert',
@@ -426,7 +430,8 @@ const ExpertProfile: React.FC = () => {
                 multiline
                 rows={3}
                 variant="outlined"
-                placeholder="Describe your background, experience, and what makes you unique as an expert..."
+                placeholder="A concise professional bio that will be shown to users (2-3 sentences about your expertise and approach)..."
+                helperText="This is your public-facing bio that users will see when browsing experts"
               />
             </Grid>
 
@@ -575,7 +580,8 @@ const ExpertProfile: React.FC = () => {
                 multiline
                 rows={3}
                 variant="outlined"
-                placeholder="Describe your professional background and key experiences..."
+                placeholder="Detailed description of your professional background, education, career journey, and specific experiences that shaped your expertise..."
+                helperText="Provide comprehensive details about your professional journey and qualifications"
               />
             </Grid>
 
