@@ -27,7 +27,7 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
             'onboarding_completed', 'onboarding_completed_at', 'total_training_messages',
             'last_training_at', 'profile', 'profile_image'
         ]
-        read_only_fields = ['id', 'name', 'email', 'onboarding_completed', 'onboarding_completed_at']
+        read_only_fields = ['id', 'email', 'onboarding_completed', 'onboarding_completed_at']
     
     def get_first_name(self, obj):
         """Split the name field to get first name"""

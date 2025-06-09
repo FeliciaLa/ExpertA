@@ -812,7 +812,7 @@ class ExpertProfileView(APIView):
         return response
     
     def get(self, request):
-        print(f"\n=== ExpertProfileView DEBUG ===")
+        print(f"\n=== ExpertProfileView GET DEBUG START ===")
         print(f"Request user: {request.user}")
         print(f"User ID: {getattr(request.user, 'id', 'No ID')}")
         print(f"User email: {getattr(request.user, 'email', 'No email')}")
@@ -831,22 +831,31 @@ class ExpertProfileView(APIView):
         
         expert = request.user
         print(f"Expert object: {expert}")
+        print(f"Expert name: {expert.name}")
+        print(f"Expert bio: {expert.bio}")
         
+        # Check if profile exists
         try:
-            serializer = ExpertProfileSerializer(expert)
-            print(f"Serializer data: {serializer.data}")
-            response = Response(serializer.data)
-            
-            # Add CORS headers to response
-            response["Access-Control-Allow-Origin"] = "*"
-            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-            print(f"Returning success response")
-            return response
+            profile = expert.profile
+            print(f"Profile found: {profile}")
+            print(f"Profile industry: {profile.industry}")
+            print(f"Profile years_of_experience: {profile.years_of_experience}")
+            print(f"Profile key_skills: {profile.key_skills}")
+        except ExpertProfile.DoesNotExist:
+            print("No profile found for this expert")
         except Exception as e:
-            print(f"ERROR in serializer: {str(e)}")
-            import traceback
-            print(f"Traceback: {traceback.format_exc()}")
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(f"Error accessing profile: {e}")
+        
+        serializer = ExpertProfileSerializer(expert)
+        print(f"Serialized data: {serializer.data}")
+        print(f"=== ExpertProfileView GET DEBUG END ===")
+        
+        response = Response(serializer.data)
+        
+        # Add CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
 
 class ExpertProfileUpdateView(APIView):
     """
@@ -865,6 +874,8 @@ class ExpertProfileUpdateView(APIView):
     
     def put(self, request):
         expert = request.user
+        print(f"=== BACKEND UPDATE DEBUG START ===")
+        print(f"Request data: {request.data}")
         
         # Extract valid fields from request data
         valid_data = {}
@@ -889,8 +900,10 @@ class ExpertProfileUpdateView(APIView):
         # Update expert instance
         for key, value in valid_data.items():
             setattr(expert, key, value)
+            print(f"Set expert.{key} = {value}")
         
         expert.save()
+        print(f"Expert saved successfully")
         
         # Handle profile fields if provided
         if 'profile' in request.data:
@@ -900,7 +913,9 @@ class ExpertProfileUpdateView(APIView):
             # Get or create the expert profile
             try:
                 profile = expert.profile
+                print(f"Found existing profile: {profile}")
             except ExpertProfile.DoesNotExist:
+                print("Creating new profile...")
                 profile = ExpertProfile.objects.create(
                     expert=expert,
                     industry='',
@@ -926,9 +941,21 @@ class ExpertProfileUpdateView(APIView):
             
             profile.save()
             print(f"Profile saved successfully")
+        else:
+            print("No profile data in request")
+        
+        # Check what we're about to return
+        print(f"Expert after save: name={expert.name}, bio={expert.bio}")
+        try:
+            profile_check = expert.profile
+            print(f"Profile after save: industry={profile_check.industry}, years_of_experience={profile_check.years_of_experience}")
+        except ExpertProfile.DoesNotExist:
+            print("No profile found after save")
         
         # Return updated profile
         serializer = ExpertProfileSerializer(expert)
+        print(f"Serialized data: {serializer.data}")
+        print(f"=== BACKEND UPDATE DEBUG END ===")
         response = Response(serializer.data)
         
         # Add CORS headers to response
