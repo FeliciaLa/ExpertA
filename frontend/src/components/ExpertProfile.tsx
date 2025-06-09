@@ -229,10 +229,8 @@ const ExpertProfile: React.FC = () => {
         setSuccess('Profile updated successfully');
       }
       
-      setProfile({
-        ...profile,
-        ...data,
-      });
+      // Refresh the profile data from the server to ensure we have the latest data
+      await fetchProfile();
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to update profile:', error);
