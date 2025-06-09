@@ -379,13 +379,188 @@ export const OnboardingReview: React.FC = () => {
 
   if (answers.length === 0 && onboardingType === 'simplified') {
     return (
-      <Paper sx={{ p: 3, mt: 3 }}>
-        <Typography variant="h6" color="primary" gutterBottom>
-          Onboarding Complete
+      <Paper sx={{ p: 4, maxWidth: 800, mx: 'auto' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Typography variant="h4" gutterBottom color="primary">
+            Expert Profile Setup
+          </Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1, 
+            bgcolor: 'success.light', 
+            color: 'success.contrastText',
+            px: 2, 
+            py: 0.5, 
+            borderRadius: 2 
+          }}>
+            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+              ✓ Complete
+            </Typography>
+          </Box>
+        </Box>
+        
+        <Typography variant="body1" paragraph color="text.secondary">
+          Your expert profile has been successfully set up. All information is saved and can be edited in the "My Profile" section above.
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Your expert profile has been set up successfully. All your profile information is now available in the "My Profile" section above.
-        </Typography>
+
+        <Divider sx={{ my: 3 }} />
+
+        {expertProfile && (
+          <Grid container spacing={3}>
+            {/* Basic Information */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Basic Information
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Full Name"
+                value={expertProfile.name || ''}
+                variant="outlined"
+                InputProps={{ readOnly: true }}
+                sx={{ 
+                  '& .MuiInputBase-input': { 
+                    color: 'text.primary',
+                    bgcolor: 'grey.50' 
+                  }
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Professional Title"
+                value={expertProfile.title || ''}
+                variant="outlined"
+                InputProps={{ readOnly: true }}
+                sx={{ 
+                  '& .MuiInputBase-input': { 
+                    color: 'text.primary',
+                    bgcolor: 'grey.50' 
+                  }
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Professional Bio"
+                value={expertProfile.bio || ''}
+                variant="outlined"
+                InputProps={{ readOnly: true }}
+                sx={{ 
+                  '& .MuiInputBase-input': { 
+                    color: 'text.primary',
+                    bgcolor: 'grey.50' 
+                  }
+                }}
+              />
+            </Grid>
+
+            {/* Experience & Expertise */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                Experience & Expertise
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Industry"
+                value={expertProfile.industry || ''}
+                variant="outlined"
+                InputProps={{ readOnly: true }}
+                sx={{ 
+                  '& .MuiInputBase-input': { 
+                    color: 'text.primary',
+                    bgcolor: 'grey.50' 
+                  }
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Years of Experience"
+                value={getExperienceDisplayValue(expertProfile.years_of_experience)}
+                variant="outlined"
+                InputProps={{ readOnly: true }}
+                sx={{ 
+                  '& .MuiInputBase-input': { 
+                    color: 'text.primary',
+                    bgcolor: 'grey.50' 
+                  }
+                }}
+              />
+            </Grid>
+
+            {/* Key Skills */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Key Skills
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {keySkills.map((skill) => (
+                  <Chip
+                    key={skill}
+                    label={skill}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Grid>
+
+            {/* Additional Details */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                Additional Details
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Methodologies & Frameworks"
+                value={expertProfile.methodologies || ''}
+                variant="outlined"
+                InputProps={{ readOnly: true }}
+                sx={{ 
+                  '& .MuiInputBase-input': { 
+                    color: 'text.primary',
+                    bgcolor: 'grey.50' 
+                  }
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Tools & Technologies"
+                value={expertProfile.tools_technologies || ''}
+                variant="outlined"
+                InputProps={{ readOnly: true }}
+                sx={{ 
+                  '& .MuiInputBase-input': { 
+                    color: 'text.primary',
+                    bgcolor: 'grey.50' 
+                  }
+                }}
+              />
+            </Grid>
+          </Grid>
+        )}
       </Paper>
     );
   }
