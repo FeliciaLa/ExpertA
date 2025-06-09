@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Paper, Box, Typography, Button, Divider } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ExpertProfile from '../components/ExpertProfile';
 import { SimpleExpertSetup } from '../components/SimpleExpertSetup';
-import OnboardingReview from '../components/OnboardingReview';
 import { ExpertWelcomeDialog } from '../components/ExpertWelcomeDialog';
 import { useAuth } from '../contexts/AuthContext';
 
 const ExpertPage: React.FC = () => {
   const { expert } = useAuth();
   const [showSetup, setShowSetup] = useState(false);
-  const [showReview, setShowReview] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   
   const needsSetup = !expert?.onboarding_completed;
-  const hasCompletedSetup = expert?.onboarding_completed;
 
   // Check for openProfileSetup flag in session storage on component mount
   useEffect(() => {
@@ -64,34 +60,6 @@ const ExpertPage: React.FC = () => {
           Show Welcome Dialog (Test)
         </Button>
       </Box>
-      
-      {hasCompletedSetup && (
-        <Paper 
-          sx={{ 
-            p: 2, 
-            mt: 3, 
-            mb: showReview ? 0 : 4, 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            cursor: 'pointer',
-            bgcolor: 'primary.light',
-            color: 'white'
-          }}
-          onClick={() => setShowReview(!showReview)}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <CheckCircleIcon sx={{ mr: 1 }} />
-            <Typography variant="subtitle1">
-              Expert Profile Complete
-            </Typography>
-          </Box>
-        </Paper>
-      )}
-      
-      {hasCompletedSetup && showReview && (
-        <OnboardingReview />
-      )}
       
       {needsSetup && !showSetup && (
         <Paper sx={{ p: 3, mt: 3, mb: 4 }}>
