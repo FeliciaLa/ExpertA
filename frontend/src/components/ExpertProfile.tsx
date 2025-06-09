@@ -180,6 +180,8 @@ const ExpertProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
+    console.log('🔥 SAVE BUTTON CLICKED - Function started!');
+    alert('Save function called!'); // Temporary alert to ensure function is running
     try {
       console.log('=== SAVE DEBUG START ===');
       console.log('Current profile state:', profile);
