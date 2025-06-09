@@ -71,7 +71,7 @@ const EXPERIENCE_LEVELS = [
 ];
 
 const ExpertProfile: React.FC = () => {
-  const { expert, setUser, setIsAuthenticated, setIsExpert, setIsUser } = useAuth();
+  const { expert, setUser, setIsAuthenticated, setIsExpert, setIsUser, refreshExpert } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -196,12 +196,44 @@ const ExpertProfile: React.FC = () => {
 
       const data = await expertApi.updateProfile(updateData);
       
+      // Check if profile is sufficiently complete to mark onboarding as done
+      const isProfileComplete = 
+        profile.name.trim() &&
+        profile.title.trim() &&
+        profile.bio.trim() &&
+        profile.profile?.industry &&
+        profile.profile?.years_of_experience &&
+        keySkills.length > 0;
+
+      // If profile is complete and onboarding isn't marked as complete, complete it
+      if (isProfileComplete && !expert?.onboarding_completed) {
+        try {
+          await expertApi.completeOnboarding({
+            industry: profile.profile?.industry || '',
+            years_of_experience: profile.profile?.years_of_experience || 0,
+            key_skills: keySkills.join(', '),
+            typical_problems: profile.profile?.typical_problems || `As a ${profile.title}, I help clients solve complex challenges in my field.`,
+            background: profile.profile?.background || '',
+            certifications: profile.profile?.certifications || '',
+            methodologies: profile.profile?.methodologies || '',
+            tools_technologies: profile.profile?.tools_technologies || ''
+          });
+          // Refresh expert data to update onboarding status
+          await refreshExpert();
+          setSuccess('Profile updated and onboarding completed! You can now start training your AI.');
+        } catch (onboardingError) {
+          console.error('Failed to complete onboarding:', onboardingError);
+          setSuccess('Profile updated successfully');
+        }
+      } else {
+        setSuccess('Profile updated successfully');
+      }
+      
       setProfile({
         ...profile,
         ...data,
       });
       setIsEditing(false);
-      setSuccess('Profile updated successfully');
     } catch (error) {
       console.error('Failed to update profile:', error);
       setError('Failed to update profile');
