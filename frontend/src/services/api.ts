@@ -483,6 +483,16 @@ export const expertApi = {
     bio?: string;
     specialties?: string;
     title?: string;
+    profile?: {
+      industry?: string;
+      years_of_experience?: number;
+      key_skills?: string;
+      typical_problems?: string;
+      background?: string;
+      certifications?: string;
+      methodologies?: string;
+      tools_technologies?: string;
+    };
   }) => {
     try {
       const response = await api.put('profile/update/', profileData);

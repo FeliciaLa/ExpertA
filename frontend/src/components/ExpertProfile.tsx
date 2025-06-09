@@ -15,6 +15,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  MenuItem,
+  Chip,
+  Divider
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -41,6 +44,32 @@ interface ProfileData {
   };
 }
 
+const INDUSTRIES = [
+  'Technology & Software',
+  'Marketing & Advertising', 
+  'Finance & Banking',
+  'Healthcare & Medicine',
+  'Education & Training',
+  'Consulting & Strategy',
+  'Design & Creative',
+  'Sales & Business Development',
+  'Operations & Management',
+  'Legal & Compliance',
+  'Real Estate',
+  'Manufacturing',
+  'Retail & E-commerce',
+  'Other'
+];
+
+const EXPERIENCE_LEVELS = [
+  '1-2 years',
+  '3-5 years', 
+  '6-10 years',
+  '11-15 years',
+  '16-20 years',
+  '20+ years'
+];
+
 const ExpertProfile: React.FC = () => {
   const { expert, setUser, setIsAuthenticated, setIsExpert, setIsUser } = useAuth();
   const navigate = useNavigate();
@@ -51,6 +80,9 @@ const ExpertProfile: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [skillInput, setSkillInput] = useState('');
+  const [keySkills, setKeySkills] = useState<string[]>([]);
+  
   const [profile, setProfile] = useState<ProfileData>({
     name: expert?.name || '',
     email: expert?.email || '',
@@ -73,6 +105,12 @@ const ExpertProfile: React.FC = () => {
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    if (profile?.profile?.key_skills) {
+      setKeySkills(profile.profile.key_skills.split(', ').filter(skill => skill.trim()));
+    }
+  }, [profile]);
 
   const fetchProfile = async () => {
     try {
@@ -99,6 +137,16 @@ const ExpertProfile: React.FC = () => {
         ...data,
         title: data.title || 'Expert',
         bio: data.bio || '',
+        profile: data.profile || {
+          industry: '',
+          years_of_experience: 0,
+          key_skills: '',
+          typical_problems: '',
+          background: '',
+          certifications: '',
+          methodologies: '',
+          tools_technologies: '',
+        }
       });
     } catch (error: any) {
       console.error('Failed to fetch profile:', error);
@@ -111,14 +159,38 @@ const ExpertProfile: React.FC = () => {
     }
   };
 
+  const getExperienceDisplayValue = (yearsOfExperience: number | undefined) => {
+    if (!yearsOfExperience) return '1-2 years';
+    
+    if (yearsOfExperience <= 2) return '1-2 years';
+    if (yearsOfExperience <= 5) return '3-5 years';
+    if (yearsOfExperience <= 10) return '6-10 years';
+    if (yearsOfExperience <= 15) return '11-15 years';
+    if (yearsOfExperience <= 20) return '16-20 years';
+    return '20+ years';
+  };
+
   const handleSave = async () => {
     try {
-      const data = await expertApi.updateProfile({
+      // Prepare the update data
+      const updateData = {
         name: profile.name,
         bio: profile.bio,
-        specialties: profile.specialties,
+        specialties: `${keySkills.join(', ')}\n\nMethodologies: ${profile.profile?.methodologies || ''}\nTools: ${profile.profile?.tools_technologies || ''}`,
         title: profile.title,
-      });
+        profile: {
+          industry: profile.profile?.industry || '',
+          years_of_experience: profile.profile?.years_of_experience || 0,
+          key_skills: keySkills.join(', '),
+          typical_problems: profile.profile?.typical_problems || '',
+          background: profile.profile?.background || '',
+          certifications: profile.profile?.certifications || '',
+          methodologies: profile.profile?.methodologies || '',
+          tools_technologies: profile.profile?.tools_technologies || ''
+        }
+      };
+
+      const data = await expertApi.updateProfile(updateData);
       
       setProfile({
         ...profile,
@@ -130,6 +202,19 @@ const ExpertProfile: React.FC = () => {
       console.error('Failed to update profile:', error);
       setError('Failed to update profile');
     }
+  };
+
+  const handleAddSkill = () => {
+    if (skillInput.trim() && !keySkills.includes(skillInput.trim())) {
+      const newSkills = [...keySkills, skillInput.trim()];
+      setKeySkills(newSkills);
+      setSkillInput('');
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    const newSkills = keySkills.filter(skill => skill !== skillToRemove);
+    setKeySkills(newSkills);
   };
 
   const handleImageUpload = () => {
@@ -226,9 +311,9 @@ const ExpertProfile: React.FC = () => {
   };
 
   return (
-    <Paper sx={{ p: 3, mb: 4, backgroundColor: 'white' }}>
+    <Paper sx={{ p: 4, mb: 4, backgroundColor: 'white' }}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-        <Typography variant="h6" color="primary">
+        <Typography variant="h4" color="primary">
           My Profile
         </Typography>
         <Box display="flex" alignItems="center" gap={1}>
@@ -250,8 +335,9 @@ const ExpertProfile: React.FC = () => {
         </Box>
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4} display="flex" flexDirection="column" alignItems="center">
+      <Grid container spacing={4}>
+        {/* Profile Image Section */}
+        <Grid item xs={12} md={3} display="flex" flexDirection="column" alignItems="center">
           <Avatar
             src={getProfileImageUrl()}
             sx={{ 
@@ -287,58 +373,244 @@ const ExpertProfile: React.FC = () => {
           )}
         </Grid>
         
-        <Grid item xs={12} md={8}>
-          <Typography variant="subtitle1" color="primary" gutterBottom>
-            Personal Information
-          </Typography>
-          
-          <TextField
-            label="Professional Title"
-            value={profile.title}
-            onChange={(e) => setProfile({ ...profile, title: e.target.value })}
-            disabled={!isEditing}
-            fullWidth
-            variant="outlined"
-            size="small"
-            sx={{ mb: 2 }}
-            placeholder="e.g., Data Scientist, Marketing Expert, etc."
-          />
-          
-          <TextField
-            label="Name"
-            value={profile.name}
-            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-            disabled={!isEditing}
-            fullWidth
-            variant="outlined"
-            size="small"
-            sx={{ mb: 2 }}
-          />
-          
-          <TextField
-            label="Email"
-            value={profile.email}
-            disabled
-            fullWidth
-            variant="outlined"
-            size="small"
-            sx={{ mb: 2 }}
-          />
-          
-          <TextField
-            label="Bio"
-            value={profile.bio}
-            onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-            disabled={!isEditing}
-            fullWidth
-            multiline
-            rows={4}
-            variant="outlined"
-            size="small"
-            sx={{ mb: 2 }}
-            placeholder="Write a compelling bio that describes your expertise, experience, and what makes you unique as an expert. This will be visible to users searching for experts."
-            helperText={isEditing ? "Please write your own professional bio. This is what users will see when they view your profile." : ""}
-          />
+        {/* Profile Information Section */}
+        <Grid item xs={12} md={9}>
+          <Grid container spacing={3}>
+            {/* Basic Information */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Basic Information
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Full Name"
+                value={profile.name}
+                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                disabled={!isEditing}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Professional Title"
+                value={profile.title}
+                onChange={(e) => setProfile({ ...profile, title: e.target.value })}
+                disabled={!isEditing}
+                fullWidth
+                variant="outlined"
+                placeholder="e.g., Senior Marketing Manager, Data Scientist"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Email"
+                value={profile.email}
+                disabled
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Professional Bio"
+                value={profile.bio}
+                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                disabled={!isEditing}
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                placeholder="Describe your background, experience, and what makes you unique as an expert..."
+              />
+            </Grid>
+
+            {/* Experience & Expertise */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                Experience & Expertise
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Industry"
+                value={profile.profile?.industry || ''}
+                onChange={(e) => setProfile({ 
+                  ...profile, 
+                  profile: { ...profile.profile!, industry: e.target.value }
+                })}
+                disabled={!isEditing}
+                fullWidth
+                variant="outlined"
+                select={isEditing}
+              >
+                {isEditing && INDUSTRIES.map((industry) => (
+                  <MenuItem key={industry} value={industry}>
+                    {industry}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Years of Experience"
+                value={getExperienceDisplayValue(profile.profile?.years_of_experience)}
+                onChange={(e) => {
+                  const experienceMap: { [key: string]: number } = {
+                    '1-2 years': 2,
+                    '3-5 years': 5,
+                    '6-10 years': 10,
+                    '11-15 years': 15,
+                    '16-20 years': 20,
+                    '20+ years': 25
+                  };
+                  const numericValue = experienceMap[e.target.value] || 2;
+                  setProfile({ 
+                    ...profile, 
+                    profile: { ...profile.profile!, years_of_experience: numericValue }
+                  });
+                }}
+                disabled={!isEditing}
+                fullWidth
+                variant="outlined"
+                select={isEditing}
+              >
+                {isEditing && EXPERIENCE_LEVELS.map((level) => (
+                  <MenuItem key={level} value={level}>
+                    {level}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            {/* Key Skills */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Key Skills
+              </Typography>
+              {isEditing && (
+                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Add a skill"
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+                    placeholder="e.g., Project Management, Python, SEO"
+                    variant="outlined"
+                    size="small"
+                  />
+                  <Button onClick={handleAddSkill} variant="outlined">
+                    Add
+                  </Button>
+                </Box>
+              )}
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {keySkills.map((skill) => (
+                  <Chip
+                    key={skill}
+                    label={skill}
+                    onDelete={isEditing ? () => handleRemoveSkill(skill) : undefined}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Grid>
+
+            {/* Additional Details */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                Additional Details
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Methodologies & Frameworks"
+                value={profile.profile?.methodologies || ''}
+                onChange={(e) => setProfile({ 
+                  ...profile, 
+                  profile: { ...profile.profile!, methodologies: e.target.value }
+                })}
+                disabled={!isEditing}
+                fullWidth
+                variant="outlined"
+                placeholder="e.g., Agile, Design Thinking, LEAN"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Tools & Technologies"
+                value={profile.profile?.tools_technologies || ''}
+                onChange={(e) => setProfile({ 
+                  ...profile, 
+                  profile: { ...profile.profile!, tools_technologies: e.target.value }
+                })}
+                disabled={!isEditing}
+                fullWidth
+                variant="outlined"
+                placeholder="e.g., Salesforce, Adobe Creative Suite, Python"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Background & Experience"
+                value={profile.profile?.background || ''}
+                onChange={(e) => setProfile({ 
+                  ...profile, 
+                  profile: { ...profile.profile!, background: e.target.value }
+                })}
+                disabled={!isEditing}
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                placeholder="Describe your professional background and key experiences..."
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Certifications"
+                value={profile.profile?.certifications || ''}
+                onChange={(e) => setProfile({ 
+                  ...profile, 
+                  profile: { ...profile.profile!, certifications: e.target.value }
+                })}
+                disabled={!isEditing}
+                fullWidth
+                variant="outlined"
+                placeholder="List your relevant certifications..."
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Typical Problems You Solve"
+                value={profile.profile?.typical_problems || ''}
+                onChange={(e) => setProfile({ 
+                  ...profile, 
+                  profile: { ...profile.profile!, typical_problems: e.target.value }
+                })}
+                disabled={!isEditing}
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                placeholder="Describe the types of problems you typically help clients solve..."
+              />
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
 

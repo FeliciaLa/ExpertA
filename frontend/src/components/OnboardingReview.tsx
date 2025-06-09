@@ -379,114 +379,13 @@ export const OnboardingReview: React.FC = () => {
 
   if (answers.length === 0 && onboardingType === 'simplified') {
     return (
-      <Paper sx={{ p: 4, maxWidth: 800, mx: 'auto' }}>
-        <Typography variant="h4" gutterBottom color="primary">
-          Expert Profile Information
+      <Paper sx={{ p: 3, mt: 3 }}>
+        <Typography variant="h6" color="primary" gutterBottom>
+          Onboarding Complete
         </Typography>
-        
-        <Typography variant="body1" paragraph color="text.secondary">
-          Review and edit your expert profile information. Click on any field to edit it.
+        <Typography variant="body1" color="text.secondary">
+          Your expert profile has been set up successfully. All your profile information is now available in the "My Profile" section above.
         </Typography>
-
-        <Divider sx={{ my: 3 }} />
-
-        {expertProfile && (
-          <Grid container spacing={3}>
-            {/* Basic Information */}
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Basic Information
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              {renderEditableTextField('name', 'Full Name', expertProfile.name || '')}
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              {renderEditableTextField('title', 'Professional Title', expertProfile.title || '', false, 1, 'e.g., Senior Marketing Manager, Data Scientist')}
-            </Grid>
-
-            <Grid item xs={12}>
-              {renderEditableTextField('bio', 'Professional Bio', expertProfile.bio || '', true, 3, 'Describe your background, experience, and what makes you unique as an expert...')}
-            </Grid>
-
-            {/* Experience & Expertise */}
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                Experience & Expertise
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              {renderEditableTextField('industry', 'Industry', expertProfile.industry || '', false, 1, undefined, true, INDUSTRIES)}
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              {renderEditableTextField('years_of_experience', 'Years of Experience', getExperienceDisplayValue(expertProfile.years_of_experience), false, 1, undefined, true, EXPERIENCE_LEVELS)}
-            </Grid>
-
-            {/* Skills */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Key Skills
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Add a skill"
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
-                  placeholder="e.g., Project Management, Python, SEO"
-                  variant="outlined"
-                  size="small"
-                />
-                <Button onClick={handleAddSkill} variant="outlined">
-                  Add
-                </Button>
-              </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {keySkills.map((skill) => (
-                  <Chip
-                    key={skill}
-                    label={skill}
-                    onDelete={() => handleRemoveSkill(skill)}
-                    color="primary"
-                    variant="outlined"
-                  />
-                ))}
-              </Box>
-            </Grid>
-
-            {/* Additional Details */}
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                Additional Details
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              {renderEditableTextField('methodologies', 'Methodologies & Frameworks', expertProfile.methodologies || '', false, 1, 'e.g., Agile, Design Thinking, LEAN')}
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              {renderEditableTextField('tools_technologies', 'Tools & Technologies', expertProfile.tools_technologies || '', false, 1, 'e.g., Salesforce, Adobe Creative Suite, Python')}
-            </Grid>
-
-            {success && (
-              <Grid item xs={12}>
-                <Alert severity="success">{success}</Alert>
-              </Grid>
-            )}
-
-            {error && (
-              <Grid item xs={12}>
-                <Alert severity="error">{error}</Alert>
-              </Grid>
-            )}
-          </Grid>
-        )}
       </Paper>
     );
   }

@@ -892,6 +892,41 @@ class ExpertProfileUpdateView(APIView):
         
         expert.save()
         
+        # Handle profile fields if provided
+        if 'profile' in request.data:
+            profile_data = request.data['profile']
+            print(f"Profile data received: {profile_data}")
+            
+            # Get or create the expert profile
+            try:
+                profile = expert.profile
+            except ExpertProfile.DoesNotExist:
+                profile = ExpertProfile.objects.create(
+                    expert=expert,
+                    industry='',
+                    years_of_experience=0,
+                    key_skills='',
+                    typical_problems='',
+                    background='',
+                    certifications='',
+                    methodologies='',
+                    tools_technologies=''
+                )
+            
+            # Update profile fields
+            profile_fields = [
+                'industry', 'years_of_experience', 'key_skills', 'typical_problems',
+                'background', 'certifications', 'methodologies', 'tools_technologies'
+            ]
+            
+            for field in profile_fields:
+                if field in profile_data:
+                    setattr(profile, field, profile_data[field])
+                    print(f"Updated profile.{field} = {profile_data[field]}")
+            
+            profile.save()
+            print(f"Profile saved successfully")
+        
         # Return updated profile
         serializer = ExpertProfileSerializer(expert)
         response = Response(serializer.data)
