@@ -813,38 +813,62 @@ class ExpertProfileView(APIView):
     
     def get(self, request):
         print(f"\n=== ExpertProfileView GET DEBUG START ===")
-        print(f"Request user: {request.user}")
-        print(f"User ID: {getattr(request.user, 'id', 'No ID')}")
-        print(f"User email: {getattr(request.user, 'email', 'No email')}")
-        print(f"User is_authenticated: {request.user.is_authenticated}")
-        print(f"User is_active: {getattr(request.user, 'is_active', 'No is_active')}")
-        print(f"User role: {getattr(request.user, 'role', 'No role')}")
+        expert = request.user
+        print(f"Request user: {expert}")
+        print(f"User ID: {getattr(expert, 'id', 'No ID')}")
+        print(f"User email: {getattr(expert, 'email', 'No email')}")
+        print(f"User is_authenticated: {expert.is_authenticated}")
+        print(f"User is_active: {getattr(expert, 'is_active', 'No is_active')}")
+        print(f"User role: {getattr(expert, 'role', 'No role')}")
         
         # Check authorization header
         auth_header = request.headers.get('Authorization', '')
         print(f"Authorization header present: {bool(auth_header)}")
         print(f"Authorization header starts with Bearer: {auth_header.startswith('Bearer ')}")
         
-        if not request.user.is_authenticated:
-            print(f"ERROR: User is not authenticated!")
-            return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        expert = request.user
+        # Check if profile exists and debug the relationship
+        print(f"\n--- Profile Relationship Debug ---")
         print(f"Expert object: {expert}")
-        print(f"Expert name: {expert.name}")
-        print(f"Expert bio: {expert.bio}")
+        print(f"Expert type: {type(expert)}")
+        print(f"Expert __dict__: {expert.__dict__}")
         
-        # Check if profile exists
+        # Try different ways to access the profile
         try:
-            profile = expert.profile
-            print(f"Profile found: {profile}")
-            print(f"Profile industry: {profile.industry}")
-            print(f"Profile years_of_experience: {profile.years_of_experience}")
-            print(f"Profile key_skills: {profile.key_skills}")
-        except ExpertProfile.DoesNotExist:
-            print("No profile found for this expert")
+            # Method 1: Direct attribute access
+            profile_direct = expert.profile
+            print(f"✓ Direct access: expert.profile = {profile_direct}")
+            print(f"Profile type: {type(profile_direct)}")
+            print(f"Profile __dict__: {profile_direct.__dict__}")
         except Exception as e:
-            print(f"Error accessing profile: {e}")
+            print(f"✗ Direct access failed: {e}")
+            print(f"Exception type: {type(e)}")
+        
+        try:
+            # Method 2: Using hasattr
+            has_profile = hasattr(expert, 'profile')
+            print(f"hasattr(expert, 'profile'): {has_profile}")
+        except Exception as e:
+            print(f"✗ hasattr check failed: {e}")
+        
+        try:
+            # Method 3: Using getattr
+            profile_getattr = getattr(expert, 'profile', None)
+            print(f"getattr(expert, 'profile', None): {profile_getattr}")
+        except Exception as e:
+            print(f"✗ getattr check failed: {e}")
+        
+        try:
+            # Method 4: Database query
+            from .models import ExpertProfile
+            profile_db = ExpertProfile.objects.filter(expert=expert).first()
+            print(f"Database query result: {profile_db}")
+            if profile_db:
+                print(f"DB Profile industry: {profile_db.industry}")
+                print(f"DB Profile years_of_experience: {profile_db.years_of_experience}")
+        except Exception as e:
+            print(f"✗ Database query failed: {e}")
+        
+        print(f"--- End Profile Debug ---\n")
         
         serializer = ExpertProfileSerializer(expert)
         print(f"Serialized data: {serializer.data}")
