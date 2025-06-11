@@ -351,12 +351,12 @@ const StepByStepOnboarding: React.FC = () => {
       };
 
       await expertApi.completeOnboarding(onboardingData);
-      await refreshExpert();
       
-      // Redirect to Train AI page after successful completion
-      setTimeout(() => {
-        navigate('/train');
-      }, 1500); // Small delay to let them see the completion message
+      // Redirect immediately to Train AI page
+      navigate('/train');
+      
+      // Refresh expert data in background (no await needed since we're navigating away)
+      refreshExpert();
       
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
