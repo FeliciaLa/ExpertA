@@ -56,9 +56,14 @@ class DocumentUploadView(APIView):
     
     def post(self, request):
         expert = request.user
+        print(f"DocumentUploadView - request.FILES: {request.FILES}")
+        print(f"DocumentUploadView - request.FILES.keys(): {list(request.FILES.keys())}")
+        print(f"DocumentUploadView - request.data: {request.data}")
+        
         files = request.FILES.getlist('documents')
         
         if not files:
+            print(f"DocumentUploadView - No files found with key 'documents'")
             return Response({
                 'error': 'No files provided'
             }, status=status.HTTP_400_BAD_REQUEST)
