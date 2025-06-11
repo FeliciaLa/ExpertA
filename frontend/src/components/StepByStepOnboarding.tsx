@@ -46,7 +46,7 @@ interface StepData {
   name: string;
   title: string;
   bio: string;
-  industry: string;
+  industry: string[];
   years_of_experience: number;
   key_skills: string[];
   background: string;
@@ -120,7 +120,7 @@ const StepByStepOnboarding: React.FC = () => {
     name: '',
     title: '',
     bio: '',
-    industry: '',
+    industry: [],
     years_of_experience: 1,
     key_skills: [],
     background: '',
@@ -132,6 +132,7 @@ const StepByStepOnboarding: React.FC = () => {
   
   const [currentValue, setCurrentValue] = useState('');
   const [newSkill, setNewSkill] = useState('');
+  const [newIndustry, setNewIndustry] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
@@ -158,7 +159,7 @@ const StepByStepOnboarding: React.FC = () => {
         name: profile.name || '',
         title: profile.title || '',
         bio: profile.bio || '',
-        industry: profile.profile?.industry || '',
+        industry: profile.profile?.industry ? profile.profile.industry.split(', ') : [],
         years_of_experience: profile.profile?.years_of_experience || 1,
         key_skills: profile.profile?.key_skills ? profile.profile.key_skills.split(', ') : [],
         background: profile.profile?.background || '',
@@ -184,7 +185,8 @@ const StepByStepOnboarding: React.FC = () => {
     // Save current field value
     setStepData(prev => ({
       ...prev,
-      [currentField]: currentField === 'key_skills' ? prev.key_skills : currentValue
+      [currentField]: currentField === 'key_skills' ? prev.key_skills : 
+                     currentField === 'industry' ? prev.industry : currentValue
     }));
 
     // Save to backend
@@ -208,6 +210,11 @@ const StepByStepOnboarding: React.FC = () => {
     if (currentField === 'key_skills') {
       if (stepData.key_skills.length === 0) {
         setError('Please add at least one skill');
+        return false;
+      }
+    } else if (currentField === 'industry') {
+      if (stepData.industry.length === 0) {
+        setError('Please add at least one industry');
         return false;
       }
     } else if (currentField === 'years_of_experience') {
@@ -238,7 +245,8 @@ const StepByStepOnboarding: React.FC = () => {
         // Profile fields - update expert profile
         updateData.profile = {
           ...stepData,
-          [currentField]: currentField === 'key_skills' ? stepData.key_skills : currentValue
+          [currentField]: currentField === 'key_skills' ? stepData.key_skills : 
+                         currentField === 'industry' ? stepData.industry : currentValue
         };
       }
 
@@ -257,7 +265,7 @@ const StepByStepOnboarding: React.FC = () => {
       
       // Prepare final onboarding data
       const onboardingData = {
-        industry: stepData.industry,
+        industry: stepData.industry.join(', '),
         years_of_experience: stepData.years_of_experience,
         key_skills: stepData.key_skills.join(', '),
         typical_problems: stepData.typical_problems || `As a ${stepData.title}, I help clients solve complex challenges in my field.`,
@@ -292,6 +300,23 @@ const StepByStepOnboarding: React.FC = () => {
     setStepData(prev => ({
       ...prev,
       key_skills: prev.key_skills.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
+  const addIndustry = () => {
+    if (newIndustry.trim() && !stepData.industry.includes(newIndustry.trim())) {
+      setStepData(prev => ({
+        ...prev,
+        industry: [...prev.industry, newIndustry.trim()]
+      }));
+      setNewIndustry('');
+    }
+  };
+
+  const removeIndustry = (industryToRemove: string) => {
+    setStepData(prev => ({
+      ...prev,
+      industry: prev.industry.filter(industry => industry !== industryToRemove)
     }));
   };
 
@@ -342,21 +367,53 @@ const StepByStepOnboarding: React.FC = () => {
         
       case 'industry':
         return (
-          <TextField
-            fullWidth
-            select
-            label="Industry"
-            value={currentValue}
-            onChange={(e) => setCurrentValue(e.target.value)}
-            variant="outlined"
-            sx={{ mt: 2 }}
-          >
-            {INDUSTRIES.map((industry) => (
-              <MenuItem key={industry} value={industry}>
-                {industry}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Box sx={{ mt: 2 }}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={8}>
+                <TextField
+                  fullWidth
+                  label="Add an industry"
+                  value={newIndustry}
+                  onChange={(e) => setNewIndustry(e.target.value)}
+                  placeholder="e.g., Technology, Marketing, Healthcare"
+                  variant="outlined"
+                  onKeyPress={(e) => e.key === 'Enter' && addIndustry()}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <Button
+                  variant="contained"
+                  onClick={addIndustry}
+                  disabled={!newIndustry.trim()}
+                  fullWidth
+                >
+                  Add Industry
+                </Button>
+              </Grid>
+            </Grid>
+            
+            <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {stepData.industry.map((industry, index) => (
+                <Chip
+                  key={index}
+                  label={industry}
+                  onDelete={() => removeIndustry(industry)}
+                  color="primary"
+                  variant="outlined"
+                />
+              ))}
+            </Box>
+            
+            {stepData.industry.length === 0 && (
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                Add at least one industry to continue
+              </Typography>
+            )}
+            
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              Suggested: {INDUSTRIES.slice(0, 5).join(', ')}, and more...
+            </Typography>
+          </Box>
         );
         
       case 'years_of_experience':
