@@ -227,8 +227,8 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler',
 }
 
-# CORS settings - explicitly allow Vercel and local development
-CORS_ALLOW_ALL_ORIGINS = False  # Disable to use explicit origins
+# CORS settings - temporarily allow all origins for debugging
+CORS_ALLOW_ALL_ORIGINS = True  # Re-enable to debug the issue
 CORS_ALLOW_CREDENTIALS = True
 
 # Enable specific origins - be explicit about what we allow
