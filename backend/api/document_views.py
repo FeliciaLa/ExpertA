@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.core.files.uploadedfile import UploadedFile
 import mimetypes
 import os
@@ -49,6 +50,7 @@ class DocumentUploadView(APIView):
     Upload documents for AI training
     """
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
     
     def options(self, request, *args, **kwargs):
         # Handle CORS preflight requests - let Django CORS middleware handle headers
@@ -59,11 +61,21 @@ class DocumentUploadView(APIView):
         print(f"DocumentUploadView - request.FILES: {request.FILES}")
         print(f"DocumentUploadView - request.FILES.keys(): {list(request.FILES.keys())}")
         print(f"DocumentUploadView - request.data: {request.data}")
+        print(f"DocumentUploadView - Content-Type: {request.content_type}")
+        print(f"DocumentUploadView - Headers: {dict(request.headers)}")
         
+        # Try to get files from different possible keys
         files = request.FILES.getlist('documents')
+        if not files:
+            # Try other possible field names
+            for key in request.FILES.keys():
+                print(f"DocumentUploadView - Found files under key: {key}")
+                files = request.FILES.getlist(key)
+                break
         
         if not files:
-            print(f"DocumentUploadView - No files found with key 'documents'")
+            print(f"DocumentUploadView - No files found in request.FILES")
+            print(f"DocumentUploadView - Available keys: {list(request.FILES.keys())}")
             return Response({
                 'error': 'No files provided'
             }, status=status.HTTP_400_BAD_REQUEST)
