@@ -821,162 +821,25 @@ class ExpertProfileView(APIView):
         print(f"User is_active: {getattr(expert, 'is_active', 'No is_active')}")
         print(f"User role: {getattr(expert, 'role', 'No role')}")
         
-        # Check authorization header
-        auth_header = request.headers.get('Authorization', '')
-        print(f"Authorization header present: {bool(auth_header)}")
-        print(f"Authorization header starts with Bearer: {auth_header.startswith('Bearer ')}")
-        
-        # Check if profile exists and debug the relationship
-        print(f"\n--- Profile Relationship Debug ---")
-        print(f"Expert object: {expert}")
-        print(f"Expert type: {type(expert)}")
-        print(f"Expert __dict__: {expert.__dict__}")
-        
-        # Try different ways to access the profile
+        # Ensure profile exists before serializing
         try:
-            # Method 1: Direct attribute access
-            profile_direct = expert.profile
-            print(f"✓ Direct access: expert.profile = {profile_direct}")
-            print(f"Profile type: {type(profile_direct)}")
-            print(f"Profile __dict__: {profile_direct.__dict__}")
-        except Exception as e:
-            print(f"✗ Direct access failed: {e}")
-            print(f"Exception type: {type(e)}")
-        
-        try:
-            # Method 2: Using hasattr
-            has_profile = hasattr(expert, 'profile')
-            print(f"hasattr(expert, 'profile'): {has_profile}")
-        except Exception as e:
-            print(f"✗ hasattr check failed: {e}")
-        
-        try:
-            # Method 3: Using getattr
-            profile_getattr = getattr(expert, 'profile', None)
-            print(f"getattr(expert, 'profile', None): {profile_getattr}")
-        except Exception as e:
-            print(f"✗ getattr check failed: {e}")
-        
-        try:
-            # Method 4: Database query
-            from .models import ExpertProfile
-            profile_db = ExpertProfile.objects.filter(expert=expert).first()
-            print(f"Database query result: {profile_db}")
-            if profile_db:
-                print(f"DB Profile industry: {profile_db.industry}")
-                print(f"DB Profile years_of_experience: {profile_db.years_of_experience}")
-        except Exception as e:
-            print(f"✗ Database query failed: {e}")
-        
-        print(f"--- End Profile Debug ---\n")
-        
-        serializer = ExpertProfileSerializer(expert)
-        print(f"Serialized data: {serializer.data}")
-        print(f"=== ExpertProfileView GET DEBUG END ===")
-        
-        response = Response(serializer.data)
-        
-        # Add CORS headers to response
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
-
-class ExpertProfileUpdateView(APIView):
-    """
-    API endpoint for updating expert profile information.
-    """
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser, MultiPartParser, FormParser]
-    
-    def options(self, request, *args, **kwargs):
-        # Handle CORS preflight requests
-        response = Response()
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "PUT, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
-    
-    def put(self, request):
-        expert = request.user
-        print(f"=== BACKEND UPDATE DEBUG START ===")
-        print(f"Request data: {request.data}")
-        
-        # Extract valid fields from request data
-        valid_data = {}
-        for field in ['bio', 'specialties', 'title', 'name']:
-            if field in request.data:
-                valid_data[field] = request.data[field]
-        
-        # Handle first_name and last_name by combining them into name (for backward compatibility)
-        first_name = request.data.get('first_name', '').strip()
-        last_name = request.data.get('last_name', '').strip()
-        
-        # Only process first_name/last_name if no direct name was provided
-        if 'name' not in valid_data and (first_name or last_name):
-            # Combine first and last name
-            name_parts = [first_name, last_name]
-            combined_name = ' '.join(part for part in name_parts if part)
-            if combined_name:
-                valid_data['name'] = combined_name
-        
-        print(f"Valid data: {valid_data}")
-        
-        # Update expert instance
-        for key, value in valid_data.items():
-            setattr(expert, key, value)
-            print(f"Set expert.{key} = {value}")
-        
-        expert.save()
-        print(f"Expert saved successfully")
-        
-        # Handle profile fields if provided
-        if 'profile' in request.data:
-            profile_data = request.data['profile']
-            print(f"Profile data received: {profile_data}")
-            
-            # Get or create the expert profile
-            try:
-                profile = expert.profile
-                print(f"Found existing profile: {profile}")
-            except ExpertProfile.DoesNotExist:
-                print("Creating new profile...")
-                profile = ExpertProfile.objects.create(
-                    expert=expert,
-                    industry='',
-                    years_of_experience=0,
-                    key_skills='',
-                    typical_problems='',
-                    background='',
-                    certifications='',
-                    methodologies='',
-                    tools_technologies=''
-                )
-            
-            # Update profile fields
-            profile_fields = [
-                'industry', 'years_of_experience', 'key_skills', 'typical_problems',
-                'background', 'certifications', 'methodologies', 'tools_technologies'
-            ]
-            
-            for field in profile_fields:
-                if field in profile_data:
-                    setattr(profile, field, profile_data[field])
-                    print(f"Updated profile.{field} = {profile_data[field]}")
-            
-            profile.save()
-            print(f"Profile saved successfully")
-        else:
-            print("No profile data in request")
-        
-        # Check what we're about to return
-        print(f"Expert after save: name={expert.name}, bio={expert.bio}")
-        try:
-            profile_check = expert.profile
-            print(f"Profile after save: industry={profile_check.industry}, years_of_experience={profile_check.years_of_experience}")
+            profile = expert.profile
+            print(f"✓ Profile exists: {profile}")
         except ExpertProfile.DoesNotExist:
-            print("No profile found after save")
+            print("✗ Profile doesn't exist, creating new one...")
+            profile = ExpertProfile.objects.create(
+                expert=expert,
+                industry='',
+                years_of_experience=0,
+                key_skills='',
+                typical_problems='',
+                background='',
+                certifications='',
+                methodologies='',
+                tools_technologies=''
+            )
+            print(f"✓ Created new profile: {profile}")
         
-        # Return updated profile
         serializer = ExpertProfileSerializer(expert)
         print(f"Serialized data: {serializer.data}")
         print(f"=== BACKEND UPDATE DEBUG END ===")
