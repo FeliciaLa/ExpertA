@@ -507,15 +507,6 @@ const UserProfilePage: React.FC = () => {
               </Typography>
             </Box>
 
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Role
-              </Typography>
-              <Typography variant="h6">
-                {userRole}
-              </Typography>
-            </Box>
-
 
           </Grid>
         </Grid>
