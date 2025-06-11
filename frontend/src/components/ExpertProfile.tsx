@@ -11,11 +11,17 @@ import {
   Alert,
   Divider,
   MenuItem,
-  Chip
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useAuth } from '../contexts/AuthContext';
 import { expertApi, API_URL } from '../services/api';
@@ -79,6 +85,8 @@ const ExpertProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [newSkill, setNewSkill] = useState('');
@@ -288,6 +296,28 @@ const ExpertProfile: React.FC = () => {
     
     const baseUrl = API_URL.replace('/api/', '').replace('/api', '');
     return `${baseUrl}${profileData.profile_image}`;
+  };
+
+  const handleDeleteProfile = async () => {
+    try {
+      setDeleting(true);
+      setError(null);
+      
+      // Call API to delete profile (you'll need to implement this endpoint)
+      await expertApi.deleteProfile();
+      
+      // Clear local storage
+      localStorage.clear();
+      
+      // Redirect to home page or login
+      window.location.href = '/';
+      
+    } catch (err: any) {
+      console.error('Failed to delete profile:', err);
+      setError('Failed to delete profile. Please try again.');
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   if (loading) {
@@ -631,9 +661,75 @@ const ExpertProfile: React.FC = () => {
                 helperText="Professional certifications and credentials"
               />
             </Grid>
+
+            {/* Delete Profile Button - Only shown when editing */}
+            {isEditing && (
+              <Grid item xs={12}>
+                <Divider sx={{ my: 3 }} />
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h6" color="error" gutterBottom>
+                    Danger Zone
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Deleting your profile will permanently remove all your data and cannot be undone.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={() => setShowDeleteDialog(true)}
+                    disabled={saving}
+                  >
+                    Delete Profile
+                  </Button>
+                </Box>
+              </Grid>
+            )}
           </Grid>
         </Grid>
       </Grid>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle color="error">
+          Delete Profile
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete your profile? This action cannot be undone and will:
+          </DialogContentText>
+          <Box component="ul" sx={{ mt: 2, mb: 2 }}>
+            <li>Permanently delete all your profile data</li>
+            <li>Remove all your training messages and AI knowledge</li>
+            <li>Delete your account completely</li>
+          </Box>
+          <DialogContentText>
+            <strong>This action is irreversible.</strong>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setShowDeleteDialog(false)}
+            disabled={deleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteProfile}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} /> : <DeleteIcon />}
+          >
+            {deleting ? 'Deleting...' : 'Delete Profile'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };
