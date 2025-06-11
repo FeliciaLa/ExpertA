@@ -19,12 +19,8 @@ class DocumentListView(APIView):
     permission_classes = [IsAuthenticated]
     
     def options(self, request, *args, **kwargs):
-        # Handle CORS preflight requests
-        response = Response()
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
+        # Handle CORS preflight requests - let Django CORS middleware handle headers
+        return Response()
     
     def get(self, request):
         expert = request.user
@@ -42,15 +38,10 @@ class DocumentListView(APIView):
                 'error_message': doc.error_message
             })
         
-        response = Response({
+        return Response({
             'documents': result,
             'total': len(result)
         })
-        
-        # Add CORS headers to response
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
 
 
 class DocumentUploadView(APIView):
@@ -60,12 +51,8 @@ class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
     
     def options(self, request, *args, **kwargs):
-        # Handle CORS preflight requests
-        response = Response()
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
+        # Handle CORS preflight requests - let Django CORS middleware handle headers
+        return Response()
     
     def post(self, request):
         expert = request.user
@@ -125,16 +112,11 @@ class DocumentUploadView(APIView):
                     'error': str(e)
                 })
         
-        response = Response({
+        return Response({
             'message': f'Successfully uploaded {uploaded_count} documents',
             'uploaded_count': uploaded_count,
             'results': results
         })
-        
-        # Add CORS headers to response
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
     
     def _process_document(self, document):
         """Process document content and add to knowledge base"""
@@ -207,12 +189,8 @@ class DocumentDeleteView(APIView):
     permission_classes = [IsAuthenticated]
     
     def options(self, request, *args, **kwargs):
-        # Handle CORS preflight requests
-        response = Response()
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "DELETE, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response
+        # Handle CORS preflight requests - let Django CORS middleware handle headers
+        return Response()
     
     def delete(self, request, document_id):
         expert = request.user
@@ -220,22 +198,12 @@ class DocumentDeleteView(APIView):
         try:
             document = Document.objects.get(id=document_id, expert=expert)
         except Document.DoesNotExist:
-            response = Response({
+            return Response({
                 'error': 'Document not found'
             }, status=status.HTTP_404_NOT_FOUND)
-            
-            # Add CORS headers to error response
-            response["Access-Control-Allow-Origin"] = "*"
-            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-            return response
         
         document.delete()
         
-        response = Response({
+        return Response({
             'message': 'Document deleted successfully'
-        })
-        
-        # Add CORS headers to response
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
-        return response 
+        }) 
