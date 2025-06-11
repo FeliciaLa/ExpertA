@@ -338,7 +338,9 @@ const ExpertProfile: React.FC = () => {
 
   // Tour callback handler
   const handleTourCallback = (data: CallBackProps) => {
-    const { status } = data;
+    const { action, index, status, type } = data;
+    
+    console.log('Tour callback:', { action, index, status, type });
     
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       // Tour finished or skipped - mark as seen
@@ -346,6 +348,9 @@ const ExpertProfile: React.FC = () => {
       if (expert?.id) {
         localStorage.setItem(`expert_tour_seen_${expert.id}`, 'true');
       }
+    } else if (type === 'step:after') {
+      // Update step index after each step
+      setTourStepIndex(index + (action === 'prev' ? -1 : 1));
     }
   };
 
