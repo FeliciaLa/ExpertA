@@ -16,7 +16,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
+
 import { useAuth } from '../contexts/AuthContext';
 import { expertApi, API_URL } from '../services/api';
 
@@ -83,30 +83,6 @@ const ExpertProfile: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [newSkill, setNewSkill] = useState('');
   
-  // Tour state
-  const [runTour, setRunTour] = useState(false);
-  const [tourStepIndex, setTourStepIndex] = useState(0);
-  
-  // Tour steps configuration
-  const tourSteps: Step[] = [
-    {
-      target: '[data-tour="train-ai"]',
-      content: '🚀 Start training your AI assistant here! This is where you teach the AI to respond like you.',
-      placement: 'bottom',
-      disableBeacon: true,
-    },
-    {
-      target: '[data-tour="profile-info"]',
-      content: '👤 Click "Edit Profile" to update your information, skills, and expertise anytime.',
-      placement: 'top',
-    },
-    {
-      target: '[data-tour="browse-experts"]',
-      content: '👥 Explore other experts on the platform to see how they structure their profiles.',
-      placement: 'bottom',
-    }
-  ];
-  
   const [profileData, setProfileData] = useState<ExpertProfileData>({
     name: '',
     title: '',
@@ -135,28 +111,6 @@ const ExpertProfile: React.FC = () => {
       refreshExpert();
     }
   }, []);
-
-  // Check if we should show the tour for new experts
-  useEffect(() => {
-    console.log('Tour check:', { 
-      expertId: expert?.id, 
-      onboardingCompleted: expert?.onboarding_completed, 
-      loading, 
-      hasSeenTour: expert?.id ? localStorage.getItem(`expert_tour_seen_${expert.id}`) : null 
-    });
-    
-    if (expert?.id && expert?.onboarding_completed && !loading) {
-      const hasSeenTour = localStorage.getItem(`expert_tour_seen_${expert.id}`);
-      if (!hasSeenTour) {
-        console.log('Starting tour in 2 seconds...');
-        // Delay to ensure DOM is ready and profile data is loaded
-        setTimeout(() => {
-          console.log('Setting runTour to true');
-          setRunTour(true);
-        }, 2000);
-      }
-    }
-  }, [expert?.id, expert?.onboarding_completed, loading]);
 
   const loadProfile = async () => {
     try {
@@ -336,24 +290,6 @@ const ExpertProfile: React.FC = () => {
     return `${baseUrl}${profileData.profile_image}`;
   };
 
-  // Tour callback handler
-  const handleTourCallback = (data: CallBackProps) => {
-    const { action, index, status, type } = data;
-    
-    console.log('Tour callback:', { action, index, status, type });
-    
-    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      // Tour finished or skipped - mark as seen
-      setRunTour(false);
-      if (expert?.id) {
-        localStorage.setItem(`expert_tour_seen_${expert.id}`, 'true');
-      }
-    } else if (type === 'step:after') {
-      // Update step index after each step
-      setTourStepIndex(index + (action === 'prev' ? -1 : 1));
-    }
-  };
-
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" p={4}>
@@ -394,30 +330,13 @@ const ExpertProfile: React.FC = () => {
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="contained"
-                startIcon={<EditIcon />}
-                onClick={() => setIsEditing(true)}
-                sx={{ mr: 1 }}
-              >
-                Edit Profile
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => {
-                  // Clear tour seen flag and restart tour
-                  if (expert?.id) {
-                    localStorage.removeItem(`expert_tour_seen_${expert.id}`);
-                  }
-                  setRunTour(true);
-                  setTourStepIndex(0);
-                }}
-                size="small"
-              >
-                Show Tour
-              </Button>
-            </>
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={() => setIsEditing(true)}
+            >
+              Edit Profile
+            </Button>
           )}
         </Box>
       </Box>
@@ -477,7 +396,7 @@ const ExpertProfile: React.FC = () => {
         <Grid item xs={12} md={9}>
           <Grid container spacing={3}>
             {/* Basic Information */}
-            <Grid item xs={12} data-tour="profile-info">
+            <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>
                 Basic Information
               </Typography>
@@ -715,40 +634,6 @@ const ExpertProfile: React.FC = () => {
           </Grid>
         </Grid>
       </Grid>
-
-      {/* Guided Tour */}
-      <Joyride
-        steps={tourSteps}
-        run={runTour}
-        stepIndex={tourStepIndex}
-        callback={handleTourCallback}
-        continuous={true}
-        showProgress={true}
-        showSkipButton={true}
-        disableOverlayClose={false}
-        debug={true}
-        styles={{
-          options: {
-            zIndex: 9999999,
-          },
-        }}
-        floaterProps={{
-          disableAnimation: true,
-        }}
-        locale={{
-          back: 'Back',
-          close: 'Close',
-          last: 'Finish Tour',
-          next: 'Next',
-          skip: 'Skip Tour',
-        }}
-      />
-      
-      {runTour && (
-        <div style={{ position: 'fixed', top: 10, right: 10, background: 'red', color: 'white', padding: '5px', zIndex: 99999 }}>
-          TOUR RUNNING
-        </div>
-      )}
     </Paper>
   );
 };

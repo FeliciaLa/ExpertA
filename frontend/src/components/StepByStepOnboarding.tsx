@@ -13,6 +13,7 @@ import {
   LinearProgress
 } from '@mui/material';
 import { ArrowBack, ArrowForward, CheckCircle } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { expertApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -154,6 +155,7 @@ const stepSections = [
 const steps = stepSections.flatMap(section => section.steps);
 
 const StepByStepOnboarding: React.FC = () => {
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [stepData, setStepData] = useState<StepData>({
     name: '',
@@ -351,10 +353,14 @@ const StepByStepOnboarding: React.FC = () => {
       await expertApi.completeOnboarding(onboardingData);
       await refreshExpert();
       
+      // Redirect to Train AI page after successful completion
+      setTimeout(() => {
+        navigate('/train');
+      }, 1500); // Small delay to let them see the completion message
+      
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
       setError('Failed to complete setup. Please try again.');
-    } finally {
       setCompleting(false);
     }
   };
@@ -465,10 +471,10 @@ const StepByStepOnboarding: React.FC = () => {
             </Typography>
             <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
               You've successfully set up your expert profile with all your skills, experience, and expertise. 
-              Next, you'll train your AI assistant to help users with questions in your area of expertise.
+              Now it's time to train your AI assistant to help users with questions in your area of expertise.
             </Typography>
             <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-              Click "Complete Setup" to continue to your profile dashboard
+              Click "Complete Setup" to start training your AI assistant
             </Typography>
           </Box>
         );
