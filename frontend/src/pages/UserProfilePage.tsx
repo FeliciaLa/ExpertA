@@ -479,35 +479,95 @@ const UserProfilePage: React.FC = () => {
             </Tooltip>
           </Box>
         </Box>
-        <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-          Basic Information
-        </Typography>
-
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={4} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Avatar
-              sx={{
-                width: 120,
-                height: 120,
-                bgcolor: 'primary.main',
-                fontSize: '3rem'
-              }}
-            >
-              {user?.name ? user.name[0].toUpperCase() : 'U'}
-            </Avatar>
-          </Grid>
-
-          <Grid item xs={12} sm={8}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Name
-              </Typography>
-              <Typography variant="h6">
-                {user?.name || 'Not provided'}
+        <Grid container spacing={4}>
+          {/* Profile Section */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+              <Avatar
+                sx={{
+                  width: 120,
+                  height: 120,
+                  bgcolor: 'primary.main',
+                  fontSize: '3rem',
+                  mb: 2
+                }}
+              >
+                {user?.name ? user.name[0].toUpperCase() : 'U'}
+              </Avatar>
+              <Typography variant="h5" gutterBottom>
+                {user?.name || 'User'}
               </Typography>
             </Box>
+          </Grid>
 
+          {/* Quick Actions Section */}
+          <Grid item xs={12} md={8}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+              Quick Actions
+            </Typography>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  onClick={() => navigate('/experts')}
+                  sx={{ 
+                    py: 2,
+                    fontSize: '1.1rem',
+                    borderRadius: 2
+                  }}
+                >
+                  Browse All Experts
+                </Button>
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  fullWidth
+                  onClick={() => navigate('/')}
+                  sx={{ 
+                    py: 2,
+                    fontSize: '1.1rem',
+                    borderRadius: 2
+                  }}
+                >
+                  Back to Home
+                </Button>
+              </Grid>
+            </Grid>
 
+            <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 2 }}>
+              Popular Expert Categories
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {[
+                'Marketing & Advertising',
+                'Technology & Software', 
+                'Finance & Banking',
+                'Healthcare & Medicine',
+                'Consulting & Strategy',
+                'Design & Creative'
+              ].map((category) => (
+                <Button
+                  key={category}
+                  variant="outlined"
+                  size="small"
+                  onClick={() => navigate('/experts')}
+                  sx={{ 
+                    borderRadius: 20,
+                    textTransform: 'none',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  {category}
+                </Button>
+              ))}
+            </Box>
           </Grid>
         </Grid>
 
