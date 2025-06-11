@@ -125,7 +125,11 @@ const ExpertProfile: React.FC = () => {
   // Load profile data on mount
   useEffect(() => {
     loadProfile();
-  }, []);
+    // Also refresh expert data to ensure we have the latest onboarding status
+    if (refreshExpert) {
+      refreshExpert();
+    }
+  }, [refreshExpert]);
 
   // Check if we should show the tour for new experts
   useEffect(() => {
@@ -139,12 +143,12 @@ const ExpertProfile: React.FC = () => {
     if (expert?.id && expert?.onboarding_completed && !loading) {
       const hasSeenTour = localStorage.getItem(`expert_tour_seen_${expert.id}`);
       if (!hasSeenTour) {
-        console.log('Starting tour in 1 second...');
-        // Small delay to ensure DOM is ready
+        console.log('Starting tour in 2 seconds...');
+        // Delay to ensure DOM is ready and profile data is loaded
         setTimeout(() => {
           console.log('Setting runTour to true');
           setRunTour(true);
-        }, 1000);
+        }, 2000);
       }
     }
   }, [expert?.id, expert?.onboarding_completed, loading]);
