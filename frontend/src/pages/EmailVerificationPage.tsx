@@ -12,6 +12,7 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useAuth } from '../contexts/AuthContext';
+import { API_URL } from '../services/api';
 
 export const EmailVerificationPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -31,8 +32,10 @@ export const EmailVerificationPage: React.FC = () => {
 
       try {
         console.log('Verifying email change with token:', token);
+        console.log('API URL:', API_URL);
+        console.log('Full verification URL:', `${API_URL}verify-email-change/`);
         
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://experta-backend-d64920064058.herokuapp.com'}/api/verify-email-change/`, {
+        const response = await fetch(`${API_URL}verify-email-change/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -40,6 +43,9 @@ export const EmailVerificationPage: React.FC = () => {
           body: JSON.stringify({ token }),
         });
 
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
         const data = await response.json();
         console.log('Email verification response:', data);
 

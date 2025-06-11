@@ -114,6 +114,7 @@ api.interceptors.request.use(
       'user/register/',
       'login/',
       'verify-email/',
+      'verify-email-change/',
       'public-experts/',
       'password-reset/',
       'password-reset-confirm/',
