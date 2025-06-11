@@ -502,54 +502,44 @@ const UserProfilePage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* User Statistics */}
-        <Box sx={{ mt: 4, mb: 4 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
-                                  <Typography variant="h4" color="primary" gutterBottom>
-                    Dec 2024
-                  </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Member Since
-                </Typography>
-              </Paper>
-            </Grid>
+                  {/* User Statistics */}
+          <Box sx={{ mt: 4, mb: 4, maxWidth: 400, mx: 'auto' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+              <Typography variant="body1" color="text.secondary">
+                Member Since
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                Dec 2024
+              </Typography>
+            </Box>
             
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
-                <Typography variant="h4" color="primary" gutterBottom>
-                  0
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Experts Consulted
-                </Typography>
-              </Paper>
-            </Grid>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+              <Typography variant="body1" color="text.secondary">
+                Experts Consulted
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                0
+              </Typography>
+            </Box>
             
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
-                <Typography variant="h4" color="primary" gutterBottom>
-                  0
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Consultations
-                </Typography>
-              </Paper>
-            </Grid>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+              <Typography variant="body1" color="text.secondary">
+                Total Consultations
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                0
+              </Typography>
+            </Box>
             
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
-                <Typography variant="h4" color="primary" gutterBottom>
-                  -
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Favorite Category
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-        </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+              <Typography variant="body1" color="text.secondary">
+                Favorite Category
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                -
+              </Typography>
+            </Box>
+          </Box>
 
         {/* Consultation History Section */}
         <Box sx={{ mt: 6 }}>
