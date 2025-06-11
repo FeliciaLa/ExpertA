@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SettingsIcon from '@mui/icons-material/Settings';
+import InfoIcon from '@mui/icons-material/Info';
 import { useAuth } from '../contexts/AuthContext';
 import { userApi, authApi } from '../services/api';
 import { API_URL } from '../services/api';
@@ -31,6 +32,7 @@ const UserProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [name, setName] = useState(user?.name || '');
   
   // Account settings state
@@ -472,6 +474,14 @@ const UserProfilePage: React.FC = () => {
             <Typography variant="h4" color="primary">
               My Profile
             </Typography>
+            <Tooltip title="How ExpertA Works">
+              <IconButton
+                onClick={() => setIsHowItWorksOpen(true)}
+                sx={{ ml: 1 }}
+              >
+                <InfoIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Account Settings">
               <IconButton
                 onClick={() => setIsAccountSettingsOpen(true)}
@@ -498,87 +508,6 @@ const UserProfilePage: React.FC = () => {
           <Typography variant="h5" gutterBottom>
             {user?.name || 'User'}
           </Typography>
-        </Box>
-
-        {/* How ExpertA Works Section */}
-        <Box sx={{ mt: 6 }}>
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            How ExpertA Works
-          </Typography>
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 3, height: '100%', textAlign: 'center' }}>
-                <Box sx={{ 
-                  width: 60, 
-                  height: 60, 
-                  bgcolor: 'primary.main', 
-                  borderRadius: '50%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  mx: 'auto',
-                  mb: 2
-                }}>
-                  <Typography variant="h4" sx={{ color: 'white' }}>1</Typography>
-                </Box>
-                <Typography variant="h6" gutterBottom>
-                  Browse Experts
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Explore our curated list of AI-trained experts across various industries and specialties.
-                </Typography>
-              </Paper>
-            </Grid>
-            
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 3, height: '100%', textAlign: 'center' }}>
-                <Box sx={{ 
-                  width: 60, 
-                  height: 60, 
-                  bgcolor: 'primary.main', 
-                  borderRadius: '50%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  mx: 'auto',
-                  mb: 2
-                }}>
-                  <Typography variant="h4" sx={{ color: 'white' }}>2</Typography>
-                </Box>
-                <Typography variant="h6" gutterBottom>
-                  Chat with AI
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Start a conversation with an expert's AI trained on their knowledge and experience.
-                </Typography>
-              </Paper>
-            </Grid>
-            
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 3, height: '100%', textAlign: 'center' }}>
-                <Box sx={{ 
-                  width: 60, 
-                  height: 60, 
-                  bgcolor: 'primary.main', 
-                  borderRadius: '50%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  mx: 'auto',
-                  mb: 2
-                }}>
-                  <Typography variant="h4" sx={{ color: 'white' }}>3</Typography>
-                </Box>
-                <Typography variant="h6" gutterBottom>
-                  Get Expert Advice
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Receive personalized advice and insights based on real expert knowledge and methodology.
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
         </Box>
 
         {/* Consultation History Section */}
@@ -791,6 +720,98 @@ const UserProfilePage: React.FC = () => {
               Close
             </Button>
           </DialogActions>
+        </Dialog>
+
+        {/* How ExpertA Works Dialog */}
+        <Dialog 
+          open={isHowItWorksOpen}
+          onClose={() => setIsHowItWorksOpen(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5">
+              How ExpertA Works
+            </Typography>
+            <IconButton onClick={() => setIsHowItWorksOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              <Grid item xs={12} md={4}>
+                <Paper sx={{ p: 3, height: '100%', textAlign: 'center' }}>
+                  <Box sx={{ 
+                    width: 60, 
+                    height: 60, 
+                    bgcolor: 'primary.main', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 2
+                  }}>
+                    <Typography variant="h4" sx={{ color: 'white' }}>1</Typography>
+                  </Box>
+                  <Typography variant="h6" gutterBottom>
+                    Browse Experts
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Explore our curated list of AI-trained experts across various industries and specialties.
+                  </Typography>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} md={4}>
+                <Paper sx={{ p: 3, height: '100%', textAlign: 'center' }}>
+                  <Box sx={{ 
+                    width: 60, 
+                    height: 60, 
+                    bgcolor: 'primary.main', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 2
+                  }}>
+                    <Typography variant="h4" sx={{ color: 'white' }}>2</Typography>
+                  </Box>
+                  <Typography variant="h6" gutterBottom>
+                    Chat with AI
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Start a conversation with an expert's AI trained on their knowledge and experience.
+                  </Typography>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} md={4}>
+                <Paper sx={{ p: 3, height: '100%', textAlign: 'center' }}>
+                  <Box sx={{ 
+                    width: 60, 
+                    height: 60, 
+                    bgcolor: 'primary.main', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 2
+                  }}>
+                    <Typography variant="h4" sx={{ color: 'white' }}>3</Typography>
+                  </Box>
+                  <Typography variant="h6" gutterBottom>
+                    Get Expert Advice
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Receive personalized advice and insights based on real expert knowledge and methodology.
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </DialogContent>
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
