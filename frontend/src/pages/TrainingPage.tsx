@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { DocumentUpload } from '../components/DocumentUpload';
 import { TrainingChat } from '../components/TrainingChat';
+import { AITrainingProgress } from '../components/AITrainingProgress';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
 import InfoIcon from '@mui/icons-material/Info';
@@ -67,6 +68,9 @@ const TrainingPage: React.FC = () => {
           The more you train it, the better it becomes at representing your expertise to potential clients.
         </Typography>
       </Alert>
+
+      {/* AI Training Progress */}
+      <AITrainingProgress />
 
       <Paper sx={{ width: '100%', mb: 3 }}>
         <Tabs 
