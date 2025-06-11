@@ -4,12 +4,15 @@ import {
   Paper,
   Typography,
   Tabs,
-  Tab
+  Tab,
+  Alert,
+  AlertTitle
 } from '@mui/material';
 import { DocumentUpload } from '../components/DocumentUpload';
 import { TrainingChat } from '../components/TrainingChat';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
+import InfoIcon from '@mui/icons-material/Info';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -49,6 +52,21 @@ const TrainingPage: React.FC = () => {
       <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
         AI Training
       </Typography>
+
+      {/* Welcome Explainer */}
+      <Alert 
+        severity="info" 
+        icon={<InfoIcon />}
+        sx={{ mb: 4 }}
+      >
+        <AlertTitle sx={{ fontWeight: 600 }}>Welcome to AI Training!</AlertTitle>
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Now that your profile is set up, it's time to train your AI assistant with your expertise. 
+          Start by uploading documents (PDFs, Word docs, etc.) that showcase your knowledge, 
+          or use the Q&A Training to teach your AI through conversation. 
+          The more you train it, the better it becomes at representing your expertise to potential clients.
+        </Typography>
+      </Alert>
 
       <Paper sx={{ width: '100%', mb: 3 }}>
         <Tabs 
