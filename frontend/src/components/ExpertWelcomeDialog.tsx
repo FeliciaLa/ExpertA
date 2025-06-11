@@ -61,11 +61,11 @@ export const ExpertWelcomeDialog: React.FC<ExpertWelcomeDialogProps> = ({
         <List sx={{ mt: 2 }}>
           <ListItem>
             <ListItemIcon>
-              <AccountCircle color="primary" />
+              <CheckCircle color="success" />
             </ListItemIcon>
             <ListItemText
-              primary="1. Complete Your Profile"
-              secondary="Add your professional details, bio, and expertise areas to help users understand your background."
+              primary="✓ Profile Complete"
+              secondary="Your expert profile has been set up with all your professional details and expertise areas."
             />
           </ListItem>
 
@@ -74,7 +74,7 @@ export const ExpertWelcomeDialog: React.FC<ExpertWelcomeDialogProps> = ({
               <Psychology color="primary" />
             </ListItemIcon>
             <ListItemText
-              primary="2. Train Your AI Assistant"
+              primary="Next: Train Your AI Assistant"
               secondary="Participate in an interactive training session where you'll answer questions about your expertise. This teaches the AI to respond like you."
             />
           </ListItem>
@@ -84,7 +84,7 @@ export const ExpertWelcomeDialog: React.FC<ExpertWelcomeDialogProps> = ({
               <Chat color="primary" />
             </ListItemIcon>
             <ListItemText
-              primary="3. Start Helping Users"
+              primary="Then: Start Helping Users"
               secondary="Once trained, users can chat with your AI assistant to get expert advice based on your knowledge and experience."
             />
           </ListItem>

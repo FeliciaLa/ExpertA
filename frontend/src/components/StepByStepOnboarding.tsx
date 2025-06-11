@@ -55,6 +55,7 @@ interface StepData {
   tools_technologies: string;
   certifications: string;
   bio: string;
+  completion: string;
 }
 
 const stepSections = [
@@ -139,6 +140,11 @@ const stepSections = [
         label: 'Professional Bio',
         description: 'Finally, write your professional bio which will be visible to clients',
         field: 'bio'
+      },
+      {
+        label: 'Profile Complete!',
+        description: 'Congratulations! Your expert profile is ready',
+        field: 'completion'
       }
     ]
   }
@@ -161,7 +167,8 @@ const StepByStepOnboarding: React.FC = () => {
     methodologies: '',
     tools_technologies: '',
     certifications: '',
-    bio: ''
+    bio: '',
+    completion: ''
   });
   
   const [currentValue, setCurrentValue] = useState('');
@@ -218,7 +225,8 @@ const StepByStepOnboarding: React.FC = () => {
         methodologies: profile.profile?.methodologies || '',
         tools_technologies: profile.profile?.tools_technologies || '',
         certifications: profile.profile?.certifications || '',
-        bio: profile.bio || ''
+        bio: profile.bio || '',
+        completion: ''
       };
       setStepData(existingData);
     } catch (error) {
@@ -259,6 +267,12 @@ const StepByStepOnboarding: React.FC = () => {
   const validateCurrentField = () => {
     const currentField = steps[activeStep].field;
     
+    // Completion step doesn't need validation
+    if (currentField === 'completion') {
+      setError(null);
+      return true;
+    }
+    
     if (currentField === 'key_skills') {
       if (stepData.key_skills.length === 0) {
         setError('Please add at least one skill');
@@ -284,9 +298,15 @@ const StepByStepOnboarding: React.FC = () => {
   };
 
   const saveCurrentField = async () => {
+    const currentField = steps[activeStep].field;
+    
+    // Skip saving for completion step
+    if (currentField === 'completion') {
+      return;
+    }
+    
     try {
       setLoading(true);
-      const currentField = steps[activeStep].field;
       
       let updateData: any = {};
       
@@ -431,6 +451,26 @@ const StepByStepOnboarding: React.FC = () => {
             variant="outlined"
             sx={{ mt: 2 }}
           />
+        );
+
+      case 'completion':
+        return (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <CheckCircle sx={{ fontSize: 100, color: 'success.main', mb: 3 }} />
+            <Typography variant="h4" gutterBottom color="primary">
+              🎉 Profile Complete!
+            </Typography>
+            <Typography variant="h6" color="textSecondary" sx={{ mb: 3 }}>
+              Congratulations! Your expert profile is ready
+            </Typography>
+            <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
+              You've successfully set up your expert profile with all your skills, experience, and expertise. 
+              Next, you'll train your AI assistant to help users with questions in your area of expertise.
+            </Typography>
+            <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
+              Click "Complete Setup" to continue to your profile dashboard
+            </Typography>
+          </Box>
         );
         
       case 'industry':
