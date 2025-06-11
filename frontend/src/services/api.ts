@@ -88,6 +88,7 @@ export interface UserData {
   role: string;
   is_expert?: boolean;
   is_user?: boolean;
+  profile_image?: string;
 }
 
 export interface UserAuthResponse {
@@ -717,6 +718,19 @@ export const userApi = {
   updateProfile: async (profileData: any): Promise<UserData> => {
     const response = await api.put('user/profile/update/', profileData);
     return response.data;
+  },
+
+  uploadProfileImage: async (imageFile: File): Promise<UserData> => {
+    try {
+      const formData = new FormData();
+      formData.append('profile_image', imageFile);
+      
+      // Don't set Content-Type header - let the browser set it automatically with boundary
+      const response = await api.post('user/profile/upload-image/', formData);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   deleteProfile: async (): Promise<{ message: string }> => {

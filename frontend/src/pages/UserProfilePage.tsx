@@ -37,6 +37,7 @@ const UserProfilePage: React.FC = () => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || '');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [name, setName] = useState(user?.name || '');
   
   // Account settings state
@@ -443,8 +444,6 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
-
-
   const handleSaveName = async () => {
     if (!editedName.trim()) return;
     
@@ -474,13 +473,41 @@ const UserProfilePage: React.FC = () => {
     setIsEditingName(false);
   };
 
-  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // For now, we'll just show an alert since we don't have backend support
-      // In a real implementation, you'd upload the file to your server
-      alert('Profile picture upload functionality would be implemented here');
-      console.log('Selected file:', file);
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB.');
+        return;
+      }
+      
+      try {
+        setIsUploadingImage(true);
+        console.log('Uploading profile image:', file.name);
+        const updatedUser = await userApi.uploadProfileImage(file);
+        
+        // Update user context with the new profile image
+        if (user && setUser) {
+          setUser({
+            ...user,
+            profile_image: updatedUser.profile_image
+          });
+        }
+        
+        console.log('Profile image updated successfully:', updatedUser);
+      } catch (error) {
+        console.error('Error uploading profile image:', error);
+        alert('Failed to upload profile image. Please try again.');
+      } finally {
+        setIsUploadingImage(false);
+      }
     }
   };
 
@@ -554,8 +581,11 @@ const UserProfilePage: React.FC = () => {
               minWidth: 200
             }}>
               <Box sx={{ position: 'relative', mb: 2 }}>
-                <Avatar sx={{ width: 120, height: 120, fontSize: '3rem' }}>
-                  {user?.name?.charAt(0).toUpperCase()}
+                <Avatar 
+                  src={user?.profile_image} 
+                  sx={{ width: 120, height: 120, fontSize: '3rem' }}
+                >
+                  {!user?.profile_image && user?.name?.charAt(0).toUpperCase()}
                 </Avatar>
                 <input
                   accept="image/*"
@@ -567,6 +597,7 @@ const UserProfilePage: React.FC = () => {
                 <label htmlFor="profile-picture-upload">
                   <IconButton
                     component="span"
+                    disabled={isUploadingImage}
                     sx={{
                       position: 'absolute',
                       bottom: -5,
@@ -578,9 +609,16 @@ const UserProfilePage: React.FC = () => {
                       '&:hover': {
                         bgcolor: 'primary.dark',
                       },
+                      '&:disabled': {
+                        bgcolor: 'grey.400',
+                      },
                     }}
                   >
-                    <CameraAltIcon fontSize="small" />
+                    {isUploadingImage ? (
+                      <CircularProgress size={16} sx={{ color: 'white' }} />
+                    ) : (
+                      <CameraAltIcon fontSize="small" />
+                    )}
                   </IconButton>
                 </label>
               </Box>
