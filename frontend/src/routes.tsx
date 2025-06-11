@@ -16,6 +16,7 @@ import ExpertProfile from './components/ExpertProfile';
 import OnboardingReview from './components/OnboardingReview';
 import DocumentUpload from './components/DocumentUpload';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
 import TrainingPage from './pages/TrainingPage';
 import PasswordResetPage from './pages/PasswordResetPage';
 import TermsOfService from './pages/TermsOfService';
@@ -60,6 +61,7 @@ function AppRoutes() {
       <Route path="/experts" element={<Layout><ExpertList /></Layout>} />
       <Route path="/experts/:expertId" element={<Layout><ExpertDetailPage /></Layout>} />
       <Route path="/verify-email/:token" element={<Layout><VerifyEmailPage /></Layout>} />
+      <Route path="/verify-email-change/:token" element={<Layout><EmailVerificationPage /></Layout>} />
       <Route path="/reset-password/:uidb64/:token" element={<Layout><PasswordResetPage /></Layout>} />
       <Route path="/terms" element={<Layout><TermsOfService /></Layout>} />
       <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
