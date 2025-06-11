@@ -491,16 +491,6 @@ const ExpertProfile: React.FC = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Email"
-                value={profileData.email}
-                disabled
-                helperText="Email cannot be changed"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
                 label="Professional Bio"
                 value={profileData.bio}
                 onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
