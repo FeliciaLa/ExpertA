@@ -303,6 +303,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Email verification fields
     verification_token = models.CharField(max_length=100, blank=True, null=True)
     verification_token_created_at = models.DateTimeField(null=True, blank=True)
+    
+    # Email change verification fields
+    pending_email = models.EmailField(blank=True, null=True)
+    email_change_token = models.CharField(max_length=255, blank=True, null=True)
+    email_change_token_created_at = models.DateTimeField(blank=True, null=True)
 
     objects = UserManager()
 

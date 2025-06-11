@@ -2127,17 +2127,29 @@ class ExpertProfileUpdateView(APIView):
 
 class ChangeEmailView(APIView):
     """
-    API endpoint for changing user email address.
+    API endpoint for changing user email address with proper verification.
     """
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
         try:
             new_email = request.data.get('new_email', '').strip().lower()
+            current_password = request.data.get('current_password', '')
             
             if not new_email:
                 return Response({
                     "error": "New email address is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not current_password:
+                return Response({
+                    "error": "Current password is required to change email"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Verify current password for security
+            if not request.user.check_password(current_password):
+                return Response({
+                    "error": "Current password is incorrect"
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # Validate email format
@@ -2161,19 +2173,187 @@ class ChangeEmailView(APIView):
                     "error": "This is already your current email address"
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # For security, we would typically send a verification email here
-            # For now, we'll just update the email directly
-            request.user.email = new_email
+            # Generate verification token
+            import secrets
+            verification_token = secrets.token_urlsafe(32)
+            
+            # Store pending email change (you could create a PendingEmailChange model)
+            # For now, we'll use a simple approach with user fields
+            request.user.pending_email = new_email
+            request.user.email_change_token = verification_token
+            request.user.email_change_token_created_at = timezone.now()
             request.user.save()
             
+            # Send verification email to new address
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                
+                verification_url = f"https://expert-a.vercel.app/verify-email-change/{verification_token}"
+                
+                subject = "Verify Your New Email Address - ExpertA"
+                message = f"""
+Hello {request.user.name},
+
+You recently requested to change your email address on ExpertA.
+
+Please click the link below to verify your new email address:
+{verification_url}
+
+If you did not request this change, please ignore this email or contact support.
+
+This link will expire in 24 hours.
+
+Best regards,
+The ExpertA Team
+                """
+                
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [new_email],
+                    fail_silently=False,
+                )
+                
+                # Also notify the current email about the change attempt
+                current_email_subject = "Email Change Request - ExpertA"
+                current_email_message = f"""
+Hello {request.user.name},
+
+A request was made to change your email address from {request.user.email} to {new_email}.
+
+If this was you, please check the new email address for a verification link.
+If this was not you, please secure your account immediately.
+
+Best regards,
+The ExpertA Team
+                """
+                
+                send_mail(
+                    current_email_subject,
+                    current_email_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [request.user.email],
+                    fail_silently=True,  # Don't fail if current email notification fails
+                )
+                
+            except Exception as e:
+                print(f"Error sending verification email: {e}")
+                return Response({
+                    "error": "Failed to send verification email. Please try again."
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
             return Response({
-                "message": "Email address updated successfully"
+                "message": f"Verification email sent to {new_email}. Please check your email and click the verification link to complete the email change."
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
             print(f"Change email error: {e}")
             return Response({
-                "error": "Failed to update email address"
+                "error": "Failed to process email change request"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VerifyEmailChangeView(APIView):
+    """
+    API endpoint to verify email change using the token sent to the new email.
+    """
+    authentication_classes = []  # No authentication required, using token
+    
+    def post(self, request):
+        try:
+            token = request.data.get('token', '')
+            
+            if not token:
+                return Response({
+                    "error": "Verification token is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Find user with this token
+            try:
+                user = User.objects.get(email_change_token=token)
+            except User.DoesNotExist:
+                return Response({
+                    "error": "Invalid or expired verification token"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if token is expired (24 hours)
+            if not user.email_change_token_created_at:
+                return Response({
+                    "error": "Invalid verification token"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            token_age = timezone.now() - user.email_change_token_created_at
+            if token_age.total_seconds() > 24 * 60 * 60:  # 24 hours
+                # Clean up expired token
+                user.pending_email = None
+                user.email_change_token = None
+                user.email_change_token_created_at = None
+                user.save()
+                
+                return Response({
+                    "error": "Verification token has expired. Please request a new email change."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if pending email is still valid
+            if not user.pending_email:
+                return Response({
+                    "error": "No pending email change found"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if the pending email is still available
+            if User.objects.filter(email=user.pending_email).exclude(id=user.id).exists():
+                return Response({
+                    "error": "This email address is no longer available"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Update the email
+            old_email = user.email
+            user.email = user.pending_email
+            user.pending_email = None
+            user.email_change_token = None
+            user.email_change_token_created_at = None
+            user.save()
+            
+            # Send confirmation email to the new email address
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                
+                subject = "Email Successfully Changed - ExpertA"
+                message = f"""
+Hello {user.name},
+
+Your email address has been successfully changed from {old_email} to {user.email}.
+
+If you did not make this change, please contact support immediately.
+
+Best regards,
+The ExpertA Team
+                """
+                
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=True,
+                )
+                
+            except Exception as e:
+                print(f"Error sending confirmation email: {e}")
+                # Don't fail the verification if email sending fails
+            
+            return Response({
+                "message": "Email address successfully updated!",
+                "new_email": user.email
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"Email verification error: {e}")
+            return Response({
+                "error": "Failed to verify email change"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

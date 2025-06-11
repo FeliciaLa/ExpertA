@@ -486,9 +486,10 @@ export const authApi = {
     return response.data;
   },
 
-  changeEmail: async (newEmail: string): Promise<{ message: string }> => {
+  changeEmail: async (newEmail: string, currentPassword: string): Promise<{ message: string }> => {
     const response = await api.post('profile/change-email/', {
-      new_email: newEmail
+      new_email: newEmail,
+      current_password: currentPassword
     });
     return response.data;
   },

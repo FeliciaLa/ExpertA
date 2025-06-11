@@ -28,7 +28,8 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
 }) => {
   const [emailData, setEmailData] = useState({
     newEmail: '',
-    confirmEmail: ''
+    confirmEmail: '',
+    currentPassword: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -52,13 +53,18 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
       return;
     }
 
+    if (!emailData.currentPassword) {
+      setError('Current password is required to change your email address');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      await authApi.changeEmail(emailData.newEmail);
-      setSuccess('Email change request sent! Please check your email to confirm.');
-      setEmailData({ newEmail: '', confirmEmail: '' });
+      await authApi.changeEmail(emailData.newEmail, emailData.currentPassword);
+      setSuccess(`Verification email sent to ${emailData.newEmail}. Please check your email and click the verification link to complete the email change.`);
+      setEmailData({ newEmail: '', confirmEmail: '', currentPassword: '' });
     } catch (error: any) {
       setError(error.response?.data?.error || 'Failed to change email');
     } finally {
@@ -97,7 +103,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   };
 
   const handleClose = () => {
-    setEmailData({ newEmail: '', confirmEmail: '' });
+    setEmailData({ newEmail: '', confirmEmail: '', currentPassword: '' });
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     setError(null);
     setSuccess(null);
@@ -172,10 +178,21 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
             disabled={loading}
           />
 
+          <TextField
+            fullWidth
+            label="Current Password"
+            type="password"
+            value={emailData.currentPassword}
+            onChange={(e) => setEmailData({ ...emailData, currentPassword: e.target.value })}
+            margin="normal"
+            disabled={loading}
+            helperText="Password is required for security when changing your email address"
+          />
+
           <Button
             variant="outlined"
             onClick={handleEmailChange}
-            disabled={loading || !emailData.newEmail || !emailData.confirmEmail}
+            disabled={loading || !emailData.newEmail || !emailData.confirmEmail || !emailData.currentPassword}
             sx={{ mt: 1 }}
           >
             Update Email

@@ -25,6 +25,7 @@ from .views import (
     PasswordResetConfirmView,
     ExpertOnboardingCompleteView,
     ChangeEmailView,
+    VerifyEmailChangeView,
     ChangePasswordView
 )
 from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView, TrainingStatsView
@@ -203,6 +204,7 @@ urlpatterns = [
     
     # Account settings endpoints
     path('profile/change-email/', ChangeEmailView.as_view(), name='change-email'),
+    path('verify-email-change/', VerifyEmailChangeView.as_view(), name='verify-email-change'),
     path('profile/change-password/', ChangePasswordView.as_view(), name='change-password'),
     
     # CORS test endpoint
