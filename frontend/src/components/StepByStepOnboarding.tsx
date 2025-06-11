@@ -589,7 +589,7 @@ const StepByStepOnboarding: React.FC = () => {
             label="Methodologies & Frameworks"
             value={currentValue}
             onChange={(e) => setCurrentValue(e.target.value)}
-            placeholder="What methodologies, frameworks, or approaches do you use in your work? (Optional)"
+            placeholder="What methodologies, frameworks, or approaches do you use in your work?"
             variant="outlined"
             sx={{ mt: 2 }}
           />
@@ -604,7 +604,7 @@ const StepByStepOnboarding: React.FC = () => {
             label="Tools & Technologies"
             value={currentValue}
             onChange={(e) => setCurrentValue(e.target.value)}
-            placeholder="What tools, software, or technologies do you use regularly? (Optional)"
+            placeholder="What tools, software, or technologies do you use regularly?"
             variant="outlined"
             sx={{ mt: 2 }}
           />
@@ -619,7 +619,7 @@ const StepByStepOnboarding: React.FC = () => {
             label="Certifications & Qualifications"
             value={currentValue}
             onChange={(e) => setCurrentValue(e.target.value)}
-            placeholder="List any relevant certifications, degrees, or qualifications (Optional)"
+            placeholder="List any relevant certifications, degrees, or qualifications"
             variant="outlined"
             sx={{ mt: 2 }}
           />
