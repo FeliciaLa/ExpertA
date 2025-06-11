@@ -33,12 +33,26 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
     trainingMinutes: 0
   });
   const [loading, setLoading] = useState(true);
+  const [previousMessageCount, setPreviousMessageCount] = useState(0);
 
   useEffect(() => {
     loadTrainingStats();
-  }, [expert?.total_training_messages]); // Refresh when expert data changes
+  }, [expert?.id]); // Only refresh when expert changes, not on every data update
 
-  const loadTrainingStats = async () => {
+  // Watch for increases in training message count to refresh stats
+  useEffect(() => {
+    const currentCount = expert?.total_training_messages || 0;
+    if (currentCount > previousMessageCount && previousMessageCount > 0) {
+      console.log('Training messages increased, refreshing stats:', {
+        previous: previousMessageCount,
+        current: currentCount
+      });
+      loadTrainingStats(true);
+    }
+    setPreviousMessageCount(currentCount);
+  }, [expert?.total_training_messages, previousMessageCount]);
+
+  const loadTrainingStats = async (forceRefresh = false) => {
     try {
       setLoading(true);
       
@@ -46,21 +60,49 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
       const documentsResponse = await trainingService.getDocuments();
       const documentsCount = documentsResponse.documents?.length || 0;
       
-      // Calculate Q&A stats from expert data
-      const qaMessages = expert?.total_training_messages || 0;
-      const trainingMinutes = Math.floor(qaMessages / 2); // Estimate 2 messages per minute
+      // Get accurate training stats from database
+      const trainingStatsResponse = await trainingService.getTrainingStats();
+      
+      if (forceRefresh || trainingStatsResponse.stored_total !== trainingStatsResponse.updated_total) {
+        console.log('Training stats from database:', {
+          expertMessages: trainingStatsResponse.expert_messages,
+          aiMessages: trainingStatsResponse.ai_messages,
+          totalMessages: trainingStatsResponse.total_messages,
+          trainingMinutes: trainingStatsResponse.training_minutes,
+          storedTotal: trainingStatsResponse.stored_total,
+          updatedTotal: trainingStatsResponse.updated_total,
+          expertId: expert?.id,
+          lastTraining: trainingStatsResponse.last_training_at
+        });
+      }
       
       setStats({
         documentsUploaded: documentsCount,
+        qaMessagesCount: trainingStatsResponse.total_messages,
+        trainingMinutes: trainingStatsResponse.training_minutes,
+        lastTrainingDate: trainingStatsResponse.last_training_at
+      });
+    } catch (error) {
+      console.error('Error loading training stats:', error);
+      
+      // Fallback to expert data if API fails
+      const qaMessages = expert?.total_training_messages || 0;
+      const trainingMinutes = Math.max(Math.floor(qaMessages / 2), 0);
+      
+      setStats({
+        documentsUploaded: 0,
         qaMessagesCount: qaMessages,
         trainingMinutes: trainingMinutes,
         lastTrainingDate: expert?.last_training_at
       });
-    } catch (error) {
-      console.error('Error loading training stats:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to refresh stats manually (useful after training sessions)
+  const refreshStats = () => {
+    loadTrainingStats(true);
   };
 
   const getAIPersonality = () => {

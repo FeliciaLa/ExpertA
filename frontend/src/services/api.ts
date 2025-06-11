@@ -683,6 +683,16 @@ export const trainingService = {
       console.error('Error in sendMessage:', error);
       throw error;
     }
+  },
+
+  getTrainingStats: async () => {
+    try {
+      const response = await api.get('training/stats/');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting training stats:', error);
+      throw error;
+    }
   }
 };
 
