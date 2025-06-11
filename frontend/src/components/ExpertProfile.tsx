@@ -218,6 +218,9 @@ const ExpertProfile: React.FC = () => {
       };
 
       console.log('Sending update data:', updateData);
+      console.log('Profile object being sent:', updateData.profile);
+      console.log('Industry being sent:', updateData.profile.industry);
+      console.log('Years of experience being sent:', updateData.profile.years_of_experience);
       
       const data = await expertApi.updateProfile(updateData);
       console.log('Update response received:', data);
@@ -517,7 +520,19 @@ const ExpertProfile: React.FC = () => {
                 value={profile.profile?.industry || ''}
                 onChange={(e) => setProfile({ 
                   ...profile, 
-                  profile: { ...profile.profile!, industry: e.target.value }
+                  profile: { 
+                    ...(profile.profile || {
+                      industry: '',
+                      years_of_experience: 0,
+                      key_skills: '',
+                      typical_problems: '',
+                      background: '',
+                      certifications: '',
+                      methodologies: '',
+                      tools_technologies: '',
+                    }), 
+                    industry: e.target.value 
+                  }
                 })}
                 disabled={!isEditing}
                 fullWidth
@@ -548,7 +563,19 @@ const ExpertProfile: React.FC = () => {
                   const numericValue = experienceMap[e.target.value] || 2;
                   setProfile({ 
                     ...profile, 
-                    profile: { ...profile.profile!, years_of_experience: numericValue }
+                    profile: { 
+                      ...(profile.profile || {
+                        industry: '',
+                        years_of_experience: 0,
+                        key_skills: '',
+                        typical_problems: '',
+                        background: '',
+                        certifications: '',
+                        methodologies: '',
+                        tools_technologies: '',
+                      }), 
+                      years_of_experience: numericValue 
+                    }
                   });
                 }}
                 disabled={!isEditing}
@@ -612,7 +639,19 @@ const ExpertProfile: React.FC = () => {
                 value={profile.profile?.methodologies || ''}
                 onChange={(e) => setProfile({ 
                   ...profile, 
-                  profile: { ...profile.profile!, methodologies: e.target.value }
+                  profile: { 
+                    ...(profile.profile || {
+                      industry: '',
+                      years_of_experience: 0,
+                      key_skills: '',
+                      typical_problems: '',
+                      background: '',
+                      certifications: '',
+                      methodologies: '',
+                      tools_technologies: '',
+                    }), 
+                    methodologies: e.target.value 
+                  }
                 })}
                 disabled={!isEditing}
                 fullWidth
@@ -627,7 +666,19 @@ const ExpertProfile: React.FC = () => {
                 value={profile.profile?.tools_technologies || ''}
                 onChange={(e) => setProfile({ 
                   ...profile, 
-                  profile: { ...profile.profile!, tools_technologies: e.target.value }
+                  profile: { 
+                    ...(profile.profile || {
+                      industry: '',
+                      years_of_experience: 0,
+                      key_skills: '',
+                      typical_problems: '',
+                      background: '',
+                      certifications: '',
+                      methodologies: '',
+                      tools_technologies: '',
+                    }), 
+                    tools_technologies: e.target.value 
+                  }
                 })}
                 disabled={!isEditing}
                 fullWidth
@@ -642,7 +693,19 @@ const ExpertProfile: React.FC = () => {
                 value={profile.profile?.background || ''}
                 onChange={(e) => setProfile({ 
                   ...profile, 
-                  profile: { ...profile.profile!, background: e.target.value }
+                  profile: { 
+                    ...(profile.profile || {
+                      industry: '',
+                      years_of_experience: 0,
+                      key_skills: '',
+                      typical_problems: '',
+                      background: '',
+                      certifications: '',
+                      methodologies: '',
+                      tools_technologies: '',
+                    }), 
+                    background: e.target.value 
+                  }
                 })}
                 disabled={!isEditing}
                 fullWidth
@@ -660,7 +723,19 @@ const ExpertProfile: React.FC = () => {
                 value={profile.profile?.certifications || ''}
                 onChange={(e) => setProfile({ 
                   ...profile, 
-                  profile: { ...profile.profile!, certifications: e.target.value }
+                  profile: { 
+                    ...(profile.profile || {
+                      industry: '',
+                      years_of_experience: 0,
+                      key_skills: '',
+                      typical_problems: '',
+                      background: '',
+                      certifications: '',
+                      methodologies: '',
+                      tools_technologies: '',
+                    }), 
+                    certifications: e.target.value 
+                  }
                 })}
                 disabled={!isEditing}
                 fullWidth
@@ -675,7 +750,19 @@ const ExpertProfile: React.FC = () => {
                 value={profile.profile?.typical_problems || ''}
                 onChange={(e) => setProfile({ 
                   ...profile, 
-                  profile: { ...profile.profile!, typical_problems: e.target.value }
+                  profile: { 
+                    ...(profile.profile || {
+                      industry: '',
+                      years_of_experience: 0,
+                      key_skills: '',
+                      typical_problems: '',
+                      background: '',
+                      certifications: '',
+                      methodologies: '',
+                      tools_technologies: '',
+                    }), 
+                    typical_problems: e.target.value 
+                  }
                 })}
                 disabled={!isEditing}
                 fullWidth
