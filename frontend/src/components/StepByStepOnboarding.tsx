@@ -83,14 +83,14 @@ const steps = [
     field: 'years_of_experience'
   },
   {
-    label: 'Key Skills',
-    description: 'What are your main skills and competencies?',
-    field: 'key_skills'
-  },
-  {
     label: 'Professional Background',
     description: 'Describe your professional background and expertise',
     field: 'background'
+  },
+  {
+    label: 'Key Skills',
+    description: 'What are your main skills and competencies?',
+    field: 'key_skills'
   },
   {
     label: 'Typical Problems You Solve',
