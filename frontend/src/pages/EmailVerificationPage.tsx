@@ -21,6 +21,7 @@ export const EmailVerificationPage: React.FC = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [hasStartedVerification, setHasStartedVerification] = useState(false);
 
   useEffect(() => {
     const verifyEmailChange = async () => {
@@ -29,6 +30,14 @@ export const EmailVerificationPage: React.FC = () => {
         setMessage('Invalid verification link - no token provided');
         return;
       }
+
+      // Prevent multiple simultaneous requests
+      if (hasStartedVerification) {
+        console.log('Verification already in progress, skipping duplicate request');
+        return;
+      }
+      
+      setHasStartedVerification(true);
 
       try {
         console.log('Verifying email change with token:', token);
@@ -70,7 +79,7 @@ export const EmailVerificationPage: React.FC = () => {
     };
 
     verifyEmailChange();
-  }, [token, refreshUser]);
+  }, [token, refreshUser, hasStartedVerification]);
 
   const handleGoToProfile = () => {
     navigate('/expert/profile');
