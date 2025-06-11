@@ -950,10 +950,15 @@ class ExpertOnboardingCompleteView(APIView):
             expert = request.user
             profile_data = request.data
             
+            print(f"=== ONBOARDING COMPLETION DEBUG START ===")
+            print(f"Expert: {expert.email}")
+            print(f"Profile data received: {profile_data}")
+            
             # Validate required fields
             required_fields = ['industry', 'years_of_experience', 'key_skills', 'background']
             for field in required_fields:
                 if field not in profile_data:
+                    print(f"Missing required field: {field}")
                     return Response({
                         'error': f'Missing required field: {field}'
                     }, status=status.HTTP_400_BAD_REQUEST)
@@ -977,6 +982,7 @@ class ExpertOnboardingCompleteView(APIView):
             expert.onboarding_completed = True
             expert.onboarding_completed_at = timezone.now()
             expert.save()
+            print(f"Expert onboarding marked as complete: {expert.onboarding_completed}")
             
             # Initialize knowledge base
             knowledge_base, kb_created = ExpertKnowledgeBase.objects.get_or_create(
@@ -989,6 +995,8 @@ class ExpertOnboardingCompleteView(APIView):
                     'training_summary': f"Expert in {profile_data.get('industry', 'their field')} with {profile_data.get('years_of_experience', 0)} years of experience. Skills: {profile_data.get('key_skills', '')}"
                 }
             )
+            print(f"Knowledge base created: {kb_created}")
+            print(f"=== ONBOARDING COMPLETION DEBUG END ===")
             
             return Response({
                 'status': 'success',
