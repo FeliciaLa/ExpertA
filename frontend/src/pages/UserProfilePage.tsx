@@ -16,9 +16,11 @@ import {
   IconButton,
   Snackbar,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Tooltip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useAuth } from '../contexts/AuthContext';
 import { userApi, authApi } from '../services/api';
 import { API_URL } from '../services/api';
@@ -460,11 +462,23 @@ const UserProfilePage: React.FC = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4 }}>
-        My Profile
-      </Typography>
-
-      <Paper elevation={2} sx={{ p: 4, borderRadius: 2 }}>
+      <Paper elevation={2} sx={{ p: 4, borderRadius: 2, maxWidth: 1000, mx: 'auto' }}>
+        {/* Header */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h4" color="primary">
+              My Profile
+            </Typography>
+            <Tooltip title="Account Settings">
+              <IconButton
+                onClick={() => setIsAccountSettingsOpen(true)}
+                sx={{ ml: 1 }}
+              >
+                <SettingsIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
         <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
           Basic Information
         </Typography>
@@ -511,233 +525,226 @@ const UserProfilePage: React.FC = () => {
               </Typography>
             </Box>
 
-            <Button 
-              variant="contained" 
-              color="primary"
-              onClick={() => setIsAccountSettingsOpen(true)}
-              sx={{ mt: 2 }}
-            >
-              Account Settings
-            </Button>
+
           </Grid>
         </Grid>
-      </Paper>
 
-      {/* Account Settings Dialog */}
-      <Dialog
-        open={isAccountSettingsOpen}
-        onClose={handleAccountSettingsClose}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: { borderRadius: 2 }
-        }}
-      >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">Account Settings</Typography>
-          <IconButton onClick={handleAccountSettingsClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+        {/* Account Settings Dialog */}
+        <Dialog
+          open={isAccountSettingsOpen}
+          onClose={handleAccountSettingsClose}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: 2 }
+          }}
+        >
+          <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6">Account Settings</Typography>
+            <IconButton onClick={handleAccountSettingsClose} size="small">
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
 
-        <DialogContent dividers>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-              {error}
-            </Alert>
-          )}
+          <DialogContent dividers>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+                {error}
+              </Alert>
+            )}
 
-          {successMessage && (
-            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMessage(null)}>
+            {successMessage && (
+              <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMessage(null)}>
+                {successMessage}
+              </Alert>
+            )}
+
+            {/* Current Email Display */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+                Current Email
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {user?.email || 'Not provided'}
+              </Typography>
+            </Box>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* Change Email Section */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" gutterBottom>
+                Change Email Address
+              </Typography>
+              
+              <TextField
+                fullWidth
+                label="New Email Address"
+                type="email"
+                value={emailData.newEmail}
+                onChange={(e) => setEmailData({ ...emailData, newEmail: e.target.value })}
+                margin="normal"
+                disabled={isLoading}
+              />
+              
+              <TextField
+                fullWidth
+                label="Confirm New Email"
+                type="email"
+                value={emailData.confirmEmail}
+                onChange={(e) => setEmailData({ ...emailData, confirmEmail: e.target.value })}
+                margin="normal"
+                disabled={isLoading}
+              />
+
+              <TextField
+                fullWidth
+                label="Current Password"
+                type="password"
+                value={emailData.currentPassword}
+                onChange={(e) => setEmailData({ ...emailData, currentPassword: e.target.value })}
+                margin="normal"
+                disabled={isLoading}
+                helperText="Password is required for security when changing your email address"
+              />
+
+              <Button
+                variant="outlined"
+                onClick={handleEmailChange}
+                disabled={isLoading || !emailData.newEmail || !emailData.confirmEmail || !emailData.currentPassword}
+                sx={{ mt: 1 }}
+              >
+                Update Email
+              </Button>
+            </Box>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* Change Password Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Change Password
+              </Typography>
+
+              <TextField
+                fullWidth
+                label="Current Password"
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                margin="normal"
+                disabled={isLoading}
+              />
+
+              <TextField
+                fullWidth
+                label="New Password"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                margin="normal"
+                disabled={isLoading}
+                helperText="Password must be at least 8 characters long"
+              />
+
+              <TextField
+                fullWidth
+                label="Confirm New Password"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                margin="normal"
+                disabled={isLoading}
+              />
+
+              <Button
+                variant="outlined"
+                onClick={handlePasswordChange}
+                disabled={isLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                sx={{ mt: 1 }}
+              >
+                Update Password
+              </Button>
+            </Box>
+          </DialogContent>
+
+          <DialogActions>
+            <Button 
+              onClick={() => setIsDeleteDialogOpen(true)}
+              color="error"
+              sx={{ mr: 'auto' }}
+            >
+              Delete Profile
+            </Button>
+            <Button onClick={handleAccountSettingsClose} variant="outlined">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog 
+          open={isDeleteDialogOpen} 
+          onClose={() => setIsDeleteDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ color: 'error.main' }}>
+            Delete Profile
+          </DialogTitle>
+          
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Are you sure you want to delete your profile? This action is permanent and cannot be undone.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              All your account data will be permanently deleted, including:
+            </Typography>
+            <Box component="ul" sx={{ mt: 1, mb: 2 }}>
+              <Typography component="li" variant="body2" color="text.secondary">
+                Your profile information
+              </Typography>
+              <Typography component="li" variant="body2" color="text.secondary">
+                Your account history
+              </Typography>
+              <Typography component="li" variant="body2" color="text.secondary">
+                All associated data
+              </Typography>
+            </Box>
+            {error && (
+              <Typography color="error" sx={{ mt: 2 }}>
+                {error}
+              </Typography>
+            )}
+          </DialogContent>
+          
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="contained"
+              color="error"
+              onClick={handleDeleteProfile}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Deleting...' : 'Delete My Profile'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {successMessage && (
+          <Snackbar
+            open={!!successMessage}
+            autoHideDuration={6000}
+            onClose={() => setSuccessMessage(null)}
+          >
+            <Alert onClose={() => setSuccessMessage(null)} severity="success">
               {successMessage}
             </Alert>
-          )}
-
-          {/* Current Email Display */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-              Current Email
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {user?.email || 'Not provided'}
-            </Typography>
-          </Box>
-
-          <Divider sx={{ my: 3 }} />
-
-          {/* Change Email Section */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Change Email Address
-            </Typography>
-            
-            <TextField
-              fullWidth
-              label="New Email Address"
-              type="email"
-              value={emailData.newEmail}
-              onChange={(e) => setEmailData({ ...emailData, newEmail: e.target.value })}
-              margin="normal"
-              disabled={isLoading}
-            />
-            
-            <TextField
-              fullWidth
-              label="Confirm New Email"
-              type="email"
-              value={emailData.confirmEmail}
-              onChange={(e) => setEmailData({ ...emailData, confirmEmail: e.target.value })}
-              margin="normal"
-              disabled={isLoading}
-            />
-
-            <TextField
-              fullWidth
-              label="Current Password"
-              type="password"
-              value={emailData.currentPassword}
-              onChange={(e) => setEmailData({ ...emailData, currentPassword: e.target.value })}
-              margin="normal"
-              disabled={isLoading}
-              helperText="Password is required for security when changing your email address"
-            />
-
-            <Button
-              variant="outlined"
-              onClick={handleEmailChange}
-              disabled={isLoading || !emailData.newEmail || !emailData.confirmEmail || !emailData.currentPassword}
-              sx={{ mt: 1 }}
-            >
-              Update Email
-            </Button>
-          </Box>
-
-          <Divider sx={{ my: 3 }} />
-
-          {/* Change Password Section */}
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Change Password
-            </Typography>
-
-            <TextField
-              fullWidth
-              label="Current Password"
-              type="password"
-              value={passwordData.currentPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-              margin="normal"
-              disabled={isLoading}
-            />
-
-            <TextField
-              fullWidth
-              label="New Password"
-              type="password"
-              value={passwordData.newPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-              margin="normal"
-              disabled={isLoading}
-              helperText="Password must be at least 8 characters long"
-            />
-
-            <TextField
-              fullWidth
-              label="Confirm New Password"
-              type="password"
-              value={passwordData.confirmPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-              margin="normal"
-              disabled={isLoading}
-            />
-
-            <Button
-              variant="outlined"
-              onClick={handlePasswordChange}
-              disabled={isLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-              sx={{ mt: 1 }}
-            >
-              Update Password
-            </Button>
-          </Box>
-        </DialogContent>
-
-        <DialogActions>
-          <Button 
-            onClick={() => setIsDeleteDialogOpen(true)}
-            color="error"
-            sx={{ mr: 'auto' }}
-          >
-            Delete Profile
-          </Button>
-          <Button onClick={handleAccountSettingsClose} variant="outlined">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog 
-        open={isDeleteDialogOpen} 
-        onClose={() => setIsDeleteDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ color: 'error.main' }}>
-          Delete Profile
-        </DialogTitle>
-        
-        <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Are you sure you want to delete your profile? This action is permanent and cannot be undone.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            All your account data will be permanently deleted, including:
-          </Typography>
-          <Box component="ul" sx={{ mt: 1, mb: 2 }}>
-            <Typography component="li" variant="body2" color="text.secondary">
-              Your profile information
-            </Typography>
-            <Typography component="li" variant="body2" color="text.secondary">
-              Your account history
-            </Typography>
-            <Typography component="li" variant="body2" color="text.secondary">
-              All associated data
-            </Typography>
-          </Box>
-          {error && (
-            <Typography color="error" sx={{ mt: 2 }}>
-              {error}
-            </Typography>
-          )}
-        </DialogContent>
-        
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setIsDeleteDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button 
-            variant="contained"
-            color="error"
-            onClick={handleDeleteProfile}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Deleting...' : 'Delete My Profile'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {successMessage && (
-        <Snackbar
-          open={!!successMessage}
-          autoHideDuration={6000}
-          onClose={() => setSuccessMessage(null)}
-        >
-          <Alert onClose={() => setSuccessMessage(null)} severity="success">
-            {successMessage}
-          </Alert>
-        </Snackbar>
-      )}
+          </Snackbar>
+        )}
+      </Paper>
     </Container>
   );
 };
