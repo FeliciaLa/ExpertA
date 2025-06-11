@@ -541,11 +541,8 @@ export const expertApi = {
       const formData = new FormData();
       formData.append('profile_image', imageFile);
       
-      const response = await api.post('profile/upload-image/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Don't set Content-Type header - let the browser set it automatically with boundary
+      const response = await api.post('profile/upload-image/', formData);
       return response.data;
     } catch (error) {
       throw error;
@@ -625,11 +622,8 @@ export const trainingService = {
   
   uploadDocuments: async (formData: FormData) => {
     try {
-      const response = await api.post('documents/upload/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Don't set Content-Type header - let the browser set it automatically with boundary
+      const response = await api.post('documents/upload/', formData);
       return response.data;
     } catch (error) {
       throw error;
