@@ -18,6 +18,14 @@ class DocumentListView(APIView):
     """
     permission_classes = [IsAuthenticated]
     
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
+    
     def get(self, request):
         expert = request.user
         documents = Document.objects.filter(expert=expert)
@@ -34,10 +42,15 @@ class DocumentListView(APIView):
                 'error_message': doc.error_message
             })
         
-        return Response({
+        response = Response({
             'documents': result,
             'total': len(result)
         })
+        
+        # Add CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
 
 
 class DocumentUploadView(APIView):
@@ -45,6 +58,14 @@ class DocumentUploadView(APIView):
     Upload documents for AI training
     """
     permission_classes = [IsAuthenticated]
+    
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
     
     def post(self, request):
         expert = request.user
@@ -104,11 +125,16 @@ class DocumentUploadView(APIView):
                     'error': str(e)
                 })
         
-        return Response({
+        response = Response({
             'message': f'Successfully uploaded {uploaded_count} documents',
             'uploaded_count': uploaded_count,
             'results': results
         })
+        
+        # Add CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
     
     def _process_document(self, document):
         """Process document content and add to knowledge base"""
@@ -180,18 +206,36 @@ class DocumentDeleteView(APIView):
     """
     permission_classes = [IsAuthenticated]
     
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "DELETE, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
+    
     def delete(self, request, document_id):
         expert = request.user
         
         try:
             document = Document.objects.get(id=document_id, expert=expert)
         except Document.DoesNotExist:
-            return Response({
+            response = Response({
                 'error': 'Document not found'
             }, status=status.HTTP_404_NOT_FOUND)
+            
+            # Add CORS headers to error response
+            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+            return response
         
         document.delete()
         
-        return Response({
+        response = Response({
             'message': 'Document deleted successfully'
-        }) 
+        })
+        
+        # Add CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response 
