@@ -63,10 +63,10 @@ interface ExpertProfileData {
   profile_image?: string;
   
   // Professional details
-  industry: string;
+  industry: string[];
+  expertise: string;
   years_of_experience: number;
   key_skills: string[];
-  specialties: string;
   background: string;
   typical_problems: string;
   methodologies: string;
@@ -90,6 +90,7 @@ const ExpertProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [newSkill, setNewSkill] = useState('');
+  const [newIndustry, setNewIndustry] = useState('');
   
   const [profileData, setProfileData] = useState<ExpertProfileData>({
     name: '',
@@ -97,10 +98,10 @@ const ExpertProfile: React.FC = () => {
     email: '',
     bio: '',
     profile_image: '',
-    industry: '',
+    industry: [],
+    expertise: '',
     years_of_experience: 0,
     key_skills: [],
-    specialties: '',
     background: '',
     typical_problems: '',
     methodologies: '',
@@ -138,10 +139,10 @@ const ExpertProfile: React.FC = () => {
         email: data.email || '',
         bio: data.bio || '',
         profile_image: data.profile_image || '',
-        industry: data.profile?.industry || '',
+        industry: data.profile?.industry ? data.profile.industry.split(', ').filter((s: string) => s.trim()) : [],
+        expertise: data.specialties || '',
         years_of_experience: data.profile?.years_of_experience || 0,
         key_skills: skills,
-        specialties: data.specialties || '',
         background: data.profile?.background || '',
         typical_problems: data.profile?.typical_problems || '',
         methodologies: data.profile?.methodologies || '',
@@ -167,9 +168,9 @@ const ExpertProfile: React.FC = () => {
         name: profileData.name,
         title: profileData.title,
         bio: profileData.bio,
-        specialties: profileData.specialties,
+        specialties: profileData.expertise,
         profile: {
-          industry: profileData.industry,
+          industry: profileData.industry.join(', '),
           years_of_experience: profileData.years_of_experience,
           key_skills: profileData.key_skills.join(', '),
           background: profileData.background,
@@ -188,14 +189,14 @@ const ExpertProfile: React.FC = () => {
       
       // Check if profile is complete for onboarding
       const isComplete = profileData.name && profileData.title && profileData.bio && 
-                        profileData.industry && profileData.years_of_experience > 0 && 
+                        profileData.industry.length > 0 && profileData.years_of_experience > 0 && 
                         profileData.key_skills.length > 0;
       
       console.log('=== PROFILE COMPLETENESS CHECK ===');
       console.log('name:', profileData.name, '✓');
       console.log('title:', profileData.title, profileData.title ? '✓' : '❌');
       console.log('bio:', profileData.bio, profileData.bio ? '✓' : '❌');
-      console.log('industry:', profileData.industry, profileData.industry ? '✓' : '❌');
+      console.log('industry:', profileData.industry, profileData.industry.length > 0 ? '✓' : '❌');
       console.log('years_of_experience:', profileData.years_of_experience, profileData.years_of_experience > 0 ? '✓' : '❌');
       console.log('key_skills:', profileData.key_skills, profileData.key_skills.length > 0 ? '✓' : '❌');
       console.log('isComplete:', isComplete);
@@ -205,7 +206,7 @@ const ExpertProfile: React.FC = () => {
         console.log('Profile is complete, attempting onboarding completion...');
         try {
           const onboardingData = {
-            industry: profileData.industry,
+            industry: profileData.industry.join(', '),
             years_of_experience: profileData.years_of_experience,
             key_skills: profileData.key_skills.join(', '),
             typical_problems: profileData.typical_problems || `As a ${profileData.title}, I help clients solve complex challenges in my field.`,
@@ -278,6 +279,23 @@ const ExpertProfile: React.FC = () => {
     setProfileData(prev => ({
       ...prev,
       key_skills: prev.key_skills.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
+  const addIndustry = () => {
+    if (newIndustry.trim() && !profileData.industry.includes(newIndustry.trim())) {
+      setProfileData(prev => ({
+        ...prev,
+        industry: [...prev.industry, newIndustry.trim()]
+      }));
+      setNewIndustry('');
+    }
+  };
+
+  const removeIndustry = (industryToRemove: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      industry: prev.industry.filter(industry => industry !== industryToRemove)
     }));
   };
 
@@ -483,12 +501,14 @@ const ExpertProfile: React.FC = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Areas of Specialization"
-                value={profileData.specialties}
-                onChange={(e) => setProfileData(prev => ({ ...prev, specialties: e.target.value }))}
+                label="Expertise"
+                value={profileData.expertise}
+                onChange={(e) => setProfileData(prev => ({ ...prev, expertise: e.target.value }))}
                 disabled={!isEditing}
-                placeholder="e.g., Digital Marketing, SEO, Content Strategy"
-                helperText="Main areas where you provide expertise"
+                multiline
+                rows={4}
+                placeholder="e.g., I specialize in digital marketing strategy for SaaS companies, with deep expertise in conversion optimization and growth hacking..."
+                helperText="Describe your core area of expertise and what you specialize in"
               />
             </Grid>
 
@@ -500,22 +520,45 @@ const ExpertProfile: React.FC = () => {
               </Typography>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Industry"
-                value={profileData.industry}
-                onChange={(e) => setProfileData(prev => ({ ...prev, industry: e.target.value }))}
-                disabled={!isEditing}
-                select={isEditing}
-                required
-              >
-                {INDUSTRIES.map((industry) => (
-                  <MenuItem key={industry} value={industry}>
-                    {industry}
-                  </MenuItem>
+            {/* Industry */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Industry
+              </Typography>
+              
+              {isEditing && (
+                <Box display="flex" gap={1} mb={2}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Add an industry"
+                    value={newIndustry}
+                    onChange={(e) => setNewIndustry(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addIndustry()}
+                    placeholder="e.g., Technology, Marketing, Healthcare"
+                  />
+                  <Button variant="outlined" onClick={addIndustry}>
+                    Add
+                  </Button>
+                </Box>
+              )}
+              
+              <Box display="flex" flexWrap="wrap" gap={1}>
+                {profileData.industry.map((industry) => (
+                  <Chip
+                    key={industry}
+                    label={industry}
+                    onDelete={isEditing ? () => removeIndustry(industry) : undefined}
+                    color="primary"
+                    variant="outlined"
+                  />
                 ))}
-              </TextField>
+                {profileData.industry.length === 0 && (
+                  <Typography variant="body2" color="text.secondary">
+                    No industries added yet
+                  </Typography>
+                )}
+              </Box>
             </Grid>
 
             <Grid item xs={12} md={6}>
