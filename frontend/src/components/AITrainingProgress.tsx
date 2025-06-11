@@ -137,7 +137,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
             </Badge>
             
             <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 600 }}>
-              Your AI Assistant
+              {expert?.name ? `${expert.name}'s Bot` : 'Your AI Assistant'}
             </Typography>
           </Box>
         </Grid>
