@@ -20,20 +20,30 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from '../contexts/AuthContext';
-import { userApi } from '../services/api';
+import { userApi, authApi } from '../services/api';
 import { API_URL } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 const UserProfilePage: React.FC = () => {
   const { user, setUser, isUser, isExpert } = useAuth();
   const navigate = useNavigate();
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Account settings state
+  const [emailData, setEmailData] = useState({
+    newEmail: '',
+    confirmEmail: '',
+    currentPassword: ''
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +82,6 @@ const UserProfilePage: React.FC = () => {
                 console.log('User data received from direct endpoint:', userData);
                 setUser(userData);
                 setName(userData.name || '');
-                setEmail(userData.email || '');
                 localStorage.setItem('user', JSON.stringify(userData));
                 setIsPageLoading(false);
                 return; // Exit early if direct fetch was successful
@@ -196,12 +205,11 @@ const UserProfilePage: React.FC = () => {
                 
                 if (retryResponse.ok) {
                   console.log('Profile fetch successful after token refresh');
-                  const userData = await retryResponse.json();
-                  console.log('User data received:', userData);
-                  setUser(userData);
-                  setName(userData.name || '');
-                  setEmail(userData.email || '');
-                  localStorage.setItem('user', JSON.stringify(userData));
+                                  const userData = await retryResponse.json();
+                console.log('User data received:', userData);
+                setUser(userData);
+                setName(userData.name || '');
+                localStorage.setItem('user', JSON.stringify(userData));
                 } else {
                   // Retry with fallback direct endpoint if token refresh didn't help
                   console.log('Profile fetch failed after token refresh, trying direct endpoint');
@@ -241,7 +249,6 @@ const UserProfilePage: React.FC = () => {
                       console.log('User data received from direct endpoint:', userData);
                       setUser(userData);
                       setName(userData.name || '');
-                      setEmail(userData.email || '');
                       localStorage.setItem('user', JSON.stringify(userData));
                     } else {
                       const errorText = await directResponse.text();
@@ -275,7 +282,6 @@ const UserProfilePage: React.FC = () => {
           console.log('User data received:', userData);
           setUser(userData);
           setName(userData.name || '');
-          setEmail(userData.email || '');
           localStorage.setItem('user', JSON.stringify(userData));
         }
       } catch (err) {
@@ -289,10 +295,19 @@ const UserProfilePage: React.FC = () => {
     fetchUserProfile();
   }, [setUser]);
 
-  const handleEditProfile = async () => {
-    // Form validation
-    if (newPassword && newPassword !== confirmPassword) {
-      setError('New passwords do not match');
+  const handleEmailChange = async () => {
+    if (emailData.newEmail !== emailData.confirmEmail) {
+      setError('Email addresses do not match');
+      return;
+    }
+
+    if (!emailData.newEmail.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (!emailData.currentPassword) {
+      setError('Current password is required to change your email address');
       return;
     }
 
@@ -300,89 +315,52 @@ const UserProfilePage: React.FC = () => {
     setError(null);
 
     try {
-      // Only include fields that have values
-      const updateData: any = {};
-      if (name) updateData.name = name;
-      if (email) updateData.email = email;
-      if (currentPassword) updateData.currentPassword = currentPassword;
-      if (newPassword) updateData.newPassword = newPassword;
-      
-      // Add user_id for direct access approach
-      const storedUserData = localStorage.getItem('user');
-      if (!storedUserData) {
-        throw new Error('User data not found in local storage');
-      }
-      
-      const parsedUserData = JSON.parse(storedUserData);
-      if (!parsedUserData.id) {
-        throw new Error('User ID not found in stored user data');
-      }
-      
-      // Add user_id to request for direct access authentication
-      updateData.user_id = parsedUserData.id;
-      
-      console.log('Updating user profile with data:', { 
-        ...updateData, 
-        currentPassword: updateData.currentPassword ? '****' : undefined,
-        newPassword: updateData.newPassword ? '****' : undefined,
-        user_id: updateData.user_id
-      });
-      
-      // Make a direct fetch request without token authentication
-      const response = await fetch(`${API_URL}user/profile/update/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
-        },
-        body: JSON.stringify(updateData),
-        cache: 'no-store',
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      
-      console.log('Profile update response status:', response.status);
-      
-      if (!response.ok) {
-        // Try to parse error message from the response
-        try {
-          const errorData = await response.json();
-          console.error('Profile update error response:', errorData);
-          throw new Error(errorData.error || `Failed with status ${response.status}`);
-        } catch (jsonError) {
-          // If can't parse JSON, use status text
-          throw new Error(`Failed with status ${response.status}: ${response.statusText}`);
-        }
-      }
-      
-      // If we get here, the update was successful
-      console.log('Profile update successful');
-      
-      // Get the updated user data
-      const userData = await response.json();
-      setUser(userData);
-      
-      // Update user data in localStorage
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Close dialog
-      setIsEditDialogOpen(false);
-      
-      // Show success message
-      setSuccessMessage('Profile updated successfully');
-      
-      // Reset password fields
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to update profile';
-      setError(errorMessage);
-      console.error('Profile update error:', err);
+      await authApi.changeEmail(emailData.newEmail, emailData.currentPassword);
+      setSuccessMessage(`Verification email sent to ${emailData.newEmail}. Please check your email and click the verification link to complete the email change.`);
+      setEmailData({ newEmail: '', confirmEmail: '', currentPassword: '' });
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to change email');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (!passwordData.currentPassword) {
+      setError('Please enter your current password');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await authApi.changePassword(passwordData.currentPassword, passwordData.newPassword);
+      setSuccessMessage('Password changed successfully!');
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to change password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAccountSettingsClose = () => {
+    setEmailData({ newEmail: '', confirmEmail: '', currentPassword: '' });
+    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setError(null);
+    setSuccessMessage(null);
+    setIsAccountSettingsOpen(false);
   };
 
   const handleDeleteProfile = async () => {
@@ -536,97 +514,155 @@ const UserProfilePage: React.FC = () => {
             <Button 
               variant="contained" 
               color="primary"
-              onClick={() => setIsEditDialogOpen(true)}
+              onClick={() => setIsAccountSettingsOpen(true)}
               sx={{ mt: 2 }}
             >
-              Edit Profile
+              Account Settings
             </Button>
           </Grid>
         </Grid>
       </Paper>
 
-      {/* Edit Profile Dialog */}
-      <Dialog 
-        open={isEditDialogOpen} 
-        onClose={() => setIsEditDialogOpen(false)}
-        fullWidth
+      {/* Account Settings Dialog */}
+      <Dialog
+        open={isAccountSettingsOpen}
+        onClose={handleAccountSettingsClose}
         maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
       >
-        <DialogTitle>
-          Edit Profile
-          <IconButton
-            aria-label="close"
-            onClick={() => setIsEditDialogOpen(false)}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: 'text.secondary'
-            }}
-          >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">Account Settings</Typography>
+          <IconButton onClick={handleAccountSettingsClose} size="small">
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        
-        <DialogContent>
-          <Box sx={{ mt: 2 }}>
-            {error && (
-              <Typography color="error" sx={{ mb: 2 }}>
-                {error}
-              </Typography>
-            )}
-            
-            <TextField
-              fullWidth
-              label="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              margin="normal"
-            />
-            
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              margin="normal"
-            />
-            
-            <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-              Change Password
+
+        <DialogContent dividers>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMessage(null)}>
+              {successMessage}
+            </Alert>
+          )}
+
+          {/* Current Email Display */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+              Current Email
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              {user?.email || 'Not provided'}
+            </Typography>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Change Email Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Change Email Address
             </Typography>
             
             <TextField
               fullWidth
-              label="Current Password"
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              label="New Email Address"
+              type="email"
+              value={emailData.newEmail}
+              onChange={(e) => setEmailData({ ...emailData, newEmail: e.target.value })}
               margin="normal"
+              disabled={isLoading}
             />
             
+            <TextField
+              fullWidth
+              label="Confirm New Email"
+              type="email"
+              value={emailData.confirmEmail}
+              onChange={(e) => setEmailData({ ...emailData, confirmEmail: e.target.value })}
+              margin="normal"
+              disabled={isLoading}
+            />
+
+            <TextField
+              fullWidth
+              label="Current Password"
+              type="password"
+              value={emailData.currentPassword}
+              onChange={(e) => setEmailData({ ...emailData, currentPassword: e.target.value })}
+              margin="normal"
+              disabled={isLoading}
+              helperText="Password is required for security when changing your email address"
+            />
+
+            <Button
+              variant="outlined"
+              onClick={handleEmailChange}
+              disabled={isLoading || !emailData.newEmail || !emailData.confirmEmail || !emailData.currentPassword}
+              sx={{ mt: 1 }}
+            >
+              Update Email
+            </Button>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Change Password Section */}
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Change Password
+            </Typography>
+
+            <TextField
+              fullWidth
+              label="Current Password"
+              type="password"
+              value={passwordData.currentPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+              margin="normal"
+              disabled={isLoading}
+            />
+
             <TextField
               fullWidth
               label="New Password"
               type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              value={passwordData.newPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
               margin="normal"
+              disabled={isLoading}
+              helperText="Password must be at least 8 characters long"
             />
-            
+
             <TextField
               fullWidth
               label="Confirm New Password"
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={passwordData.confirmPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
               margin="normal"
+              disabled={isLoading}
             />
+
+            <Button
+              variant="outlined"
+              onClick={handlePasswordChange}
+              disabled={isLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+              sx={{ mt: 1 }}
+            >
+              Update Password
+            </Button>
           </Box>
         </DialogContent>
-        
-        <DialogActions sx={{ px: 3, pb: 3 }}>
+
+        <DialogActions>
           <Button 
             onClick={() => setIsDeleteDialogOpen(true)}
             color="error"
@@ -634,15 +670,8 @@ const UserProfilePage: React.FC = () => {
           >
             Delete Profile
           </Button>
-          <Button onClick={() => setIsEditDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button 
-            variant="contained" 
-            onClick={handleEditProfile}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Updating...' : 'Save Changes'}
+          <Button onClick={handleAccountSettingsClose} variant="outlined">
+            Close
           </Button>
         </DialogActions>
       </Dialog>
