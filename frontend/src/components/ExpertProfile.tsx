@@ -72,6 +72,8 @@ const ExpertProfile: React.FC = () => {
   const { expert, refreshExpert } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  console.log('ExpertProfile component mounted/rendered', { expert: expert?.email, onboarding: expert?.onboarding_completed });
+  
   // State
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
