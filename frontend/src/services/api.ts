@@ -725,8 +725,8 @@ export const userApi = {
       const formData = new FormData();
       formData.append('profile_image', imageFile);
       
-      // Don't set Content-Type header - let the browser set it automatically with boundary
-      const response = await api.post('user/profile/upload-image/', formData);
+      // Try the user profile update endpoint with the image
+      const response = await api.put('user/profile/update/', formData);
       return response.data;
     } catch (error) {
       throw error;
