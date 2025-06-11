@@ -119,6 +119,33 @@ def health_check(request):
     
     return response
 
+# Simple CORS test endpoint
+@api_view(['GET', 'POST', 'OPTIONS'])
+@permission_classes([AllowAny])
+def cors_test(request):
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight OK'})
+    elif request.method == 'GET':
+        response = JsonResponse({
+            'message': 'GET request OK',
+            'origin': request.META.get('HTTP_ORIGIN', 'no origin'),
+            'user_agent': request.META.get('HTTP_USER_AGENT', 'no user agent')
+        })
+    else:  # POST
+        response = JsonResponse({
+            'message': 'POST request OK',
+            'data_received': str(request.data) if hasattr(request, 'data') else 'no data',
+            'files_received': str(request.FILES) if hasattr(request, 'FILES') else 'no files'
+        })
+    
+    # Add explicit CORS headers
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    response["Access-Control-Allow-Credentials"] = "true"
+    
+    return response
+
 urlpatterns = [
     path('chat/', ChatView.as_view(), name='chat'),
     path('token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -170,6 +197,9 @@ urlpatterns = [
     # Password reset endpoints
     path('password-reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password-reset-confirm/<str:uidb64>/<str:token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    
+    # CORS test endpoint
+    path('cors-test/', cors_test, name='cors-test'),
 ]
 
 # Ensure the public-experts endpoint is added

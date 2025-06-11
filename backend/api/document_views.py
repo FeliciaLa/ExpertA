@@ -53,8 +53,21 @@ class DocumentUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     
     def options(self, request, *args, **kwargs):
-        # Handle CORS preflight requests - let Django CORS middleware handle headers
-        return Response()
+        # Handle CORS preflight requests with explicit headers
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+        response["Access-Control-Allow-Credentials"] = "true"
+        return response
+    
+    def get(self, request):
+        """Test endpoint to verify connectivity"""
+        return Response({
+            'message': 'Document upload endpoint is accessible',
+            'user': str(request.user),
+            'parsers': [str(p) for p in self.parser_classes]
+        })
     
     def post(self, request):
         expert = request.user
@@ -129,11 +142,15 @@ class DocumentUploadView(APIView):
                     'error': str(e)
                 })
         
-        return Response({
+        response = Response({
             'message': f'Successfully uploaded {uploaded_count} documents',
             'uploaded_count': uploaded_count,
             'results': results
         })
+        # Add explicit CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Credentials"] = "true"
+        return response
     
     def _process_document(self, document):
         """Process document content and add to knowledge base"""
