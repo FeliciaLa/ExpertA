@@ -449,15 +449,23 @@ const UserProfilePage: React.FC = () => {
     if (!editedName.trim()) return;
     
     try {
-      await userApi.updateProfile({ name: editedName.trim() });
+      const updatedUser = await userApi.updateProfile({ name: editedName.trim() });
       setName(editedName.trim());
       setIsEditingName(false);
-      // Update user context if needed
-      if (user) {
-        // You might want to update the user context here
+      
+      // Update user context with the new name
+      if (user && setUser) {
+        setUser({
+          ...user,
+          name: editedName.trim()
+        });
       }
+      
+      console.log('Name updated successfully:', updatedUser);
     } catch (error) {
       console.error('Error updating name:', error);
+      // Show error message to user
+      alert('Failed to update name. Please try again.');
     }
   };
 
