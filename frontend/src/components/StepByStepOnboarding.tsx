@@ -45,89 +45,123 @@ const EXPERIENCE_OPTIONS = [
 interface StepData {
   name: string;
   title: string;
-  bio: string;
+  expertise: string;
   industry: string[];
   years_of_experience: number;
-  key_skills: string[];
   background: string;
+  key_skills: string[];
   typical_problems: string;
   methodologies: string;
   tools_technologies: string;
   certifications: string;
+  bio: string;
 }
 
-const steps = [
+const stepSections = [
   {
-    label: 'Your Name',
-    description: 'Let us know what to call you',
-    field: 'name'
+    title: 'Basic Info',
+    description: 'Let\'s start with the basics',
+    steps: [
+      {
+        label: 'Your Name',
+        description: 'Let us know what to call you',
+        field: 'name'
+      },
+      {
+        label: 'Professional Title',
+        description: 'What is your current role or expertise?',
+        field: 'title'
+      },
+      {
+        label: 'Industry',
+        description: 'Which industry do you work in?',
+        field: 'industry'
+      }
+    ]
   },
   {
-    label: 'Professional Title',
-    description: 'What is your current role or expertise?',
-    field: 'title'
+    title: 'Experience Info',
+    description: 'Tell us about your expertise and experience',
+    steps: [
+      {
+        label: 'Describe Your Expertise',
+        description: 'What do you specialize in? What\'s your core area of expertise?',
+        field: 'expertise'
+      },
+      {
+        label: 'Experience Level',
+        description: 'How many years of experience do you have?',
+        field: 'years_of_experience'
+      },
+      {
+        label: 'Professional Background',
+        description: 'Tell us about your professional journey - how did you develop your expertise?',
+        field: 'background'
+      }
+    ]
   },
   {
-    label: 'Professional Bio',
-    description: 'Write a short description that will be shown to potential clients',
-    field: 'bio'
+    title: 'Skills & Knowledge',
+    description: 'Share your skills and what problems you solve',
+    steps: [
+      {
+        label: 'Key Skills',
+        description: 'What are your main skills and competencies?',
+        field: 'key_skills'
+      },
+      {
+        label: 'Methodologies',
+        description: 'What methodologies or frameworks do you use?',
+        field: 'methodologies'
+      },
+      {
+        label: 'Tools & Technologies',
+        description: 'What tools and technologies do you work with?',
+        field: 'tools_technologies'
+      },
+      {
+        label: 'Certifications',
+        description: 'Any relevant certifications or qualifications?',
+        field: 'certifications'
+      },
+      {
+        label: 'Typical Problems You Solve',
+        description: 'What types of problems do you typically help clients with?',
+        field: 'typical_problems'
+      }
+    ]
   },
   {
-    label: 'Industry',
-    description: 'Which industry do you work in?',
-    field: 'industry'
-  },
-  {
-    label: 'Experience Level',
-    description: 'How many years of experience do you have?',
-    field: 'years_of_experience'
-  },
-  {
-    label: 'Professional Background',
-    description: 'Describe your professional background and expertise',
-    field: 'background'
-  },
-  {
-    label: 'Key Skills',
-    description: 'What are your main skills and competencies?',
-    field: 'key_skills'
-  },
-  {
-    label: 'Typical Problems You Solve',
-    description: 'What types of problems do you typically help clients with?',
-    field: 'typical_problems'
-  },
-  {
-    label: 'Methodologies',
-    description: 'What methodologies or frameworks do you use?',
-    field: 'methodologies'
-  },
-  {
-    label: 'Tools & Technologies',
-    description: 'What tools and technologies do you work with?',
-    field: 'tools_technologies'
-  },
-  {
-    label: 'Certifications',
-    description: 'Any relevant certifications or qualifications?',
-    field: 'certifications'
+    title: 'Finish Setup',
+    description: 'Complete your profile',
+    steps: [
+      {
+        label: 'Professional Bio',
+        description: 'Finally, write your professional bio which will be visible to clients',
+        field: 'bio'
+      }
+    ]
   }
 ];
+
+// Flatten steps for compatibility with existing code
+const steps = stepSections.flatMap(section => section.steps);
 
 const StepByStepOnboarding: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [stepData, setStepData] = useState<StepData>({
     name: '',
     title: '',
-    bio: '',
+    expertise: '',
     industry: [],
     years_of_experience: 1,
-    key_skills: [],
     background: '',
+    key_skills: [],
     typical_problems: '',
     methodologies: '',
     tools_technologies: '',
-    certifications: ''
+    certifications: '',
+    bio: ''
   });
   
   const [currentValue, setCurrentValue] = useState('');
@@ -138,6 +172,23 @@ const StepByStepOnboarding: React.FC = () => {
   const [completing, setCompleting] = useState(false);
   
   const { expert, refreshExpert } = useAuth();
+
+  // Helper functions for section management
+  const getCurrentSection = () => {
+    let stepCount = 0;
+    for (let i = 0; i < stepSections.length; i++) {
+      if (activeStep < stepCount + stepSections[i].steps.length) {
+        return { 
+          section: stepSections[i], 
+          sectionIndex: i, 
+          stepInSection: activeStep - stepCount,
+          totalInSection: stepSections[i].steps.length 
+        };
+      }
+      stepCount += stepSections[i].steps.length;
+    }
+    return { section: stepSections[0], sectionIndex: 0, stepInSection: 0, totalInSection: stepSections[0].steps.length };
+  };
 
   // Load existing profile data on mount
   useEffect(() => {
@@ -158,15 +209,16 @@ const StepByStepOnboarding: React.FC = () => {
       const existingData = {
         name: profile.name || '',
         title: profile.title || '',
-        bio: profile.bio || '',
+        expertise: profile.profile?.expertise || '',
         industry: profile.profile?.industry ? profile.profile.industry.split(', ') : [],
         years_of_experience: profile.profile?.years_of_experience || 1,
-        key_skills: profile.profile?.key_skills ? profile.profile.key_skills.split(', ') : [],
         background: profile.profile?.background || '',
+        key_skills: profile.profile?.key_skills ? profile.profile.key_skills.split(', ') : [],
         typical_problems: profile.profile?.typical_problems || '',
         methodologies: profile.profile?.methodologies || '',
         tools_technologies: profile.profile?.tools_technologies || '',
-        certifications: profile.profile?.certifications || ''
+        certifications: profile.profile?.certifications || '',
+        bio: profile.bio || ''
       };
       setStepData(existingData);
     } catch (error) {
@@ -265,11 +317,12 @@ const StepByStepOnboarding: React.FC = () => {
       
       // Prepare final onboarding data
       const onboardingData = {
+        expertise: stepData.expertise,
         industry: stepData.industry.join(', '),
         years_of_experience: stepData.years_of_experience,
+        background: stepData.background,
         key_skills: stepData.key_skills.join(', '),
         typical_problems: stepData.typical_problems || `As a ${stepData.title}, I help clients solve complex challenges in my field.`,
-        background: stepData.background,
         certifications: stepData.certifications,
         methodologies: stepData.methodologies,
         tools_technologies: stepData.tools_technologies
@@ -345,6 +398,21 @@ const StepByStepOnboarding: React.FC = () => {
             value={currentValue}
             onChange={(e) => setCurrentValue(e.target.value)}
             placeholder="e.g., Senior Marketing Manager, UX Designer, Financial Advisor"
+            variant="outlined"
+            sx={{ mt: 2 }}
+          />
+        );
+
+      case 'expertise':
+        return (
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label="Describe Your Expertise"
+            value={currentValue}
+            onChange={(e) => setCurrentValue(e.target.value)}
+            placeholder="e.g., I specialize in digital marketing strategy for SaaS companies, with deep expertise in conversion optimization and growth hacking..."
             variant="outlined"
             sx={{ mt: 2 }}
           />
@@ -590,6 +658,8 @@ const StepByStepOnboarding: React.FC = () => {
     );
   }
 
+  const currentSectionInfo = getCurrentSection();
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
       <Paper sx={{ p: 4 }}>
@@ -611,6 +681,16 @@ const StepByStepOnboarding: React.FC = () => {
             value={((activeStep + 1) / steps.length) * 100} 
             sx={{ height: 8, borderRadius: 4 }}
           />
+        </Box>
+
+        {/* Section Header */}
+        <Box sx={{ mb: 3, p: 3, bgcolor: 'primary.50', borderRadius: 2, border: 1, borderColor: 'primary.200' }}>
+          <Typography variant="h6" color="primary" gutterBottom>
+            {currentSectionInfo.section.title}
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            {currentSectionInfo.section.description} • Step {currentSectionInfo.stepInSection + 1} of {currentSectionInfo.totalInSection}
+          </Typography>
         </Box>
 
         {/* Current Step */}
