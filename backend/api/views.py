@@ -2177,12 +2177,19 @@ class ChangeEmailView(APIView):
             import secrets
             verification_token = secrets.token_urlsafe(32)
             
+            print(f"Email change request - User: {request.user.email}")
+            print(f"Email change request - New email: {new_email}")
+            print(f"Email change request - Generated token: {verification_token}")
+            
             # Store pending email change (you could create a PendingEmailChange model)
             # For now, we'll use a simple approach with user fields
             request.user.pending_email = new_email
             request.user.email_change_token = verification_token
             request.user.email_change_token_created_at = timezone.now()
             request.user.save()
+            
+            print(f"Email change request - Token saved to user: {request.user.email}")
+            print(f"Email change request - Pending email saved: {request.user.pending_email}")
             
             # Send verification email to new address
             try:
@@ -2264,8 +2271,10 @@ class VerifyEmailChangeView(APIView):
     def post(self, request):
         try:
             token = request.data.get('token', '')
+            print(f"Email verification request - Token received: {token}")
             
             if not token:
+                print("Email verification error: No token provided")
                 return Response({
                     "error": "Verification token is required"
                 }, status=status.HTTP_400_BAD_REQUEST)
@@ -2273,7 +2282,12 @@ class VerifyEmailChangeView(APIView):
             # Find user with this token
             try:
                 user = User.objects.get(email_change_token=token)
+                print(f"Email verification - Found user: {user.email}, pending_email: {user.pending_email}")
             except User.DoesNotExist:
+                print(f"Email verification error: No user found with token: {token}")
+                # Let's also check if any users have email change tokens
+                users_with_tokens = User.objects.filter(email_change_token__isnull=False).values('email', 'email_change_token', 'pending_email')
+                print(f"Users with email change tokens: {list(users_with_tokens)}")
                 return Response({
                     "error": "Invalid or expired verification token"
                 }, status=status.HTTP_400_BAD_REQUEST)
