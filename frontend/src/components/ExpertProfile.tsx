@@ -129,11 +129,22 @@ const ExpertProfile: React.FC = () => {
 
   // Check if we should show the tour for new experts
   useEffect(() => {
+    console.log('Tour check:', { 
+      expertId: expert?.id, 
+      onboardingCompleted: expert?.onboarding_completed, 
+      loading, 
+      hasSeenTour: expert?.id ? localStorage.getItem(`expert_tour_seen_${expert.id}`) : null 
+    });
+    
     if (expert?.id && expert?.onboarding_completed && !loading) {
       const hasSeenTour = localStorage.getItem(`expert_tour_seen_${expert.id}`);
       if (!hasSeenTour) {
+        console.log('Starting tour in 1 second...');
         // Small delay to ensure DOM is ready
-        setTimeout(() => setRunTour(true), 1000);
+        setTimeout(() => {
+          console.log('Setting runTour to true');
+          setRunTour(true);
+        }, 1000);
       }
     }
   }, [expert?.id, expert?.onboarding_completed, loading]);
@@ -684,6 +695,7 @@ const ExpertProfile: React.FC = () => {
         showProgress={true}
         showSkipButton={true}
         disableOverlayClose={true}
+        debug={true}
         styles={{
           options: {
             primaryColor: '#1976d2',
@@ -701,6 +713,12 @@ const ExpertProfile: React.FC = () => {
           skip: 'Skip tour',
         }}
       />
+      
+      {runTour && (
+        <div style={{ position: 'fixed', top: 10, right: 10, background: 'red', color: 'white', padding: '5px', zIndex: 99999 }}>
+          TOUR RUNNING
+        </div>
+      )}
     </Paper>
   );
 };
