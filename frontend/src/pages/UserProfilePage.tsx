@@ -509,15 +509,6 @@ const UserProfilePage: React.FC = () => {
 
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" color="text.secondary">
-                Email
-              </Typography>
-              <Typography variant="h6">
-                {user?.email || 'Not provided'}
-              </Typography>
-            </Box>
-
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
                 Role
               </Typography>
               <Typography variant="h6">
