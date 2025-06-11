@@ -162,6 +162,7 @@ const ExpertProfile: React.FC = () => {
         }
       };
       
+      console.log('=== FRONTEND SAVE DEBUG START ===');
       console.log('Saving profile data:', updateData);
       
       const response = await expertApi.updateProfile(updateData);
@@ -172,9 +173,20 @@ const ExpertProfile: React.FC = () => {
                         profileData.industry && profileData.years_of_experience > 0 && 
                         profileData.key_skills.length > 0;
       
+      console.log('=== PROFILE COMPLETENESS CHECK ===');
+      console.log('name:', profileData.name, '✓');
+      console.log('title:', profileData.title, profileData.title ? '✓' : '❌');
+      console.log('bio:', profileData.bio, profileData.bio ? '✓' : '❌');
+      console.log('industry:', profileData.industry, profileData.industry ? '✓' : '❌');
+      console.log('years_of_experience:', profileData.years_of_experience, profileData.years_of_experience > 0 ? '✓' : '❌');
+      console.log('key_skills:', profileData.key_skills, profileData.key_skills.length > 0 ? '✓' : '❌');
+      console.log('isComplete:', isComplete);
+      console.log('expert.onboarding_completed:', expert?.onboarding_completed);
+      
       if (isComplete && !expert?.onboarding_completed) {
+        console.log('Profile is complete, attempting onboarding completion...');
         try {
-          await expertApi.completeOnboarding({
+          const onboardingData = {
             industry: profileData.industry,
             years_of_experience: profileData.years_of_experience,
             key_skills: profileData.key_skills.join(', '),
@@ -183,7 +195,12 @@ const ExpertProfile: React.FC = () => {
             certifications: profileData.certifications,
             methodologies: profileData.methodologies,
             tools_technologies: profileData.tools_technologies
-          });
+          };
+          console.log('Onboarding data:', onboardingData);
+          
+          const onboardingResponse = await expertApi.completeOnboarding(onboardingData);
+          console.log('Onboarding response:', onboardingResponse);
+          
           await refreshExpert();
           setSuccess('Profile saved and onboarding completed! You can now train your AI.');
         } catch (onboardingError) {
@@ -191,8 +208,11 @@ const ExpertProfile: React.FC = () => {
           setSuccess('Profile saved successfully!');
         }
       } else {
+        console.log('Profile not complete or onboarding already done:', { isComplete, onboardingCompleted: expert?.onboarding_completed });
         setSuccess('Profile saved successfully!');
       }
+      
+      console.log('=== FRONTEND SAVE DEBUG END ===');
       
       setIsEditing(false);
       

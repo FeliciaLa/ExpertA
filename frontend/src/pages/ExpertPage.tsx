@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container } from '@mui/material';
 import ExpertProfile from '../components/ExpertProfile';
+import StepByStepOnboarding from '../components/StepByStepOnboarding';
 import { ExpertWelcomeDialog } from '../components/ExpertWelcomeDialog';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -28,7 +29,12 @@ const ExpertPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg">
-      <ExpertProfile />
+      {/* Show step-by-step onboarding if not completed, otherwise show regular profile */}
+      {!expert?.onboarding_completed ? (
+        <StepByStepOnboarding />
+      ) : (
+        <ExpertProfile />
+      )}
 
       <ExpertWelcomeDialog
         open={showWelcomeDialog}

@@ -13,7 +13,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, isUser, isExpert, signOut, expert, user, signIn, register } = useAuth();
-  const [showProfileAlert, setShowProfileAlert] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const handleLogout = () => {
@@ -22,9 +21,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const handleTrainAIClick = () => {
-    // If onboarding is not completed, show dialog instead of navigating
-    if (user?.role === 'expert' && !user.onboarding_completed) {
-      setShowProfileAlert(true);
+    // If onboarding is not completed, redirect to expert page (shows onboarding flow)
+    if (isExpert && !expert?.onboarding_completed) {
+      navigate('/expert');
     } else {
       navigate('/train');
     }
@@ -155,7 +154,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 mr: 2
               }}
             >
-              TRAIN AI
+              {expert?.onboarding_completed ? 'TRAIN AI' : 'SETUP PROFILE'}
             </Button>
           )}
           
@@ -173,32 +172,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </Toolbar>
       </AppBar>
       
-      {/* Profile Setup Alert Dialog */}
-      <Dialog
-        open={showProfileAlert}
-        onClose={() => setShowProfileAlert(false)}
-      >
-        <DialogTitle>
-          Profile Setup Required
-          <IconButton
-            aria-label="close"
-            onClick={() => setShowProfileAlert(false)}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            You need to complete your profile setup before you can train your AI.
-          </DialogContentText>
-        </DialogContent>
-      </Dialog>
+
 
       {/* Authentication Dialog */}
       <AuthDialog
