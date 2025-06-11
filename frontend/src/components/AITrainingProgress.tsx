@@ -3,7 +3,6 @@ import {
   Box,
   Paper,
   Typography,
-  Chip,
   Avatar,
   Grid,
   CircularProgress,
@@ -140,18 +139,6 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
             <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 600 }}>
               Your AI Assistant
             </Typography>
-            
-            <Chip
-              label={aiPersonality.status.toUpperCase()}
-              size="small"
-              sx={{
-                bgcolor: aiPersonality.color,
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '0.7rem',
-                height: 20
-              }}
-            />
           </Box>
         </Grid>
 
