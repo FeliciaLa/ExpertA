@@ -227,11 +227,11 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler',
 }
 
-# CORS settings - allow all origins for debugging, specify allowed origins for production
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS settings - explicitly allow Vercel and local development
+CORS_ALLOW_ALL_ORIGINS = False  # Disable to use explicit origins
 CORS_ALLOW_CREDENTIALS = True
 
-# Enable specific origins as well for better security
+# Enable specific origins - be explicit about what we allow
 CORS_ALLOWED_ORIGINS = [
     # Local development
     "http://localhost:5173",
@@ -242,10 +242,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5178",
     "http://localhost:5179",
     "http://localhost:5180",
-    # Vercel domains
+    # Vercel domains - exact match
     "https://expert-a.vercel.app",
-    "https://expert-a-git-main.vercel.app",
+    "https://expert-a-git-main.vercel.app", 
     "https://expert-a-feliciala.vercel.app",
+    # Vercel preview deployments - add wildcard
     "https://expert-42lkksco4-felicia-lammertings-projects.vercel.app",
     "https://expert-h0m39zhmz-felicia-lammertings-projects.vercel.app",
     "https://expert-rm7gqywrd-felicia-lammertings-projects.vercel.app",
@@ -254,7 +255,12 @@ CORS_ALLOWED_ORIGINS = [
     "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
     "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
     "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
-    # Add your custom Vercel domain once you have it
+]
+
+# Also use regex for Vercel preview URLs
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://expert-[a-z0-9]+\.vercel\.app$",
+    r"^https://expert-[a-z0-9]+-[a-z0-9]+-felicia-lammertings-projects\.vercel\.app$",
 ]
 
 CORS_ALLOW_METHODS = [
