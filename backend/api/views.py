@@ -2009,3 +2009,109 @@ class PasswordResetConfirmView(APIView):
             return Response({
                 "error": "Failed to reset password"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ExpertProfileUpdateView(APIView):
+    """
+    API endpoint for updating expert profile information.
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    
+    def options(self, request, *args, **kwargs):
+        # Handle CORS preflight requests
+        response = Response()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "PUT, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
+    
+    def put(self, request):
+        expert = request.user
+        print(f"=== BACKEND UPDATE DEBUG START ===")
+        print(f"Request data: {request.data}")
+        
+        # Extract valid fields from request data
+        valid_data = {}
+        for field in ['bio', 'specialties', 'title', 'name']:
+            if field in request.data:
+                valid_data[field] = request.data[field]
+        
+        # Handle first_name and last_name by combining them into name (for backward compatibility)
+        first_name = request.data.get('first_name', '').strip()
+        last_name = request.data.get('last_name', '').strip()
+        
+        # Only process first_name/last_name if no direct name was provided
+        if 'name' not in valid_data and (first_name or last_name):
+            # Combine first and last name
+            name_parts = [first_name, last_name]
+            combined_name = ' '.join(part for part in name_parts if part)
+            if combined_name:
+                valid_data['name'] = combined_name
+        
+        print(f"Valid data: {valid_data}")
+        
+        # Update expert instance
+        for key, value in valid_data.items():
+            setattr(expert, key, value)
+            print(f"Set expert.{key} = {value}")
+        
+        expert.save()
+        print(f"Expert saved successfully")
+        
+        # Handle profile fields if provided
+        if 'profile' in request.data:
+            profile_data = request.data['profile']
+            print(f"Profile data received: {profile_data}")
+            
+            # Get or create the expert profile
+            try:
+                profile = expert.profile
+                print(f"Found existing profile: {profile}")
+            except ExpertProfile.DoesNotExist:
+                print("Creating new profile...")
+                profile = ExpertProfile.objects.create(
+                    expert=expert,
+                    industry='',
+                    years_of_experience=0,
+                    key_skills='',
+                    typical_problems='',
+                    background='',
+                    certifications='',
+                    methodologies='',
+                    tools_technologies=''
+                )
+            
+            # Update profile fields
+            profile_fields = [
+                'industry', 'years_of_experience', 'key_skills', 'typical_problems',
+                'background', 'certifications', 'methodologies', 'tools_technologies'
+            ]
+            
+            for field in profile_fields:
+                if field in profile_data:
+                    setattr(profile, field, profile_data[field])
+                    print(f"Updated profile.{field} = {profile_data[field]}")
+            
+            profile.save()
+            print(f"Profile saved successfully")
+        else:
+            print("No profile data in request")
+        
+        # Check what we're about to return
+        print(f"Expert after save: name={expert.name}, bio={expert.bio}")
+        try:
+            profile_check = expert.profile
+            print(f"Profile after save: industry={profile_check.industry}, years_of_experience={profile_check.years_of_experience}")
+        except ExpertProfile.DoesNotExist:
+            print("No profile found after save")
+        
+        # Return updated profile
+        serializer = ExpertProfileSerializer(expert)
+        print(f"Serialized data: {serializer.data}")
+        print(f"=== BACKEND UPDATE DEBUG END ===")
+        response = Response(serializer.data)
+        
+        # Add CORS headers to response
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
+        return response
