@@ -27,7 +27,7 @@ from .views import (
     ChangeEmailView,
     ChangePasswordView
 )
-from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView
+from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView, TrainingStatsView
 from .document_views import DocumentListView, DocumentUploadView, DocumentDeleteView
 from .jwt_views import CustomTokenRefreshView
 from django.http import JsonResponse
@@ -178,6 +178,7 @@ urlpatterns = [
     path('onboarding/', OnboardingView.as_view(), name='expert-onboarding'),
     path('onboarding/answers/', OnboardingAnswersView.as_view(), name='onboarding-answers'),
     path('training/chat/', TrainingChatView.as_view(), name='training-chat'),
+    path('training/stats/', TrainingStatsView.as_view(), name='training-stats'),
     path('knowledge/process/', KnowledgeProcessingView.as_view(), name='knowledge-process'),
     
     # Document endpoints

@@ -733,4 +733,64 @@ class KnowledgeProcessingView(APIView):
             print(traceback.format_exc())
             return Response({
                 'error': f'Failed to process knowledge: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class TrainingStatsView(APIView):
+    """
+    Get accurate training statistics directly from the database
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Get training statistics for the authenticated expert"""
+        expert = request.user
+        
+        try:
+            # Count actual training messages
+            expert_messages = TrainingMessage.objects.filter(
+                expert=expert,
+                role='expert'
+            ).count()
+            
+            ai_messages = TrainingMessage.objects.filter(
+                expert=expert,
+                role='ai'
+            ).count()
+            
+            total_messages = expert_messages + ai_messages
+            
+            # Calculate training minutes (approximately 1 exchange per minute)
+            # Each exchange is 1 expert message + 1 AI message = 2 messages
+            training_minutes = max(expert_messages, 0)  # Use expert messages as the number of exchanges
+            
+            # Get latest training message timestamp
+            latest_message = TrainingMessage.objects.filter(expert=expert).order_by('-created_at').first()
+            last_training_at = latest_message.created_at if latest_message else None
+            
+            # Check if stored total matches actual count
+            stored_total = expert.total_training_messages or 0
+            actual_total = total_messages
+            
+            # Update expert's total if there's a mismatch
+            if stored_total != actual_total:
+                print(f"Training message count mismatch for {expert.email}: stored={stored_total}, actual={actual_total}")
+                expert.total_training_messages = actual_total
+                if last_training_at:
+                    expert.last_training_at = last_training_at
+                expert.save()
+            
+            return Response({
+                'expert_messages': expert_messages,
+                'ai_messages': ai_messages,
+                'total_messages': actual_total,
+                'training_minutes': training_minutes,
+                'last_training_at': last_training_at,
+                'stored_total': stored_total,
+                'updated_total': actual_total
+            })
+            
+        except Exception as e:
+            print(f"Error getting training stats: {str(e)}")
+            return Response({
+                'error': 'Failed to get training statistics'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
