@@ -103,6 +103,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Browse Experts button - only visible when authenticated */}
           {isAuthenticated && (
             <Button
+              data-tour="browse-experts"
               color="primary"
               onClick={() => navigate('/experts')}
               sx={{ 
@@ -147,6 +148,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Show Train AI button only for experts */}
           {isExpert && (
             <Button
+              data-tour="train-ai"
               color="primary"
               onClick={handleTrainAIClick}
               sx={{ 
