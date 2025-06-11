@@ -28,6 +28,7 @@ from .services import ExpertChatbot, KnowledgeProcessor
 from rest_framework import generics
 from .jwt_views import CustomTokenObtainPairSerializer
 from .utils import send_verification_email, is_token_expired
+from django.core.validators import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -2123,3 +2124,108 @@ class ExpertProfileUpdateView(APIView):
         response["Access-Control-Allow-Origin"] = "*"
         response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
         return response
+
+class ChangeEmailView(APIView):
+    """
+    API endpoint for changing user email address.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            new_email = request.data.get('new_email', '').strip().lower()
+            
+            if not new_email:
+                return Response({
+                    "error": "New email address is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate email format
+            from django.core.validators import validate_email
+            try:
+                validate_email(new_email)
+            except ValidationError:
+                return Response({
+                    "error": "Please enter a valid email address"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if email is already in use
+            if User.objects.filter(email=new_email).exclude(id=request.user.id).exists():
+                return Response({
+                    "error": "This email address is already in use"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if it's the same as current email
+            if request.user.email == new_email:
+                return Response({
+                    "error": "This is already your current email address"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # For security, we would typically send a verification email here
+            # For now, we'll just update the email directly
+            request.user.email = new_email
+            request.user.save()
+            
+            return Response({
+                "message": "Email address updated successfully"
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"Change email error: {e}")
+            return Response({
+                "error": "Failed to update email address"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ChangePasswordView(APIView):
+    """
+    API endpoint for changing user password.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            current_password = request.data.get('current_password', '')
+            new_password = request.data.get('new_password', '')
+            
+            if not current_password:
+                return Response({
+                    "error": "Current password is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not new_password:
+                return Response({
+                    "error": "New password is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Verify current password
+            if not request.user.check_password(current_password):
+                return Response({
+                    "error": "Current password is incorrect"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate new password
+            if len(new_password) < 8:
+                return Response({
+                    "error": "Password must be at least 8 characters long"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if new password is the same as current
+            if request.user.check_password(new_password):
+                return Response({
+                    "error": "New password must be different from your current password"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Update password
+            request.user.set_password(new_password)
+            request.user.save()
+            
+            return Response({
+                "message": "Password changed successfully"
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"Change password error: {e}")
+            return Response({
+                "error": "Failed to change password"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

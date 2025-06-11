@@ -23,7 +23,9 @@ from .views import (
     ExpertProfileDeleteView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
-    ExpertOnboardingCompleteView
+    ExpertOnboardingCompleteView,
+    ChangeEmailView,
+    ChangePasswordView
 )
 from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView
 from .document_views import DocumentListView, DocumentUploadView, DocumentDeleteView
@@ -197,6 +199,10 @@ urlpatterns = [
     # Password reset endpoints
     path('password-reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password-reset-confirm/<str:uidb64>/<str:token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    
+    # Account settings endpoints
+    path('profile/change-email/', ChangeEmailView.as_view(), name='change-email'),
+    path('profile/change-password/', ChangePasswordView.as_view(), name='change-password'),
     
     # CORS test endpoint
     path('cors-test/', cors_test, name='cors-test'),
