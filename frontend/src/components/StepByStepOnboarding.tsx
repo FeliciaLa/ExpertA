@@ -684,12 +684,9 @@ const StepByStepOnboarding: React.FC = () => {
         </Box>
 
         {/* Section Header */}
-        <Box sx={{ mb: 3, p: 3, bgcolor: 'primary.50', borderRadius: 2, border: 1, borderColor: 'primary.200' }}>
-          <Typography variant="h6" color="primary" gutterBottom>
+        <Box sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
             {currentSectionInfo.section.title}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {currentSectionInfo.section.description} • Step {currentSectionInfo.stepInSection + 1} of {currentSectionInfo.totalInSection}
           </Typography>
         </Box>
 
