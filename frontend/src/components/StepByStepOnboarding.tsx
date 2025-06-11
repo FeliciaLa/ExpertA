@@ -69,7 +69,7 @@ const steps = [
   },
   {
     label: 'Professional Bio',
-    description: 'Tell us about yourself and your expertise',
+    description: 'Write a short description that will be shown to potential clients',
     field: 'bio'
   },
   {
@@ -334,7 +334,7 @@ const StepByStepOnboarding: React.FC = () => {
             label="Professional Bio"
             value={currentValue}
             onChange={(e) => setCurrentValue(e.target.value)}
-            placeholder="Write a brief description of your professional background, expertise, and what makes you unique in your field..."
+            placeholder="Write a short, compelling bio that potential clients will see. Highlight your expertise and what makes you unique..."
             variant="outlined"
             sx={{ mt: 2 }}
           />
