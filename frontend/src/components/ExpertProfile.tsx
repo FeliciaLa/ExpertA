@@ -711,15 +711,48 @@ const ExpertProfile: React.FC = () => {
             textColor: '#333',
             backgroundColor: '#fff',
             overlayColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 10000,
+            zIndex: 999999,
+          },
+          tooltip: {
+            zIndex: 999999,
+          },
+          tooltipContainer: {
+            zIndex: 999999,
+          },
+          buttonNext: {
+            backgroundColor: '#1976d2',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
+          buttonBack: {
+            color: '#1976d2',
+            backgroundColor: 'transparent',
+            border: '1px solid #1976d2',
+            borderRadius: '4px',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            marginRight: '8px',
+          },
+          buttonSkip: {
+            color: '#666',
+            backgroundColor: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
           }
         }}
         locale={{
           back: 'Back',
           close: 'Close',
-          last: 'Finish',
+          last: 'Finish Tour',
           next: 'Next',
-          skip: 'Skip tour',
+          skip: 'Skip Tour',
         }}
       />
       
