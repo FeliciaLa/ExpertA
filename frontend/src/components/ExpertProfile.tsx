@@ -389,13 +389,30 @@ const ExpertProfile: React.FC = () => {
               </Button>
             </>
           ) : (
-            <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              onClick={() => setIsEditing(true)}
-            >
-              Edit Profile
-            </Button>
+            <>
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                onClick={() => setIsEditing(true)}
+                sx={{ mr: 1 }}
+              >
+                Edit Profile
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  // Clear tour seen flag and restart tour
+                  if (expert?.id) {
+                    localStorage.removeItem(`expert_tour_seen_${expert.id}`);
+                  }
+                  setRunTour(true);
+                  setTourStepIndex(0);
+                }}
+                size="small"
+              >
+                Show Tour
+              </Button>
+            </>
           )}
         </Box>
       </Box>
