@@ -4,46 +4,22 @@ import {
   Typography,
   Box,
   TextField,
-  IconButton,
-  Snackbar,
-  Alert,
+  Button,
   Grid,
   Avatar,
-  Button,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Alert,
+  Divider,
   MenuItem,
-  Chip,
-  Divider
+  Chip
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useAuth } from '../contexts/AuthContext';
 import { expertApi, API_URL } from '../services/api';
-import { useNavigate } from 'react-router-dom';
 
-interface ProfileData {
-  name: string;
-  email: string;
-  bio: string;
-  specialties: string;
-  title: string;
-  profile_image?: string;
-  profile?: {
-    industry: string;
-    years_of_experience: number;
-    key_skills: string;
-    typical_problems: string;
-    background: string;
-    certifications: string;
-    methodologies: string;
-    tools_technologies: string;
-  };
-}
-
+// Industry options
 const INDUSTRIES = [
   'Technology & Software',
   'Marketing & Advertising', 
@@ -61,6 +37,7 @@ const INDUSTRIES = [
   'Other'
 ];
 
+// Experience levels
 const EXPERIENCE_LEVELS = [
   '1-2 years',
   '3-5 years', 
@@ -70,386 +47,322 @@ const EXPERIENCE_LEVELS = [
   '20+ years'
 ];
 
+interface ExpertProfileData {
+  // Basic information
+  name: string;
+  title: string;
+  email: string;
+  bio: string;
+  profile_image?: string;
+  
+  // Professional details
+  industry: string;
+  years_of_experience: number;
+  key_skills: string[];
+  specialties: string;
+  background: string;
+  typical_problems: string;
+  methodologies: string;
+  tools_technologies: string;
+  certifications: string;
+}
+
 const ExpertProfile: React.FC = () => {
-  const { expert, setUser, setIsAuthenticated, setIsExpert, setIsUser, refreshExpert } = useAuth();
-  const navigate = useNavigate();
+  const { expert, refreshExpert } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // State
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [skillInput, setSkillInput] = useState('');
-  const [keySkills, setKeySkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState('');
   
-  const [profile, setProfile] = useState<ProfileData>({
-    name: expert?.name || '',
-    email: expert?.email || '',
-    bio: expert?.bio || '',
-    specialties: expert?.specialties || '',
-    title: expert?.title || 'Expert',
-    profile_image: expert?.profile_image || '',
-    profile: expert?.profile || {
-      industry: '',
-      years_of_experience: 0,
-      key_skills: '',
-      typical_problems: '',
-      background: '',
-      certifications: '',
-      methodologies: '',
-      tools_technologies: '',
-    },
+  const [profileData, setProfileData] = useState<ExpertProfileData>({
+    name: '',
+    title: '',
+    email: '',
+    bio: '',
+    profile_image: '',
+    industry: '',
+    years_of_experience: 0,
+    key_skills: [],
+    specialties: '',
+    background: '',
+    typical_problems: '',
+    methodologies: '',
+    tools_technologies: '',
+    certifications: ''
   });
 
+  // Load profile data on mount
   useEffect(() => {
-    fetchProfile();
+    loadProfile();
   }, []);
 
-  useEffect(() => {
-    if (profile?.profile?.key_skills) {
-      setKeySkills(profile.profile.key_skills.split(', ').filter(skill => skill.trim()));
-    }
-  }, [profile]);
-
-  const fetchProfile = async () => {
+  const loadProfile = async () => {
     try {
-      console.log('=== FETCH PROFILE START ===');
-      // Check if we have authentication tokens
-      const tokens = localStorage.getItem('tokens');
-      console.log('Tokens from localStorage:', tokens ? 'Present' : 'Missing');
-      if (!tokens) {
-        setError('Authentication required. Please log out and log in again.');
-        return;
-      }
-
-      try {
-        const parsedTokens = JSON.parse(tokens);
-        console.log('Parsed tokens:', parsedTokens ? 'Valid' : 'Invalid');
-        if (!parsedTokens.access) {
-          setError('Invalid authentication. Please log out and log in again.');
-          return;
-        }
-      } catch (e) {
-        setError('Corrupted authentication data. Please log out and log in again.');
-        return;
-      }
-
-      console.log('Making API call to fetch profile...');
+      setLoading(true);
+      setError(null);
+      
       const data = await expertApi.getProfile();
-      console.log('=== RAW API RESPONSE ===');
-      console.log('Full API response:', JSON.stringify(data, null, 2));
-      console.log('Name from API:', data.name);
-      console.log('Title from API:', data.title);
-      console.log('Bio from API:', data.bio);
-      console.log('Email from API:', data.email);
-      console.log('Profile object from API:', data.profile);
-      console.log('Profile industry:', data.profile?.industry);
-      console.log('Profile years_of_experience:', data.profile?.years_of_experience);
-      console.log('Profile key_skills:', data.profile?.key_skills);
+      console.log('Loaded profile data:', data);
       
-      const updatedProfile = {
-        ...data,
-        title: data.title || 'Expert',
+      // Convert API response to our local format
+      const skills = data.profile?.key_skills ? 
+        data.profile.key_skills.split(', ').filter((s: string) => s.trim()) : [];
+      
+      setProfileData({
+        name: data.name || '',
+        title: data.title || '',
+        email: data.email || '',
         bio: data.bio || '',
-        profile: data.profile || {
-          industry: '',
-          years_of_experience: 0,
-          key_skills: '',
-          typical_problems: '',
-          background: '',
-          certifications: '',
-          methodologies: '',
-          tools_technologies: '',
-        }
-      };
+        profile_image: data.profile_image || '',
+        industry: data.profile?.industry || '',
+        years_of_experience: data.profile?.years_of_experience || 0,
+        key_skills: skills,
+        specialties: data.specialties || '',
+        background: data.profile?.background || '',
+        typical_problems: data.profile?.typical_problems || '',
+        methodologies: data.profile?.methodologies || '',
+        tools_technologies: data.profile?.tools_technologies || '',
+        certifications: data.profile?.certifications || ''
+      });
       
-      console.log('=== UPDATED PROFILE OBJECT ===');
-      console.log('Updated profile being set:', JSON.stringify(updatedProfile, null, 2));
-      setProfile(updatedProfile);
-      console.log('Profile state has been updated');
-      console.log('=== FETCH PROFILE END ===');
-    } catch (error: any) {
-      console.error('Failed to fetch profile:', error);
-      console.error('Error response:', error.response);
-      console.error('Error response data:', error.response?.data);
-      
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        setError('Authentication expired or invalid. Please log out and log in again to refresh your session.');
-      } else {
-        setError('Failed to fetch profile');
-      }
+    } catch (err: any) {
+      console.error('Failed to load profile:', err);
+      setError('Failed to load profile data');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const getExperienceDisplayValue = (yearsOfExperience: number | undefined) => {
-    if (!yearsOfExperience) return '1-2 years';
-    
-    if (yearsOfExperience <= 2) return '1-2 years';
-    if (yearsOfExperience <= 5) return '3-5 years';
-    if (yearsOfExperience <= 10) return '6-10 years';
-    if (yearsOfExperience <= 15) return '11-15 years';
-    if (yearsOfExperience <= 20) return '16-20 years';
-    return '20+ years';
   };
 
   const handleSave = async () => {
-    console.log('Save button clicked - starting save process');
     try {
-      console.log('Current profile state:', profile);
-      console.log('Current keySkills:', keySkills);
+      setSaving(true);
+      setError(null);
       
-      // Prepare the update data
+      // Prepare data for API
       const updateData = {
-        name: profile.name,
-        bio: profile.bio,
-        specialties: `${keySkills.join(', ')}\n\nMethodologies: ${profile.profile?.methodologies || ''}\nTools: ${profile.profile?.tools_technologies || ''}`,
-        title: profile.title,
+        name: profileData.name,
+        title: profileData.title,
+        bio: profileData.bio,
+        specialties: profileData.specialties,
         profile: {
-          industry: profile.profile?.industry || '',
-          years_of_experience: profile.profile?.years_of_experience || 0,
-          key_skills: keySkills.join(', '),
-          typical_problems: profile.profile?.typical_problems || '',
-          background: profile.profile?.background || '',
-          certifications: profile.profile?.certifications || '',
-          methodologies: profile.profile?.methodologies || '',
-          tools_technologies: profile.profile?.tools_technologies || ''
+          industry: profileData.industry,
+          years_of_experience: profileData.years_of_experience,
+          key_skills: profileData.key_skills.join(', '),
+          background: profileData.background,
+          typical_problems: profileData.typical_problems,
+          methodologies: profileData.methodologies,
+          tools_technologies: profileData.tools_technologies,
+          certifications: profileData.certifications
         }
       };
-
-      console.log('Sending update data:', updateData);
-      console.log('Profile object being sent:', updateData.profile);
-      console.log('Industry being sent:', updateData.profile.industry);
-      console.log('Years of experience being sent:', updateData.profile.years_of_experience);
       
-      const data = await expertApi.updateProfile(updateData);
-      console.log('Update response received:', data);
+      console.log('Saving profile data:', updateData);
       
-      // Check if profile is sufficiently complete to mark onboarding as done
-      const isProfileComplete = 
-        profile.name.trim() &&
-        profile.title.trim() &&
-        profile.bio.trim() &&
-        profile.profile?.industry &&
-        profile.profile?.years_of_experience &&
-        keySkills.length > 0;
-
-      console.log('Profile completeness check:', {
-        name: profile.name.trim(),
-        title: profile.title.trim(), 
-        bio: profile.bio.trim(),
-        industry: profile.profile?.industry,
-        years_of_experience: profile.profile?.years_of_experience,
-        keySkillsLength: keySkills.length,
-        isComplete: isProfileComplete
-      });
-
-      // If profile is complete and onboarding isn't marked as complete, complete it
-      if (isProfileComplete && !expert?.onboarding_completed) {
+      const response = await expertApi.updateProfile(updateData);
+      console.log('Save response:', response);
+      
+      // Check if profile is complete for onboarding
+      const isComplete = profileData.name && profileData.title && profileData.bio && 
+                        profileData.industry && profileData.years_of_experience > 0 && 
+                        profileData.key_skills.length > 0;
+      
+      if (isComplete && !expert?.onboarding_completed) {
         try {
-          console.log('Completing onboarding...');
           await expertApi.completeOnboarding({
-            industry: profile.profile?.industry || '',
-            years_of_experience: profile.profile?.years_of_experience || 0,
-            key_skills: keySkills.join(', '),
-            typical_problems: profile.profile?.typical_problems || `As a ${profile.title}, I help clients solve complex challenges in my field.`,
-            background: profile.profile?.background || '',
-            certifications: profile.profile?.certifications || '',
-            methodologies: profile.profile?.methodologies || '',
-            tools_technologies: profile.profile?.tools_technologies || ''
+            industry: profileData.industry,
+            years_of_experience: profileData.years_of_experience,
+            key_skills: profileData.key_skills.join(', '),
+            typical_problems: profileData.typical_problems || `As a ${profileData.title}, I help clients solve complex challenges in my field.`,
+            background: profileData.background,
+            certifications: profileData.certifications,
+            methodologies: profileData.methodologies,
+            tools_technologies: profileData.tools_technologies
           });
-          // Refresh expert data to update onboarding status
           await refreshExpert();
-          setSuccess('Profile updated and onboarding completed! You can now start training your AI.');
+          setSuccess('Profile saved and onboarding completed! You can now train your AI.');
         } catch (onboardingError) {
-          console.error('Failed to complete onboarding:', onboardingError);
-          setSuccess('Profile updated successfully');
+          console.error('Onboarding completion failed:', onboardingError);
+          setSuccess('Profile saved successfully!');
         }
       } else {
-        setSuccess('Profile updated successfully');
+        setSuccess('Profile saved successfully!');
       }
       
-      // Refresh the profile data from the server to ensure we have the latest data
-      console.log('Refreshing profile from server...');
-      await fetchProfile();
       setIsEditing(false);
-    } catch (error: any) {
-      console.error('Failed to update profile:', error);
-      console.error('Error details:', error.response?.data);
-      setError('Failed to update profile');
+      
+    } catch (err: any) {
+      console.error('Failed to save profile:', err);
+      setError(err.response?.data?.error || 'Failed to save profile');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleAddSkill = () => {
-    if (skillInput.trim() && !keySkills.includes(skillInput.trim())) {
-      const newSkills = [...keySkills, skillInput.trim()];
-      setKeySkills(newSkills);
-      setSkillInput('');
-    }
-  };
-
-  const handleRemoveSkill = (skillToRemove: string) => {
-    const newSkills = keySkills.filter(skill => skill !== skillToRemove);
-    setKeySkills(newSkills);
-  };
-
-  const handleImageUpload = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       setUploading(true);
-      const data = await expertApi.uploadProfileImage(file);
-      setProfile({
-        ...profile,
-        profile_image: data.profile_image,
-      });
-      setSuccess('Profile image uploaded successfully');
-    } catch (error) {
-      console.error('Failed to upload image:', error);
+      const response = await expertApi.uploadProfileImage(file);
+      
+      setProfileData(prev => ({
+        ...prev,
+        profile_image: response.profile_image
+      }));
+      
+      setSuccess('Profile image uploaded successfully!');
+    } catch (err: any) {
+      console.error('Failed to upload image:', err);
       setError('Failed to upload profile image');
     } finally {
       setUploading(false);
     }
   };
 
+  const addSkill = () => {
+    if (newSkill.trim() && !profileData.key_skills.includes(newSkill.trim())) {
+      setProfileData(prev => ({
+        ...prev,
+        key_skills: [...prev.key_skills, newSkill.trim()]
+      }));
+      setNewSkill('');
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      key_skills: prev.key_skills.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
+  const getExperienceDisplay = (years: number) => {
+    if (years <= 2) return '1-2 years';
+    if (years <= 5) return '3-5 years';
+    if (years <= 10) return '6-10 years';
+    if (years <= 15) return '11-15 years';
+    if (years <= 20) return '16-20 years';
+    return '20+ years';
+  };
+
   const getProfileImageUrl = () => {
-    if (!profile.profile_image) return '';
+    if (!profileData.profile_image) return '';
+    if (profileData.profile_image.startsWith('http')) return profileData.profile_image;
     
-    // Handle both relative and absolute URLs
-    if (profile.profile_image.startsWith('http')) {
-      return profile.profile_image;
-    }
-    
-    // Use the configured API URL base
     const baseUrl = API_URL.replace('/api/', '').replace('/api', '');
-    return `${baseUrl}${profile.profile_image}`;
+    return `${baseUrl}${profileData.profile_image}`;
   };
 
-  const handleDeleteProfile = async () => {
-    try {
-      setIsDeleting(true);
-      setError(null);
-      
-      await expertApi.deleteProfile();
-      
-      // Clear all local storage
-      localStorage.removeItem('tokens');
-      localStorage.removeItem('user');
-      localStorage.removeItem('auth_role');
-      
-      // Reset auth context
-      setUser(null);
-      setIsAuthenticated(false);
-      setIsExpert(false);
-      setIsUser(false);
-      
-      // Redirect to home page
-      navigate('/');
-      
-    } catch (error: any) {
-      console.error('Delete profile error:', error);
-      setError(error.response?.data?.error || 'Failed to delete profile');
-    } finally {
-      setIsDeleting(false);
-      setIsDeleteDialogOpen(false);
-    }
-  };
-
-  const handleOpenDeleteDialog = () => {
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setIsDeleteDialogOpen(false);
-  };
-
-  const handleClearAuthentication = () => {
-    // Clear all authentication data
-    localStorage.removeItem('tokens');
-    localStorage.removeItem('user');
-    localStorage.removeItem('auth_role');
-    
-    // Reset auth context
-    setUser(null);
-    setIsAuthenticated(false);
-    setIsExpert(false);
-    setIsUser(false);
-    
-    // Redirect to home page to re-login
-    navigate('/');
-  };
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" p={4}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Paper sx={{ p: 4, mb: 4, backgroundColor: 'white' }}>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+    <Paper sx={{ p: 4, maxWidth: 1000, mx: 'auto' }}>
+      {/* Header */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" color="primary">
           My Profile
         </Typography>
-        <Box display="flex" alignItems="center" gap={1}>
-          <IconButton 
-            onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-            color="primary"
-          >
-            {isEditing ? <SaveIcon /> : <EditIcon />}
-          </IconButton>
-          <Button
-            variant="outlined"
-            color="error"
-            size="small"
-            onClick={handleOpenDeleteDialog}
-            sx={{ ml: 1 }}
-          >
-            Delete Profile
-          </Button>
+        <Box>
+          {isEditing ? (
+            <>
+              <Button
+                variant="contained"
+                startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                onClick={handleSave}
+                disabled={saving}
+                sx={{ mr: 1 }}
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<CancelIcon />}
+                onClick={() => {
+                  setIsEditing(false);
+                  loadProfile(); // Reset to original data
+                }}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={() => setIsEditing(true)}
+            >
+              Edit Profile
+            </Button>
+          )}
         </Box>
       </Box>
 
+      {/* Alerts */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      )}
+
       <Grid container spacing={4}>
-        {/* Profile Image Section */}
-        <Grid item xs={12} md={3} display="flex" flexDirection="column" alignItems="center">
-          <Avatar
-            src={getProfileImageUrl()}
-            sx={{ 
-              width: 150, 
-              height: 150, 
-              fontSize: '3rem', 
-              mb: 2,
-              bgcolor: 'primary.main' 
-            }}
-          >
-            {profile.name ? profile.name[0] : ''}
-          </Avatar>
-          
-          {isEditing && (
-            <>
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-              <Button 
-                variant="outlined" 
-                size="small" 
-                sx={{ mb: 2 }}
-                onClick={handleImageUpload}
-                disabled={uploading}
-              >
-                {uploading ? <CircularProgress size={24} /> : 'Upload Photo'}
-              </Button>
-            </>
-          )}
+        {/* Profile Image */}
+        <Grid item xs={12} md={3}>
+          <Box display="flex" flexDirection="column" alignItems="center">
+            <Avatar
+              src={getProfileImageUrl()}
+              sx={{ 
+                width: 150, 
+                height: 150, 
+                fontSize: '3rem',
+                mb: 2,
+                bgcolor: 'primary.main'
+              }}
+            >
+              {profileData.name ? profileData.name[0].toUpperCase() : 'E'}
+            </Avatar>
+            
+            {isEditing && (
+              <>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  size="small"
+                >
+                  {uploading ? <CircularProgress size={20} /> : 'Upload Photo'}
+                </Button>
+              </>
+            )}
+          </Box>
         </Grid>
-        
-        {/* Profile Information Section */}
+
+        {/* Profile Form */}
         <Grid item xs={12} md={9}>
           <Grid container spacing={3}>
             {/* Basic Information */}
@@ -461,85 +374,83 @@ const ExpertProfile: React.FC = () => {
 
             <Grid item xs={12} md={6}>
               <TextField
-                label="Full Name"
-                value={profile.name}
-                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                disabled={!isEditing}
                 fullWidth
-                variant="outlined"
+                label="Full Name"
+                value={profileData.name}
+                onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                disabled={!isEditing}
+                required
               />
             </Grid>
 
             <Grid item xs={12} md={6}>
               <TextField
+                fullWidth
                 label="Professional Title"
-                value={profile.title}
-                onChange={(e) => setProfile({ ...profile, title: e.target.value })}
+                value={profileData.title}
+                onChange={(e) => setProfileData(prev => ({ ...prev, title: e.target.value }))}
                 disabled={!isEditing}
-                fullWidth
-                variant="outlined"
                 placeholder="e.g., Senior Marketing Manager, Data Scientist"
+                required
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField
+                fullWidth
                 label="Email"
-                value={profile.email}
+                value={profileData.email}
                 disabled
-                fullWidth
-                variant="outlined"
+                helperText="Email cannot be changed"
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField
-                label="Professional Bio"
-                value={profile.bio}
-                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                disabled={!isEditing}
                 fullWidth
+                label="Professional Bio"
+                value={profileData.bio}
+                onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                disabled={!isEditing}
                 multiline
                 rows={3}
-                variant="outlined"
-                placeholder="A concise professional bio that will be shown to users (2-3 sentences about your expertise and approach)..."
-                helperText="This is your public-facing bio that users will see when browsing experts"
+                placeholder="A brief professional bio that users will see when browsing experts..."
+                helperText="This bio will be displayed publicly to potential clients"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Areas of Specialization"
+                value={profileData.specialties}
+                onChange={(e) => setProfileData(prev => ({ ...prev, specialties: e.target.value }))}
+                disabled={!isEditing}
+                placeholder="e.g., Digital Marketing, SEO, Content Strategy"
+                helperText="Main areas where you provide expertise"
               />
             </Grid>
 
             {/* Experience & Expertise */}
             <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
                 Experience & Expertise
               </Typography>
             </Grid>
 
             <Grid item xs={12} md={6}>
               <TextField
-                label="Industry"
-                value={profile.profile?.industry || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  profile: { 
-                    ...(profile.profile || {
-                      industry: '',
-                      years_of_experience: 0,
-                      key_skills: '',
-                      typical_problems: '',
-                      background: '',
-                      certifications: '',
-                      methodologies: '',
-                      tools_technologies: '',
-                    }), 
-                    industry: e.target.value 
-                  }
-                })}
-                disabled={!isEditing}
                 fullWidth
-                variant="outlined"
+                label="Industry"
+                value={profileData.industry}
+                onChange={(e) => setProfileData(prev => ({ ...prev, industry: e.target.value }))}
+                disabled={!isEditing}
                 select={isEditing}
+                required
               >
-                {isEditing && INDUSTRIES.map((industry) => (
+                {INDUSTRIES.map((industry) => (
                   <MenuItem key={industry} value={industry}>
                     {industry}
                   </MenuItem>
@@ -549,10 +460,11 @@ const ExpertProfile: React.FC = () => {
 
             <Grid item xs={12} md={6}>
               <TextField
+                fullWidth
                 label="Years of Experience"
-                value={getExperienceDisplayValue(profile.profile?.years_of_experience)}
+                value={getExperienceDisplay(profileData.years_of_experience)}
                 onChange={(e) => {
-                  const experienceMap: { [key: string]: number } = {
+                  const experienceMap: Record<string, number> = {
                     '1-2 years': 2,
                     '3-5 years': 5,
                     '6-10 years': 10,
@@ -560,30 +472,16 @@ const ExpertProfile: React.FC = () => {
                     '16-20 years': 20,
                     '20+ years': 25
                   };
-                  const numericValue = experienceMap[e.target.value] || 2;
-                  setProfile({ 
-                    ...profile, 
-                    profile: { 
-                      ...(profile.profile || {
-                        industry: '',
-                        years_of_experience: 0,
-                        key_skills: '',
-                        typical_problems: '',
-                        background: '',
-                        certifications: '',
-                        methodologies: '',
-                        tools_technologies: '',
-                      }), 
-                      years_of_experience: numericValue 
-                    }
-                  });
+                  setProfileData(prev => ({ 
+                    ...prev, 
+                    years_of_experience: experienceMap[e.target.value] || 2 
+                  }));
                 }}
                 disabled={!isEditing}
-                fullWidth
-                variant="outlined"
                 select={isEditing}
+                required
               >
-                {isEditing && EXPERIENCE_LEVELS.map((level) => (
+                {EXPERIENCE_LEVELS.map((level) => (
                   <MenuItem key={level} value={level}>
                     {level}
                   </MenuItem>
@@ -596,246 +494,116 @@ const ExpertProfile: React.FC = () => {
               <Typography variant="subtitle1" gutterBottom>
                 Key Skills
               </Typography>
+              
               {isEditing && (
-                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box display="flex" gap={1} mb={2}>
                   <TextField
                     fullWidth
-                    label="Add a skill"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
-                    placeholder="e.g., Project Management, Python, SEO"
-                    variant="outlined"
                     size="small"
+                    label="Add a skill"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+                    placeholder="e.g., Project Management, Python, SEO"
                   />
-                  <Button onClick={handleAddSkill} variant="outlined">
+                  <Button variant="outlined" onClick={addSkill}>
                     Add
                   </Button>
                 </Box>
               )}
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {keySkills.map((skill) => (
+              
+              <Box display="flex" flexWrap="wrap" gap={1}>
+                {profileData.key_skills.map((skill) => (
                   <Chip
                     key={skill}
                     label={skill}
-                    onDelete={isEditing ? () => handleRemoveSkill(skill) : undefined}
+                    onDelete={isEditing ? () => removeSkill(skill) : undefined}
                     color="primary"
                     variant="outlined"
                   />
                 ))}
+                {profileData.key_skills.length === 0 && (
+                  <Typography variant="body2" color="text.secondary">
+                    No skills added yet
+                  </Typography>
+                )}
               </Box>
             </Grid>
 
-            {/* Additional Details */}
+            {/* Professional Details */}
             <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                Additional Details
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Professional Details
               </Typography>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Methodologies & Frameworks"
-                value={profile.profile?.methodologies || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  profile: { 
-                    ...(profile.profile || {
-                      industry: '',
-                      years_of_experience: 0,
-                      key_skills: '',
-                      typical_problems: '',
-                      background: '',
-                      certifications: '',
-                      methodologies: '',
-                      tools_technologies: '',
-                    }), 
-                    methodologies: e.target.value 
-                  }
-                })}
-                disabled={!isEditing}
-                fullWidth
-                variant="outlined"
-                placeholder="e.g., Agile, Design Thinking, LEAN"
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Tools & Technologies"
-                value={profile.profile?.tools_technologies || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  profile: { 
-                    ...(profile.profile || {
-                      industry: '',
-                      years_of_experience: 0,
-                      key_skills: '',
-                      typical_problems: '',
-                      background: '',
-                      certifications: '',
-                      methodologies: '',
-                      tools_technologies: '',
-                    }), 
-                    tools_technologies: e.target.value 
-                  }
-                })}
-                disabled={!isEditing}
-                fullWidth
-                variant="outlined"
-                placeholder="e.g., Salesforce, Adobe Creative Suite, Python"
-              />
-            </Grid>
-
             <Grid item xs={12}>
               <TextField
+                fullWidth
                 label="Background & Experience"
-                value={profile.profile?.background || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  profile: { 
-                    ...(profile.profile || {
-                      industry: '',
-                      years_of_experience: 0,
-                      key_skills: '',
-                      typical_problems: '',
-                      background: '',
-                      certifications: '',
-                      methodologies: '',
-                      tools_technologies: '',
-                    }), 
-                    background: e.target.value 
-                  }
-                })}
+                value={profileData.background}
+                onChange={(e) => setProfileData(prev => ({ ...prev, background: e.target.value }))}
                 disabled={!isEditing}
-                fullWidth
                 multiline
-                rows={3}
-                variant="outlined"
-                placeholder="Detailed description of your professional background, education, career journey, and specific experiences that shaped your expertise..."
-                helperText="Provide comprehensive details about your professional journey and qualifications"
+                rows={4}
+                placeholder="Detailed description of your professional background, education, and career journey..."
+                helperText="This helps the AI understand your expertise depth and experience"
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField
-                label="Certifications"
-                value={profile.profile?.certifications || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  profile: { 
-                    ...(profile.profile || {
-                      industry: '',
-                      years_of_experience: 0,
-                      key_skills: '',
-                      typical_problems: '',
-                      background: '',
-                      certifications: '',
-                      methodologies: '',
-                      tools_technologies: '',
-                    }), 
-                    certifications: e.target.value 
-                  }
-                })}
-                disabled={!isEditing}
                 fullWidth
-                variant="outlined"
-                placeholder="List your relevant certifications..."
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
                 label="Typical Problems You Solve"
-                value={profile.profile?.typical_problems || ''}
-                onChange={(e) => setProfile({ 
-                  ...profile, 
-                  profile: { 
-                    ...(profile.profile || {
-                      industry: '',
-                      years_of_experience: 0,
-                      key_skills: '',
-                      typical_problems: '',
-                      background: '',
-                      certifications: '',
-                      methodologies: '',
-                      tools_technologies: '',
-                    }), 
-                    typical_problems: e.target.value 
-                  }
-                })}
+                value={profileData.typical_problems}
+                onChange={(e) => setProfileData(prev => ({ ...prev, typical_problems: e.target.value }))}
                 disabled={!isEditing}
-                fullWidth
                 multiline
                 rows={3}
-                variant="outlined"
-                placeholder="Describe the types of problems you typically help clients solve..."
+                placeholder="Describe the types of challenges and problems you typically help clients solve..."
+                helperText="This helps the AI understand what kinds of questions to expect"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Methodologies & Frameworks"
+                value={profileData.methodologies}
+                onChange={(e) => setProfileData(prev => ({ ...prev, methodologies: e.target.value }))}
+                disabled={!isEditing}
+                placeholder="e.g., Agile, Design Thinking, LEAN"
+                helperText="Approaches and frameworks you use"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Tools & Technologies"
+                value={profileData.tools_technologies}
+                onChange={(e) => setProfileData(prev => ({ ...prev, tools_technologies: e.target.value }))}
+                disabled={!isEditing}
+                placeholder="e.g., Salesforce, Adobe Creative Suite, Python"
+                helperText="Tools and technologies you work with"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Certifications"
+                value={profileData.certifications}
+                onChange={(e) => setProfileData(prev => ({ ...prev, certifications: e.target.value }))}
+                disabled={!isEditing}
+                placeholder="List your relevant professional certifications..."
+                helperText="Professional certifications and credentials"
               />
             </Grid>
           </Grid>
         </Grid>
       </Grid>
-
-      {error && (
-        <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
-          <Alert onClose={() => setError(null)} severity="error">
-            {error}
-            {(error.includes('Authentication') || error.includes('log out and log in')) && (
-              <Box sx={{ mt: 1 }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  onClick={handleClearAuthentication}
-                  sx={{ mt: 1 }}
-                >
-                  Clear Authentication & Re-login
-                </Button>
-              </Box>
-            )}
-          </Alert>
-        </Snackbar>
-      )}
-
-      {success && (
-        <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess(null)}>
-          <Alert onClose={() => setSuccess(null)} severity="success">
-            {success}
-          </Alert>
-        </Snackbar>
-      )}
-
-      {/* Delete Profile Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onClose={handleCloseDeleteDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Delete Profile</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" paragraph>
-            Are you sure you want to permanently delete your expert profile? This action cannot be undone.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            This will:
-          </Typography>
-          <Typography variant="body2" color="text.secondary" component="div" sx={{ ml: 2, mt: 1 }}>
-            • Delete all your profile information<br/>
-            • Remove your expert account permanently<br/>
-            • Sign you out of the application<br/>
-            • Allow you to register again with the same email if needed
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleDeleteProfile} 
-            color="error" 
-            variant="contained"
-            disabled={isDeleting}
-          >
-            {isDeleting ? <CircularProgress size={20} /> : 'Delete Profile'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Paper>
   );
 };
