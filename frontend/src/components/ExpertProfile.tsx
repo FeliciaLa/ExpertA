@@ -720,66 +720,15 @@ const ExpertProfile: React.FC = () => {
         continuous={true}
         showProgress={true}
         showSkipButton={true}
-        disableOverlayClose={true}
+        disableOverlayClose={false}
         debug={true}
         styles={{
           options: {
-            primaryColor: '#1976d2',
-            textColor: '#333',
-            backgroundColor: '#fff',
-            overlayColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 999999,
+            zIndex: 9999999,
           },
-          tooltip: {
-            zIndex: 999999,
-            pointerEvents: 'auto',
-          },
-          tooltipContainer: {
-            zIndex: 999999,
-            pointerEvents: 'auto',
-          },
-          tooltipContent: {
-            pointerEvents: 'auto',
-          },
-          tooltipFooter: {
-            pointerEvents: 'auto',
-          },
-          buttonNext: {
-            backgroundColor: '#1976d2 !important',
-            color: '#fff !important',
-            border: 'none !important',
-            borderRadius: '4px',
-            padding: '8px 16px',
-            cursor: 'pointer !important',
-            fontSize: '14px',
-            fontWeight: 500,
-            pointerEvents: 'auto',
-            position: 'relative',
-            zIndex: 999999,
-          },
-          buttonBack: {
-            color: '#1976d2 !important',
-            backgroundColor: 'transparent !important',
-            border: '1px solid #1976d2 !important',
-            borderRadius: '4px',
-            padding: '8px 16px',
-            cursor: 'pointer !important',
-            fontSize: '14px',
-            marginRight: '8px',
-            pointerEvents: 'auto',
-            position: 'relative',
-            zIndex: 999999,
-          },
-          buttonSkip: {
-            color: '#666 !important',
-            backgroundColor: 'transparent !important',
-            border: 'none !important',
-            cursor: 'pointer !important',
-            fontSize: '14px',
-            pointerEvents: 'auto',
-            position: 'relative',
-            zIndex: 999999,
-          }
+        }}
+        floaterProps={{
+          disableAnimation: true,
         }}
         locale={{
           back: 'Back',
