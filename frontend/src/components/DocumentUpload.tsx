@@ -73,6 +73,22 @@ export const DocumentUpload: React.FC = () => {
   const uploadFiles = async (files: FileList) => {
     setUploading(true);
     try {
+      // Check file sizes before upload
+      const maxFileSize = 10 * 1024 * 1024; // 10 MB
+      const oversizedFiles = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        if (files[i].size > maxFileSize) {
+          oversizedFiles.push(files[i].name);
+        }
+      }
+      
+      if (oversizedFiles.length > 0) {
+        setError(`Files too large (max 10 MB): ${oversizedFiles.join(', ')}`);
+        setUploading(false);
+        return;
+      }
+      
       const formData = new FormData();
       for (let i = 0; i < files.length; i++) {
         formData.append('documents', files[i]);
@@ -164,6 +180,10 @@ export const DocumentUpload: React.FC = () => {
         <Typography variant="body1" paragraph>
           Upload documents to train your AI assistant with your knowledge and expertise.
           Supported file types: PDF, Word documents, TXT, and more.
+        </Typography>
+        
+        <Typography variant="body2" color="textSecondary" paragraph>
+          Maximum file size: 10 MB per file
         </Typography>
 
         <Box 
