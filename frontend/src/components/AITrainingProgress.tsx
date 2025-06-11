@@ -3,17 +3,12 @@ import {
   Box,
   Paper,
   Typography,
-  LinearProgress,
   Chip,
   Avatar,
   Grid,
-  Card,
-  CardContent,
-  Button,
   CircularProgress,
   Badge
 } from '@mui/material';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -117,24 +112,24 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   }
 
   return (
-    <Paper sx={{ p: 4, mb: 4, bgcolor: 'background.paper' }}>
-      <Grid container spacing={3}>
+    <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
+      <Grid container spacing={2} alignItems="center">
         {/* AI Avatar and Status */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={3}>
           <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
             <Badge
-              badgeContent={aiPersonality.status === 'expert' ? <CheckCircleIcon sx={{ fontSize: 16 }} /> : ''}
+              badgeContent={aiPersonality.status === 'expert' ? <CheckCircleIcon sx={{ fontSize: 12 }} /> : ''}
               color="success"
               overlap="circular"
             >
               <Avatar
                 sx={{
-                  width: 80,
-                  height: 80,
+                  width: 50,
+                  height: 50,
                   bgcolor: aiPersonality.color,
-                  fontSize: '2rem',
-                  mb: 2,
-                  border: `3px solid ${aiPersonality.color}20`,
+                  fontSize: '1.5rem',
+                  mb: 1,
+                  border: `2px solid ${aiPersonality.color}20`,
                   animation: stats.qaMessagesCount > 0 ? 'pulse 2s infinite' : 'none'
                 }}
               >
@@ -142,67 +137,66 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
               </Avatar>
             </Badge>
             
-            <Typography variant="h6" gutterBottom color="primary">
+            <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 600 }}>
               Your AI Assistant
             </Typography>
             
             <Chip
               label={aiPersonality.status.toUpperCase()}
+              size="small"
               sx={{
                 bgcolor: aiPersonality.color,
                 color: 'white',
                 fontWeight: 'bold',
-                mb: 2
+                fontSize: '0.7rem',
+                height: 20
               }}
             />
-            
-            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
-              "{aiPersonality.message}"
-            </Typography>
           </Box>
         </Grid>
 
         {/* Progress Stats */}
-        <Grid item xs={12} md={8}>
-          <Typography variant="h6" gutterBottom display="flex" alignItems="center">
-            <SmartToyIcon sx={{ mr: 1, color: 'primary.main' }} />
-            Training Progress
-          </Typography>
-          
-          <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Grid container spacing={1}>
             <Grid item xs={6}>
-              <Card variant="outlined" sx={{ textAlign: 'center', p: 2 }}>
-                <UploadFileIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
-                <Typography variant="h4" color="primary" fontWeight="bold">
+              <Box sx={{ textAlign: 'center', p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <UploadFileIcon color="primary" sx={{ fontSize: 24 }} />
+                <Typography variant="h6" color="primary" fontWeight="bold" sx={{ lineHeight: 1 }}>
                   {stats.documentsUploaded}
                 </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Documents Uploaded
+                <Typography variant="caption" color="textSecondary">
+                  Documents
                 </Typography>
-              </Card>
+              </Box>
             </Grid>
             
             <Grid item xs={6}>
-              <Card variant="outlined" sx={{ textAlign: 'center', p: 2 }}>
-                <ChatIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
-                <Typography variant="h4" color="primary" fontWeight="bold">
+              <Box sx={{ textAlign: 'center', p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <ChatIcon color="primary" sx={{ fontSize: 24 }} />
+                <Typography variant="h6" color="primary" fontWeight="bold" sx={{ lineHeight: 1 }}>
                   {stats.trainingMinutes}
                 </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Minutes of Q&A Training
+                <Typography variant="caption" color="textSecondary">
+                  Q&A Minutes
                 </Typography>
-              </Card>
+              </Box>
             </Grid>
           </Grid>
-
-          {stats.lastTrainingDate && (
-            <Typography variant="caption" color="textSecondary" sx={{ mt: 2, display: 'block' }}>
-              Last training session: {new Date(stats.lastTrainingDate).toLocaleDateString()} at {new Date(stats.lastTrainingDate).toLocaleTimeString()}
-            </Typography>
-          )}
         </Grid>
 
-
+        {/* AI Message */}
+        <Grid item xs={12} md={3}>
+          <Box textAlign="center">
+            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', fontSize: '0.85rem' }}>
+              "{aiPersonality.message}"
+            </Typography>
+            {stats.lastTrainingDate && (
+              <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+                Last: {new Date(stats.lastTrainingDate).toLocaleDateString()}
+              </Typography>
+            )}
+          </Box>
+        </Grid>
       </Grid>
 
       <style>
