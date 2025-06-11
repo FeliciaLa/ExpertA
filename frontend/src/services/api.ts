@@ -125,11 +125,21 @@ api.interceptors.request.use(
       config.url?.includes(endpoint)
     );
     
+    // Check if this is a file upload request (FormData)
+    const isFileUpload = config.data instanceof FormData;
+    
+    // For file uploads, remove the Content-Type header to let the browser set it automatically with the boundary
+    if (isFileUpload) {
+      delete config.headers['Content-Type'];
+      console.log('API Request Interceptor - Removed Content-Type for file upload');
+    }
+    
     const tokens = localStorage.getItem('tokens');
     console.log('API Request Interceptor - URL:', config.url);
     console.log('API Request Interceptor - Full URL:', `${config.baseURL}${config.url}`);
     console.log('API Request Interceptor - Method:', config.method?.toUpperCase());
     console.log('API Request Interceptor - Is public endpoint:', isPublicEndpoint);
+    console.log('API Request Interceptor - Is file upload:', isFileUpload);
     
     // Only add auth headers for non-public endpoints
     if (!isPublicEndpoint && tokens) {
