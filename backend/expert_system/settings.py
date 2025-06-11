@@ -50,7 +50,7 @@ DEBUG = True  # Temporarily set to True for debugging
 ALLOWED_HOSTS = [
     "experta-production.up.railway.app",
     "*.up.railway.app",  # Allow all Railway subdomains
-    "experta-backend-74dc8de6db5e.herokuapp.com",  # Heroku domain
+    "experta-backend-d64920064058.herokuapp.com",  # Heroku domain
     "*.herokuapp.com",  # Allow all Heroku subdomains
     "localhost",
     "127.0.0.1",
