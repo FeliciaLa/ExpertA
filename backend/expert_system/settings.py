@@ -50,6 +50,8 @@ DEBUG = True  # Temporarily set to True for debugging
 ALLOWED_HOSTS = [
     "experta-production.up.railway.app",
     "*.up.railway.app",  # Allow all Railway subdomains
+    "experta-backend-74dc8de6db5e.herokuapp.com",  # Heroku domain
+    "*.herokuapp.com",  # Allow all Heroku subdomains
     "localhost",
     "127.0.0.1",
     "*"  # Allow all hosts for debugging (remove in production)
@@ -220,38 +222,35 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler',
 }
 
-# CORS settings - allow all origins, this is safer for changing Vercel domains
+# CORS settings - allow all origins for debugging, specify allowed origins for production
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Comment out CORS_ALLOWED_ORIGINS when using CORS_ALLOW_ALL_ORIGINS
-# CORS_ALLOWED_ORIGINS = [
-#     # Local development
-#     "http://localhost:5173",
-#     "http://localhost:5174",
-#     "http://localhost:5175",
-#     "http://localhost:5176",
-#     "http://localhost:5177",
-#     "http://localhost:5178",
-#     "http://localhost:5179",
-#     "http://localhost:5180",
-#     # Vercel domains
-#     "https://expert-a.vercel.app",
-#     "https://expert-a-git-main.vercel.app",
-#     "https://expert-a-feliciala.vercel.app",
-#     "https://expert-42lkksco4-felicia-lammertings-projects.vercel.app",
-#     "https://expert-h0m39zhmz-felicia-lammertings-projects.vercel.app",
-#     "https://expert-rm7gqywrd-felicia-lammertings-projects.vercel.app",
-#     "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
-#     "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
-#     "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
-#     "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
-#     "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
-#     # Add your custom Vercel domain once you have it
-# ]
-
-# Override CORS_ALLOW_ALL_ORIGINS setting - we'll use our custom middleware instead
-# CORS_ALLOW_ALL_ORIGINS = False
+# Enable specific origins as well for better security
+CORS_ALLOWED_ORIGINS = [
+    # Local development
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+    "http://localhost:5177",
+    "http://localhost:5178",
+    "http://localhost:5179",
+    "http://localhost:5180",
+    # Vercel domains
+    "https://expert-a.vercel.app",
+    "https://expert-a-git-main.vercel.app",
+    "https://expert-a-feliciala.vercel.app",
+    "https://expert-42lkksco4-felicia-lammertings-projects.vercel.app",
+    "https://expert-h0m39zhmz-felicia-lammertings-projects.vercel.app",
+    "https://expert-rm7gqywrd-felicia-lammertings-projects.vercel.app",
+    "https://expert-pkkeaorxs-felicia-lammertings-projects.vercel.app",
+    "https://expert-bpjnvsb43-felicia-lammertings-projects.vercel.app",
+    "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
+    "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
+    "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
+    # Add your custom Vercel domain once you have it
+]
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -336,7 +335,7 @@ LOGIN_REDIRECT_URL = '/api/expert-form/'
 AUTH_USER_MODEL = 'api.User'
 
 # Frontend URL for email verification
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://expert-zynclh313-felicia-lammertings-projects.vercel.app')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://expert-a.vercel.app')
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
