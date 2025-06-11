@@ -493,12 +493,26 @@ const UserProfilePage: React.FC = () => {
         console.log('Uploading profile image:', file.name);
         const updatedUser = await userApi.uploadProfileImage(file);
         
+        console.log('Upload response:', updatedUser);
+        console.log('Profile image URL from response:', updatedUser.profile_image);
+        
         // Update user context with the new profile image
         if (user && setUser) {
           setUser({
             ...user,
             profile_image: updatedUser.profile_image
           });
+        }
+        
+        // Also try to refresh the user profile to get the latest data
+        try {
+          const refreshedUser = await userApi.getProfile();
+          console.log('Refreshed user data:', refreshedUser);
+          if (setUser) {
+            setUser(refreshedUser);
+          }
+        } catch (refreshError) {
+          console.error('Error refreshing user profile:', refreshError);
         }
         
         console.log('Profile image updated successfully:', updatedUser);
