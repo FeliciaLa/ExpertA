@@ -51,6 +51,9 @@ const UserProfilePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
 
+  // Consultation history state - empty for now, will be populated when backend is ready
+  const [consultations, setConsultations] = useState<any[]>([]);
+
   // Fetch user profile data on component mount
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -650,6 +653,65 @@ const UserProfilePage: React.FC = () => {
               </Paper>
             </Grid>
           </Grid>
+        </Box>
+
+        {/* Consultation History Section */}
+        <Box sx={{ mt: 6 }}>
+          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+            Your Consultation History
+          </Typography>
+          
+          {consultations.length === 0 ? (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No consultations yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Start exploring our experts to begin your first AI consultation. 
+                Each conversation will appear here for easy access to your consultation history.
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={() => navigate('/experts')}
+                sx={{ 
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: 2
+                }}
+              >
+                Browse Experts Now
+              </Button>
+            </Paper>
+          ) : (
+            <Grid container spacing={2}>
+              {consultations.map((consultation, index) => (
+                <Grid item xs={12} key={index}>
+                  <Paper sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Box>
+                        <Typography variant="h6" gutterBottom>
+                          {consultation.expertName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          {consultation.category} • {consultation.date}
+                        </Typography>
+                        <Typography variant="body1">
+                          {consultation.lastMessage}
+                        </Typography>
+                      </Box>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => navigate(`/experts/${consultation.expertId}`)}
+                      >
+                        Continue Chat
+                      </Button>
+                    </Box>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Box>
 
         {/* Account Settings Dialog */}
