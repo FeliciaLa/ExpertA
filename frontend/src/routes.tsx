@@ -29,11 +29,11 @@ const LoadingFallback = () => (
 
 // Protected route component that checks auth
 const ProtectedExpertRoute = ({ children }: { children: ReactNode }) => {
-  const { isExpert, isAuthenticated } = useAuth();
+  const { isExpert, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
   // While checking authentication, show loading
-  if (isAuthenticated === null) {
+  if (isLoading) {
     return <LoadingFallback />;
   }
   
@@ -42,11 +42,11 @@ const ProtectedExpertRoute = ({ children }: { children: ReactNode }) => {
 
 // Protected route component for users
 const ProtectedUserRoute = ({ children }: { children: ReactNode }) => {
-  const { isUser, isAuthenticated } = useAuth();
+  const { isUser, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
   // While checking authentication, show loading
-  if (isAuthenticated === null) {
+  if (isLoading) {
     return <LoadingFallback />;
   }
   

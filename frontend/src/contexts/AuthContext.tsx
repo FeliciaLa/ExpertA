@@ -95,12 +95,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isExpert, setIsExpert] = useState(false);
   const [isUser, setIsUser] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check authentication status on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        setIsLoading(true);
         const tokens = localStorage.getItem('tokens');
         const savedUser = localStorage.getItem('user');
         
@@ -169,6 +170,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.error('Auth check error:', error);
         // If profile fetch fails, clear authentication state
         signOut();
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -467,6 +470,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAuthenticated(false);
     setIsExpert(false);
     setIsUser(false);
+    setIsLoading(false);
     
     // Clear authorization header
     delete api.defaults.headers.common['Authorization'];
