@@ -106,10 +106,13 @@ const VerifyEmailPage: React.FC = () => {
               Email Verified!
             </Typography>
             <Typography variant="body1" paragraph>
-              Your email has been successfully verified and your account is now active.
+              {userRole === 'expert' 
+                ? 'Your email has been successfully verified! Now let\'s set up your expert profile to get started.'
+                : 'Your email has been successfully verified and your account is now active.'
+              }
             </Typography>
             <Button variant="contained" color="primary" onClick={handleGoToHome}>
-              {userRole === 'expert' ? 'Go to Expert Dashboard' : 'Browse Experts'}
+              {userRole === 'expert' ? 'Set Up Profile' : 'Browse Experts'}
             </Button>
           </Box>
         ) : (
