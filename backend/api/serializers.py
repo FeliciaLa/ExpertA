@@ -18,7 +18,7 @@ class ExpertProfileDetailSerializer(serializers.ModelSerializer):
 class ExpertProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
-    profile = ExpertProfileDetailSerializer(read_only=True)
+    profile = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -42,6 +42,56 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
             name_parts = obj.name.split()
             return ' '.join(name_parts[1:]) if len(name_parts) > 1 else ''
         return ''
+    
+    def get_profile(self, obj):
+        """Get the expert profile data, create if doesn't exist"""
+        try:
+            profile = obj.profile
+            return {
+                'industry': profile.industry,
+                'years_of_experience': profile.years_of_experience,
+                'key_skills': profile.key_skills,
+                'typical_problems': profile.typical_problems,
+                'background': profile.background,
+                'certifications': profile.certifications,
+                'methodologies': profile.methodologies,
+                'tools_technologies': profile.tools_technologies
+            }
+        except ExpertProfile.DoesNotExist:
+            # Create empty profile if it doesn't exist
+            ExpertProfile.objects.create(
+                expert=obj,
+                industry='',
+                years_of_experience=0,
+                key_skills='',
+                typical_problems='',
+                background='',
+                certifications='',
+                methodologies='',
+                tools_technologies=''
+            )
+            return {
+                'industry': '',
+                'years_of_experience': 0,
+                'key_skills': '',
+                'typical_problems': '',
+                'background': '',
+                'certifications': '',
+                'methodologies': '',
+                'tools_technologies': ''
+            }
+        except Exception as e:
+            print(f"Error getting profile for {obj.email}: {e}")
+            return {
+                'industry': '',
+                'years_of_experience': 0,
+                'key_skills': '',
+                'typical_problems': '',
+                'background': '',
+                'certifications': '',
+                'methodologies': '',
+                'tools_technologies': ''
+            }
 
 class ExpertSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()

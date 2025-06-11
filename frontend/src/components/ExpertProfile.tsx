@@ -117,6 +117,7 @@ const ExpertProfile: React.FC = () => {
       console.log('=== FETCH PROFILE START ===');
       // Check if we have authentication tokens
       const tokens = localStorage.getItem('tokens');
+      console.log('Tokens from localStorage:', tokens ? 'Present' : 'Missing');
       if (!tokens) {
         setError('Authentication required. Please log out and log in again.');
         return;
@@ -124,6 +125,7 @@ const ExpertProfile: React.FC = () => {
 
       try {
         const parsedTokens = JSON.parse(tokens);
+        console.log('Parsed tokens:', parsedTokens ? 'Valid' : 'Invalid');
         if (!parsedTokens.access) {
           setError('Invalid authentication. Please log out and log in again.');
           return;
@@ -133,10 +135,18 @@ const ExpertProfile: React.FC = () => {
         return;
       }
 
+      console.log('Making API call to fetch profile...');
       const data = await expertApi.getProfile();
-      console.log('API Profile data received:', data);
+      console.log('=== RAW API RESPONSE ===');
+      console.log('Full API response:', JSON.stringify(data, null, 2));
+      console.log('Name from API:', data.name);
+      console.log('Title from API:', data.title);
       console.log('Bio from API:', data.bio);
-      console.log('Profile from API:', data.profile);
+      console.log('Email from API:', data.email);
+      console.log('Profile object from API:', data.profile);
+      console.log('Profile industry:', data.profile?.industry);
+      console.log('Profile years_of_experience:', data.profile?.years_of_experience);
+      console.log('Profile key_skills:', data.profile?.key_skills);
       
       const updatedProfile = {
         ...data,
@@ -154,11 +164,15 @@ const ExpertProfile: React.FC = () => {
         }
       };
       
-      console.log('Setting profile state to:', updatedProfile);
+      console.log('=== UPDATED PROFILE OBJECT ===');
+      console.log('Updated profile being set:', JSON.stringify(updatedProfile, null, 2));
       setProfile(updatedProfile);
+      console.log('Profile state has been updated');
       console.log('=== FETCH PROFILE END ===');
     } catch (error: any) {
       console.error('Failed to fetch profile:', error);
+      console.error('Error response:', error.response);
+      console.error('Error response data:', error.response?.data);
       
       if (error.response?.status === 401 || error.response?.status === 403) {
         setError('Authentication expired or invalid. Please log out and log in again to refresh your session.');
@@ -180,10 +194,8 @@ const ExpertProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    console.log('🔥 SAVE BUTTON CLICKED - Function started!');
-    alert('Save function called!'); // Temporary alert to ensure function is running
+    console.log('Save button clicked - starting save process');
     try {
-      console.log('=== SAVE DEBUG START ===');
       console.log('Current profile state:', profile);
       console.log('Current keySkills:', keySkills);
       
@@ -205,10 +217,10 @@ const ExpertProfile: React.FC = () => {
         }
       };
 
-      console.log('Update data being sent:', updateData);
+      console.log('Sending update data:', updateData);
       
       const data = await expertApi.updateProfile(updateData);
-      console.log('API response received:', data);
+      console.log('Update response received:', data);
       
       // Check if profile is sufficiently complete to mark onboarding as done
       const isProfileComplete = 
@@ -257,7 +269,6 @@ const ExpertProfile: React.FC = () => {
       // Refresh the profile data from the server to ensure we have the latest data
       console.log('Refreshing profile from server...');
       await fetchProfile();
-      console.log('=== SAVE DEBUG END ===');
       setIsEditing(false);
     } catch (error: any) {
       console.error('Failed to update profile:', error);
