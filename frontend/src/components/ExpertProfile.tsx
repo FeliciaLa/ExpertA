@@ -127,11 +127,14 @@ const ExpertProfile: React.FC = () => {
   // Load profile data on mount
   useEffect(() => {
     loadProfile();
-    // Also refresh expert data to ensure we have the latest onboarding status
+  }, []);
+
+  // Refresh expert data separately to ensure we have the latest onboarding status
+  useEffect(() => {
     if (refreshExpert) {
       refreshExpert();
     }
-  }, [refreshExpert]);
+  }, []);
 
   // Check if we should show the tour for new experts
   useEffect(() => {
