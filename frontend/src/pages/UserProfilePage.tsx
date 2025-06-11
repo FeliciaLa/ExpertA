@@ -492,52 +492,67 @@ const UserProfilePage: React.FC = () => {
             </Tooltip>
           </Box>
         </Box>
-        {/* Profile Section */}
-        <Box display="flex" flexDirection="column" alignItems="center">
-          <Avatar sx={{ width: 120, height: 120, fontSize: '3rem', mb: 2 }}>
-            {user?.name?.charAt(0).toUpperCase()}
-          </Avatar>
-          <Typography variant="h5" gutterBottom>
-            {user?.name}
-          </Typography>
-        </Box>
+                  {/* Profile Section with Statistics */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' }, 
+            alignItems: { xs: 'center', md: 'flex-start' },
+            gap: 4,
+            mt: 2,
+            mb: 4
+          }}>
+            {/* Left Side - Profile Picture and Name */}
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center',
+              minWidth: 200
+            }}>
+              <Avatar sx={{ width: 120, height: 120, fontSize: '3rem', mb: 2 }}>
+                {user?.name?.charAt(0).toUpperCase()}
+              </Avatar>
+              <Typography variant="h5" gutterBottom>
+                {user?.name}
+              </Typography>
+            </Box>
 
-                  {/* User Statistics */}
-          <Box sx={{ mt: 4, mb: 4, maxWidth: 400, mx: 'auto' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-              <Typography variant="body1" color="text.secondary">
-                Member Since
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                Dec 2024
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-              <Typography variant="body1" color="text.secondary">
-                Experts Consulted
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                0
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-              <Typography variant="body1" color="text.secondary">
-                Total Consultations
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                0
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
-              <Typography variant="body1" color="text.secondary">
-                Favorite Category
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                -
-              </Typography>
+            {/* Right Side - User Statistics */}
+            <Box sx={{ flex: 1, maxWidth: 400 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                <Typography variant="body1" color="text.secondary">
+                  Member Since
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  Dec 2024
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                <Typography variant="body1" color="text.secondary">
+                  Experts Consulted
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  0
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                <Typography variant="body1" color="text.secondary">
+                  Total Consultations
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  0
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                <Typography variant="body1" color="text.secondary">
+                  Favorite Category
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  -
+                </Typography>
+              </Box>
             </Box>
           </Box>
 
