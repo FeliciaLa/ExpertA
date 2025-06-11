@@ -87,7 +87,7 @@ export const ExpertList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { isUser, signIn, register } = useAuth();
+  const { isUser, isExpert, isAuthenticated, signIn, register } = useAuth();
 
   useEffect(() => {
     // Debug environment variables
@@ -218,10 +218,12 @@ export const ExpertList: React.FC = () => {
       return;
     }
     
-    if (!isUser) {
-      // Show login dialog if user is not authenticated
+    // Allow both users and experts to access chat
+    if (!isAuthenticated) {
+      // Show login dialog if no one is authenticated
       setIsAuthDialogOpen(true);
     } else {
+      // Both users and experts can chat with AI
       navigate(`/experts/${expertId}`);
     }
   };
