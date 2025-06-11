@@ -493,21 +493,62 @@ const UserProfilePage: React.FC = () => {
           </Box>
         </Box>
         {/* Profile Section */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
-          <Avatar
-            sx={{
-              width: 120,
-              height: 120,
-              bgcolor: 'primary.main',
-              fontSize: '3rem',
-              mb: 2
-            }}
-          >
-            {user?.name ? user.name[0].toUpperCase() : 'U'}
+        <Box display="flex" flexDirection="column" alignItems="center">
+          <Avatar sx={{ width: 120, height: 120, fontSize: '3rem', mb: 2 }}>
+            {user?.name?.charAt(0).toUpperCase()}
           </Avatar>
           <Typography variant="h5" gutterBottom>
-            {user?.name || 'User'}
+            {user?.name}
           </Typography>
+        </Box>
+
+        {/* User Statistics */}
+        <Box sx={{ mt: 4, mb: 4 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
+                                  <Typography variant="h4" color="primary" gutterBottom>
+                    Dec 2024
+                  </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Member Since
+                </Typography>
+              </Paper>
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
+                <Typography variant="h4" color="primary" gutterBottom>
+                  0
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Experts Consulted
+                </Typography>
+              </Paper>
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
+                <Typography variant="h4" color="primary" gutterBottom>
+                  0
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total Consultations
+                </Typography>
+              </Paper>
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper sx={{ p: 3, textAlign: 'center', height: '100%' }}>
+                <Typography variant="h4" color="primary" gutterBottom>
+                  -
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Favorite Category
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
         </Box>
 
         {/* Consultation History Section */}
