@@ -485,6 +485,21 @@ export const authApi = {
     });
     return response.data;
   },
+
+  changeEmail: async (newEmail: string): Promise<{ message: string }> => {
+    const response = await api.post('profile/change-email/', {
+      new_email: newEmail
+    });
+    return response.data;
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
+    const response = await api.post('profile/change-password/', {
+      current_password: currentPassword,
+      new_password: newPassword
+    });
+    return response.data;
+  },
 };
 
 export const expertApi = {

@@ -16,15 +16,19 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 import { useAuth } from '../contexts/AuthContext';
 import { expertApi, API_URL } from '../services/api';
+import { AccountSettingsModal } from './AccountSettingsModal';
 
 // Industry options
 const INDUSTRIES = [
@@ -87,6 +91,7 @@ const ExpertProfile: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [newSkill, setNewSkill] = useState('');
@@ -350,9 +355,19 @@ const ExpertProfile: React.FC = () => {
     <Paper sx={{ p: 4, maxWidth: 1000, mx: 'auto' }}>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" color="primary">
-          My Profile
-        </Typography>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="h4" color="primary">
+            My Profile
+          </Typography>
+          <Tooltip title="Account Settings">
+            <IconButton
+              onClick={() => setShowAccountSettings(true)}
+              sx={{ ml: 1 }}
+            >
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
         <Box>
           {isEditing ? (
             <>
@@ -773,6 +788,13 @@ const ExpertProfile: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Account Settings Modal */}
+      <AccountSettingsModal
+        open={showAccountSettings}
+        onClose={() => setShowAccountSettings(false)}
+        currentEmail={profileData.email}
+      />
     </Paper>
   );
 };
