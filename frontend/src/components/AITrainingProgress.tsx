@@ -154,7 +154,6 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
 
   const aiPersonality = getAIPersonality();
   const nextSteps = getNextSteps();
-  const overallProgress = Math.min(100, ((stats.documentsUploaded * 10) + stats.trainingMinutes) * 2);
 
   if (loading) {
     return (
@@ -220,28 +219,6 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
             Training Progress
           </Typography>
           
-          <Box sx={{ mb: 3 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-              <Typography variant="body2" color="textSecondary">
-                Overall Progress
-              </Typography>
-              <Typography variant="body2" fontWeight="bold">
-                {overallProgress}%
-              </Typography>
-            </Box>
-            <LinearProgress
-              variant="determinate"
-              value={overallProgress}
-              sx={{
-                height: 8,
-                borderRadius: 4,
-                '& .MuiLinearProgress-bar': {
-                  borderRadius: 4
-                }
-              }}
-            />
-          </Box>
-
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <Card variant="outlined" sx={{ textAlign: 'center', p: 2 }}>
