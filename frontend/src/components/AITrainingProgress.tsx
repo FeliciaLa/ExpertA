@@ -17,8 +17,6 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/api';
 
@@ -105,55 +103,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
     }
   };
 
-  const getNextSteps = () => {
-    const steps = [];
-    
-    if (stats.documentsUploaded === 0) {
-      steps.push({
-        icon: <UploadFileIcon />,
-        title: 'Upload Your First Document',
-        description: 'Share PDFs, Word docs, or other files with your knowledge',
-        priority: 'high'
-      });
-    } else if (stats.documentsUploaded < 3) {
-      steps.push({
-        icon: <UploadFileIcon />,
-        title: 'Upload More Documents',
-        description: `You have ${stats.documentsUploaded} document${stats.documentsUploaded === 1 ? '' : 's'}. Add more for better AI training.`,
-        priority: 'medium'
-      });
-    }
-    
-    if (stats.qaMessagesCount === 0) {
-      steps.push({
-        icon: <ChatIcon />,
-        title: 'Start Q&A Training',
-        description: 'Have a conversation with your AI to teach it your thought process',
-        priority: 'high'
-      });
-    } else if (stats.trainingMinutes < 10) {
-      steps.push({
-        icon: <ChatIcon />,
-        title: 'Continue Q&A Training',
-        description: `${stats.trainingMinutes} minutes completed. Aim for at least 10-15 minutes.`,
-        priority: 'medium'
-      });
-    }
-    
-    if (steps.length === 0) {
-      steps.push({
-        icon: <TrendingUpIcon />,
-        title: 'Keep Improving',
-        description: 'Great job! Continue adding content to make your AI even smarter.',
-        priority: 'low'
-      });
-    }
-    
-    return steps;
-  };
-
   const aiPersonality = getAIPersonality();
-  const nextSteps = getNextSteps();
 
   if (loading) {
     return (
@@ -252,43 +202,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
           )}
         </Grid>
 
-        {/* Next Steps */}
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-            Next Steps
-          </Typography>
-          
-          <Grid container spacing={2}>
-            {nextSteps.map((step, index) => (
-              <Grid item xs={12} md={6} key={index}>
-                <Card
-                  variant="outlined"
-                  sx={{
-                    p: 2,
-                    borderColor: step.priority === 'high' ? 'warning.main' : 'divider',
-                    borderWidth: step.priority === 'high' ? 2 : 1
-                  }}
-                >
-                  <CardContent sx={{ p: '16px !important' }}>
-                    <Box display="flex" alignItems="flex-start">
-                      <Box sx={{ color: 'primary.main', mr: 2, mt: 0.5 }}>
-                        {step.icon}
-                      </Box>
-                      <Box>
-                        <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                          {step.title}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          {step.description}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Grid>
+
       </Grid>
 
       <style>
