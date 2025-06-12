@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 
 // Read API URL from environment variable in production, or use production backend as default
-const baseUrl = import.meta.env.VITE_API_URL || 'https://experta-backend-d64920064058.herokuapp.com';
+const baseUrl = import.meta.env.VITE_API_URL || 'https://experta-backend.herokuapp.com';
 
 // Handle API URL construction properly to prevent double /api/
 let finalApiUrl;
@@ -144,12 +144,7 @@ api.interceptors.request.use(
     console.log('API Request Interceptor - Is public endpoint:', isPublicEndpoint);
     console.log('API Request Interceptor - Is file upload:', isFileUpload);
     
-    // ALERT when training/chat endpoint is called
-    if (config.url?.includes('training/chat')) {
-      console.error('🚨 TRAINING/CHAT ENDPOINT CALLED!');
-      console.error('Stack trace:', new Error().stack);
-      alert(`FOUND IT! training/chat endpoint called from: ${config.url}`);
-    }
+
     
     // Only add auth headers for non-public endpoints
     if (!isPublicEndpoint && tokens) {
