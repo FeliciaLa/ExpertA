@@ -226,9 +226,6 @@ if USE_S3:
     
     # S3 Media URL
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
-    
-    # Also keep the old setting for compatibility
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 else:
     # Local media files (for development)
     MEDIA_URL = '/media/'
