@@ -176,12 +176,12 @@ class DocumentUploadView(APIView):
                 # For other file types, just note that we can't process them
                 raise Exception(f"Unsupported file type: {document.mime_type}")
             
-            # If we have content, process it asynchronously
+            # If we have content, process it (async temporarily disabled)
             if content.strip():
-                # Queue document processing to run in background
-                from .async_tasks import process_document_async
-                process_document_async(document.id, content)
-                print(f"Queued document {document.id} for knowledge processing: {document.filename}")
+                # TODO: Async processing temporarily disabled due to Heroku deployment issues
+                # from .async_tasks import process_document_async
+                # process_document_async(document.id, content)
+                print(f"Document {document.id} saved (async processing temporarily disabled): {document.filename}")
             else:
                 raise Exception("No text content could be extracted from the document")
                 
