@@ -461,62 +461,47 @@ if os.getenv('REDIS_TLS_URL') or os.getenv('REDIS_URL'):
         redis_url = os.getenv('REDIS_TLS_URL') or os.getenv('REDIS_URL')
         print(f"Using Redis URL: {redis_url}")
         
-        # Parse Redis URL to get connection parameters for Django RQ
-        import urllib.parse
-        parsed = urllib.parse.urlparse(redis_url)
+        # Try using Redis connection pool directly (better for SSL)
+        import redis
+        
+        # Create connection pool from URL
+        connection_pool = redis.ConnectionPool.from_url(
+            redis_url,
+            ssl_cert_reqs=None,
+            ssl_check_hostname=False,
+            socket_connect_timeout=30,
+            socket_timeout=30,
+            retry_on_timeout=True
+        )
         
         RQ_QUEUES = {
             'default': {
-                'HOST': parsed.hostname,
-                'PORT': parsed.port,
-                'DB': 0,
-                'PASSWORD': parsed.password,
-                'DEFAULT_TIMEOUT': 360,
                 'CONNECTION_CLASS': 'redis.StrictRedis',
                 'CONNECTION_KWARGS': {
-                    'ssl_cert_reqs': None,
-                    'ssl': True,
-                    'ssl_check_hostname': False,
-                }
+                    'connection_pool': connection_pool
+                },
+                'DEFAULT_TIMEOUT': 360,
             },
             'knowledge_processing': {
-                'HOST': parsed.hostname,
-                'PORT': parsed.port,
-                'DB': 0,
-                'PASSWORD': parsed.password,
-                'DEFAULT_TIMEOUT': 600,
                 'CONNECTION_CLASS': 'redis.StrictRedis',
                 'CONNECTION_KWARGS': {
-                    'ssl_cert_reqs': None,
-                    'ssl': True,
-                    'ssl_check_hostname': False,
-                }
+                    'connection_pool': connection_pool
+                },
+                'DEFAULT_TIMEOUT': 600,
             },
             'high': {
-                'HOST': parsed.hostname,
-                'PORT': parsed.port,
-                'DB': 0,
-                'PASSWORD': parsed.password,
-                'DEFAULT_TIMEOUT': 300,
                 'CONNECTION_CLASS': 'redis.StrictRedis',
                 'CONNECTION_KWARGS': {
-                    'ssl_cert_reqs': None,
-                    'ssl': True,
-                    'ssl_check_hostname': False,
-                }
+                    'connection_pool': connection_pool
+                },
+                'DEFAULT_TIMEOUT': 300,
             },
             'low': {
-                'HOST': parsed.hostname,
-                'PORT': parsed.port,
-                'DB': 0,
-                'PASSWORD': parsed.password,
-                'DEFAULT_TIMEOUT': 1200,
                 'CONNECTION_CLASS': 'redis.StrictRedis',
                 'CONNECTION_KWARGS': {
-                    'ssl_cert_reqs': None,
-                    'ssl': True,
-                    'ssl_check_hostname': False,
-                }
+                    'connection_pool': connection_pool
+                },
+                'DEFAULT_TIMEOUT': 1200,
             }
         }
     except ImportError:
