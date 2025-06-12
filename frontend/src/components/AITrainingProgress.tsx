@@ -6,13 +6,16 @@ import {
   Avatar,
   Grid,
   CircularProgress,
-  Badge
+  Badge,
+  Button
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import TestTubeIcon from '@mui/icons-material/Science';
 import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 interface TrainingStats {
   documentsUploaded: number;
@@ -27,6 +30,7 @@ interface AITrainingProgressProps {
 
 export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const { expert } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<TrainingStats>({
     documentsUploaded: 0,
     qaMessagesCount: 0,
@@ -141,6 +145,12 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
 
   const aiPersonality = getAIPersonality();
 
+  const handleTestAI = () => {
+    if (expert?.id) {
+      navigate(`/experts/${expert.id}`);
+    }
+  };
+
   if (loading) {
     return (
       <Paper sx={{ p: 3, mb: 4 }}>
@@ -213,14 +223,29 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
           </Grid>
         </Grid>
 
-        {/* AI Message */}
+        {/* AI Message and Test Button */}
         <Grid item xs={12} md={3}>
           <Box textAlign="center">
-            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', fontSize: '0.85rem' }}>
+            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', fontSize: '0.85rem', mb: 2 }}>
               "{aiPersonality.message}"
             </Typography>
+            
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<TestTubeIcon />}
+              onClick={handleTestAI}
+              sx={{ 
+                mb: 1,
+                bgcolor: 'secondary.main',
+                '&:hover': { bgcolor: 'secondary.dark' }
+              }}
+            >
+              Test Your AI
+            </Button>
+            
             {stats.lastTrainingDate && (
-              <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+              <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
                 Last: {new Date(stats.lastTrainingDate).toLocaleDateString()}
               </Typography>
             )}
