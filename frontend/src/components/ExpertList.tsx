@@ -97,46 +97,7 @@ export const ExpertList: React.FC = () => {
     console.log('Force mock data:', FORCE_MOCK_DATA);
     
     // Add a direct API test without axios to debug the connection
-    const testDirectFetch = async () => {
-      try {
-        console.log('Testing direct fetch to backend...');
-        
-        if (FORCE_MOCK_DATA) {
-          console.log('Using mock data because FORCE_MOCK_DATA is true');
-          return;
-        }
-        
-        // Try multiple test endpoints
-        const testEndpoints = [
-          formatApiUrl('test'),
-          API_URL.replace(/\/api\/?$/, '/health/'),
-          formatApiUrl('public-experts'),
-          formatApiUrl('experts')
-        ];
-        
-        for (const endpoint of testEndpoints) {
-          try {
-            console.log(`Testing endpoint: ${endpoint}`);
-            const response = await fetch(endpoint, {
-              headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-              },
-              credentials: 'omit' // Avoid CORS preflight
-            });
-            console.log(`Status for ${endpoint}:`, response.status);
-            const text = await response.text();
-            console.log(`Response for ${endpoint}:`, text.substring(0, 100) + '...');
-          } catch (endpointError) {
-            console.error(`Error fetching ${endpoint}:`, endpointError);
-          }
-        }
-      } catch (error) {
-        console.error('Direct fetch test failed:', error);
-      }
-    };
-    
-    testDirectFetch();
+    // Removed automatic endpoint testing that was causing CORS errors
     
     const fetchExperts = async () => {
       try {
