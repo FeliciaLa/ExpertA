@@ -332,3 +332,44 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_admin_user(self):
         """Check if user has admin role"""
         return self.role == self.Role.ADMIN
+
+class ConsultationSession(models.Model):
+    """Model to track consultation sessions between users and experts"""
+    class Status(models.TextChoices):
+        ACTIVE = 'active', 'Active'
+        COMPLETED = 'completed', 'Completed'
+        ABANDONED = 'abandoned', 'Abandoned'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='consultations')
+    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expert_consultations')
+    expert_name = models.CharField(max_length=255)  # Stored for consistency
+    expert_industry = models.CharField(max_length=100, blank=True)  # From expert profile
+    expert_specialty = models.CharField(max_length=100, blank=True)  # From expert specialties
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    total_messages = models.IntegerField(default=0)
+    duration_minutes = models.IntegerField(default=0)  # Calculated when session ends
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
+    
+    class Meta:
+        db_table = 'consultation_sessions'
+        ordering = ['-started_at']
+
+    def __str__(self):
+        return f"{self.user.name} -> {self.expert_name} ({self.status})"
+
+    def calculate_duration(self):
+        """Calculate session duration in minutes"""
+        if self.ended_at and self.started_at:
+            delta = self.ended_at - self.started_at
+            return int(delta.total_seconds() / 60)
+        return 0
+
+    def mark_completed(self):
+        """Mark session as completed and calculate duration"""
+        if not self.ended_at:
+            self.ended_at = timezone.now()
+        self.duration_minutes = self.calculate_duration()
+        self.status = self.Status.COMPLETED
+        self.save()
