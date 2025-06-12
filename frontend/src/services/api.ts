@@ -144,6 +144,13 @@ api.interceptors.request.use(
     console.log('API Request Interceptor - Is public endpoint:', isPublicEndpoint);
     console.log('API Request Interceptor - Is file upload:', isFileUpload);
     
+    // ALERT when training/chat endpoint is called
+    if (config.url?.includes('training/chat')) {
+      console.error('🚨 TRAINING/CHAT ENDPOINT CALLED!');
+      console.error('Stack trace:', new Error().stack);
+      alert(`FOUND IT! training/chat endpoint called from: ${config.url}`);
+    }
+    
     // Only add auth headers for non-public endpoints
     if (!isPublicEndpoint && tokens) {
       try {
