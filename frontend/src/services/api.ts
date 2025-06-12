@@ -89,6 +89,7 @@ export interface UserData {
   is_expert?: boolean;
   is_user?: boolean;
   profile_image?: string;
+  date_joined?: string;
 }
 
 export interface UserAuthResponse {

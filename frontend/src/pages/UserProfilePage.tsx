@@ -481,10 +481,10 @@ const UserProfilePage: React.FC = () => {
   const calculateUserStats = () => {
     // Calculate member since date
     let memberSince = 'Dec 2024'; // Default fallback
-    const userAny = user as any;
-    if (userAny?.date_joined || userAny?.created_at || userAny?.createdAt) {
+    
+    if (user?.date_joined) {
       try {
-        const joinDate = new Date(userAny.date_joined || userAny.created_at || userAny.createdAt);
+        const joinDate = new Date(user.date_joined);
         memberSince = joinDate.toLocaleDateString('en-US', { 
           month: 'short', 
           year: 'numeric' 
