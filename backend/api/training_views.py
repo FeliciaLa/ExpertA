@@ -311,8 +311,8 @@ class TrainingChatView(RateLimitMixin, APIView):
                 )
                 
                 # Queue knowledge processing to run asynchronously
-                from .async_tasks import process_training_message_async
-                process_training_message_async(expert_msg.id)
+                from .tasks import process_training_message_async
+                process_training_message_async.delay(expert_msg.id)
                 print(f"Saved expert message: {expert_msg.id} and queued for knowledge processing")
                 
                 # Get conversation history
@@ -701,11 +701,11 @@ class KnowledgeProcessingView(APIView):
         
         try:
             # Queue expert profile processing to run asynchronously
-            from .async_tasks import process_expert_profile_async
-            process_expert_profile_async(expert.id)
+            from .tasks import process_expert_profile_async
+            process_expert_profile_async.delay(expert.id)
             
             # Queue unprocessed training messages for processing
-            from .async_tasks import process_training_message_async
+            from .tasks import process_training_message_async
             unprocessed_messages = TrainingMessage.objects.filter(
                 expert=expert,
                 role='expert',
@@ -715,7 +715,7 @@ class KnowledgeProcessingView(APIView):
             queued_count = 0
             for message in unprocessed_messages:
                 try:
-                    process_training_message_async(message.id)
+                    process_training_message_async.delay(message.id)
                     queued_count += 1
                 except Exception as e:
                     print(f"Error queuing message {message.id}: {str(e)}")

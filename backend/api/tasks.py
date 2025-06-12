@@ -1,16 +1,16 @@
 """
-Asynchronous task functions for background processing
+Celery task functions for background processing
 """
-from background_task import background
+from celery import shared_task
 from django.utils import timezone
-from .models import TrainingMessage
+from .models import TrainingMessage, Document, User
 from .services import KnowledgeProcessor
 import logging
 
 logger = logging.getLogger(__name__)
 
-@background(schedule=5)  # Schedule to run in 5 seconds
-def process_training_message_async(message_id):
+@shared_task(bind=True, retry_backoff=True, retry_kwargs={'max_retries': 3})
+def process_training_message_async(self, message_id):
     """
     Process a training message for knowledge extraction in the background
     
@@ -25,7 +25,7 @@ def process_training_message_async(message_id):
         # Only process expert messages
         if message.role != 'expert':
             logger.info(f"Skipping non-expert message {message_id}")
-            return
+            return f"Skipped non-expert message {message_id}"
             
         # Get the expert
         expert = message.expert
@@ -42,16 +42,17 @@ def process_training_message_async(message_id):
         message.save()
         
         logger.info(f"Successfully processed knowledge for message {message_id}")
+        return f"Successfully processed knowledge for message {message_id}"
         
     except TrainingMessage.DoesNotExist:
         logger.error(f"Training message {message_id} not found")
+        raise self.retry(countdown=60, exc=Exception(f"Training message {message_id} not found"))
     except Exception as e:
         logger.error(f"Error processing knowledge for message {message_id}: {str(e)}")
-        # Don't raise the exception - we don't want to crash the background task
-        # The message will remain unprocessed and can be retried later
+        raise self.retry(countdown=60, exc=e)
 
-@background(schedule=10)  # Schedule to run in 10 seconds  
-def process_expert_profile_async(expert_id):
+@shared_task(bind=True, retry_backoff=True, retry_kwargs={'max_retries': 3})
+def process_expert_profile_async(self, expert_id):
     """
     Process an expert's profile for knowledge extraction in the background
     
@@ -59,7 +60,6 @@ def process_expert_profile_async(expert_id):
         expert_id: ID of the Expert to process
     """
     try:
-        from .models import User
         expert = User.objects.get(id=expert_id)
         logger.info(f"Starting async profile processing for expert {expert_id}")
         
@@ -70,14 +70,17 @@ def process_expert_profile_async(expert_id):
         processor.process_expert_profile()
         
         logger.info(f"Successfully processed profile for expert {expert_id}")
+        return f"Successfully processed profile for expert {expert_id}"
         
     except User.DoesNotExist:
         logger.error(f"Expert {expert_id} not found")
+        raise self.retry(countdown=60, exc=Exception(f"Expert {expert_id} not found"))
     except Exception as e:
         logger.error(f"Error processing profile for expert {expert_id}: {str(e)}")
+        raise self.retry(countdown=60, exc=e)
 
-@background(schedule=30)  # Schedule to run in 30 seconds
-def process_document_async(document_id, content):
+@shared_task(bind=True, retry_backoff=True, retry_kwargs={'max_retries': 3})
+def process_document_async(self, document_id, content):
     """
     Process a document for knowledge extraction in the background
     
@@ -86,7 +89,6 @@ def process_document_async(document_id, content):
         content: Extracted text content from the document
     """
     try:
-        from .models import Document
         document = Document.objects.get(id=document_id)
         logger.info(f"Starting async document processing for document {document_id}")
         
@@ -105,8 +107,11 @@ def process_document_async(document_id, content):
         document.save()
         
         logger.info(f"Successfully processed document {document_id}")
+        return f"Successfully processed document {document_id}"
         
     except Document.DoesNotExist:
         logger.error(f"Document {document_id} not found")
+        raise self.retry(countdown=60, exc=Exception(f"Document {document_id} not found"))
     except Exception as e:
-        logger.error(f"Error processing document {document_id}: {str(e)}") 
+        logger.error(f"Error processing document {document_id}: {str(e)}")
+        raise self.retry(countdown=60, exc=e) 

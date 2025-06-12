@@ -178,10 +178,10 @@ class DocumentUploadView(APIView):
             
             # If we have content, process it (async temporarily disabled)
             if content.strip():
-                # TODO: Async processing temporarily disabled due to Heroku deployment issues
-                # from .async_tasks import process_document_async
-                # process_document_async(document.id, content)
-                print(f"Document {document.id} saved (async processing temporarily disabled): {document.filename}")
+                # Queue document processing to run asynchronously
+                from .tasks import process_document_async
+                process_document_async.delay(document.id, content)
+                print(f"Document {document.id} saved and queued for knowledge processing: {document.filename}")
             else:
                 raise Exception("No text content could be extracted from the document")
                 
