@@ -37,6 +37,12 @@ const UserProfilePage: React.FC = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || '');
   const [name, setName] = useState(user?.name || '');
+  const [userStats, setUserStats] = useState({
+    memberSince: '',
+    expertsConsulted: 0,
+    totalConsultations: 0,
+    favoriteCategory: ''
+  });
   
   // Account settings state
   const [emailData, setEmailData] = useState({
@@ -471,6 +477,55 @@ const UserProfilePage: React.FC = () => {
     setIsEditingName(false);
   };
 
+  // Calculate user statistics
+  const calculateUserStats = () => {
+    // Calculate member since date
+    let memberSince = 'Dec 2024'; // Default fallback
+    const userAny = user as any;
+    if (userAny?.date_joined || userAny?.created_at || userAny?.createdAt) {
+      try {
+        const joinDate = new Date(userAny.date_joined || userAny.created_at || userAny.createdAt);
+        memberSince = joinDate.toLocaleDateString('en-US', { 
+          month: 'short', 
+          year: 'numeric' 
+        });
+      } catch (error) {
+        console.error('Error parsing join date:', error);
+      }
+    }
+
+    // Calculate experts consulted (unique expert IDs)
+    const uniqueExperts = consultations.length > 0 
+      ? new Set(consultations.map((c: any) => c.expertId)).size 
+      : 0;
+
+    // Calculate favorite category
+    const favoriteCategory = consultations.length === 0 ? '-' : (() => {
+      const categoryCount: { [key: string]: number } = {};
+      consultations.forEach((consultation: any) => {
+        const category = consultation.category || 'Other';
+        categoryCount[category] = (categoryCount[category] || 0) + 1;
+      });
+
+      let maxCount = 0;
+      let favorite = '-';
+      Object.entries(categoryCount).forEach(([category, count]) => {
+        if (count > maxCount) {
+          maxCount = count;
+          favorite = category;
+        }
+      });
+      return favorite;
+    })();
+
+    return {
+      memberSince,
+      expertsConsulted: uniqueExperts,
+      totalConsultations: consultations.length,
+      favoriteCategory
+    };
+  };
+
 
 
   // Determine role text
@@ -591,41 +646,48 @@ const UserProfilePage: React.FC = () => {
 
             {/* Right Side - User Statistics */}
             <Box sx={{ flex: 1, maxWidth: 400 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body1" color="text.secondary">
-                  Member Since
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  Dec 2024
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body1" color="text.secondary">
-                  Experts Consulted
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  0
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body1" color="text.secondary">
-                  Total Consultations
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  0
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
-                <Typography variant="body1" color="text.secondary">
-                  Favorite Category
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  -
-                </Typography>
-              </Box>
+              {(() => {
+                const stats = calculateUserStats();
+                return (
+                  <>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Member Since
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {stats.memberSince}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Experts Consulted
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {stats.expertsConsulted}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Total Consultations
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {stats.totalConsultations}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Favorite Category
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {stats.favoriteCategory}
+                      </Typography>
+                    </Box>
+                  </>
+                );
+              })()}
             </Box>
           </Box>
 
