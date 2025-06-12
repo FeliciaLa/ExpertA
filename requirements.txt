@@ -18,6 +18,10 @@ PyPDF2==3.0.1
 python-docx==0.8.11
 Pillow>=9.0.0
 
+# AWS S3 storage
+boto3==1.34.34
+django-storages==1.14.2
+
 # AI services
 pinecone-client==5.0.1
 openai==1.54.4 
