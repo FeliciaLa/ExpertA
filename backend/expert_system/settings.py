@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "corsheaders",
     "rest_framework",
-    "background_task",
+    # "background_task",  # Temporarily disabled to get deployment working
     
     # Our apps
     "api",
