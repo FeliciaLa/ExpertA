@@ -226,10 +226,6 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
         {/* AI Message and Test Button */}
         <Grid item xs={12} md={3}>
           <Box textAlign="center">
-            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', fontSize: '0.85rem', mb: 2 }}>
-              {aiPersonality.message}
-            </Typography>
-            
             <Button
               variant="contained"
               size="small"
