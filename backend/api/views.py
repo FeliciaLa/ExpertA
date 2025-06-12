@@ -426,12 +426,32 @@ class ChatView(APIView):
                     "error": "expert_id is required"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
+            # Check for authentication (optional for tracking)
+            user = None
+            auth_header = request.headers.get('Authorization', '')
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                try:
+                    import jwt
+                    from django.conf import settings
+                    decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"], options={"verify_signature": True})
+                    user_id = decoded_token.get('user_id')
+                    if user_id:
+                        try:
+                            user = User.objects.get(id=user_id)
+                            print(f"Authenticated user found: {user.email}")
+                        except User.DoesNotExist:
+                            print(f"User not found for ID: {user_id}")
+                except (jwt.DecodeError, jwt.ExpiredSignatureError) as e:
+                    print(f"Token validation failed: {str(e)}")
+
             # Get the expert
             try:
                 expert = User.objects.get(id=expert_id)
                 print(f"\n=== Processing chat request ===")
                 print(f"Expert ID: {expert_id}")
                 print(f"Expert email: {expert.email}")
+                print(f"User authenticated: {user is not None}")
             except User.DoesNotExist:
                 print(f"Expert not found: {expert_id}")
                 return Response({
@@ -473,6 +493,41 @@ class ChatView(APIView):
                     "error": "Failed to generate response",
                     "detail": str(e)
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Track consultation session if user is authenticated
+            if user:
+                from .models import ConsultationSession
+                from django.utils import timezone
+                
+                try:
+                    # Get or create consultation session for this user and expert
+                    session, created = ConsultationSession.objects.get_or_create(
+                        user=user,
+                        expert=expert,
+                        status=ConsultationSession.Status.ACTIVE,
+                        defaults={
+                            'expert_name': expert.name or expert.email,
+                            'expert_industry': getattr(expert.profile, 'industry', '') if hasattr(expert, 'profile') else '',
+                            'expert_specialty': expert.specialties or '',
+                            'total_messages': 0,
+                            'duration_minutes': 0,
+                        }
+                    )
+                    
+                    # Increment message count (user message + AI response = 2 messages)
+                    session.total_messages += 2
+                    session.save()
+                    
+                    print(f"\n=== Consultation Session Tracking ===")
+                    print(f"Session ID: {session.id}")
+                    print(f"Created: {created}")
+                    print(f"Total Messages: {session.total_messages}")
+                    print(f"Status: {session.status}")
+                    
+                except Exception as e:
+                    print(f"Error tracking consultation session: {str(e)}")
+                    # Don't fail the entire request if session tracking fails
+                    pass
 
             return Response({
                 "answer": response,
