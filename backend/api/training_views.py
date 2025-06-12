@@ -310,13 +310,20 @@ class TrainingChatView(RateLimitMixin, APIView):
                     content=message
                 )
                 
+                # Process expert's knowledge asynchronously to improve response time
                 try:
-                    # Process expert's knowledge
-                    knowledge_processor = KnowledgeProcessor(expert)
-                    knowledge_processor.process_training_message(expert_msg)
+                    from threading import Thread
+                    def process_knowledge_async():
+                        try:
+                            knowledge_processor = KnowledgeProcessor(expert)
+                            knowledge_processor.process_training_message(expert_msg)
+                        except Exception as e:
+                            print(f"Background knowledge processing failed: {str(e)}")
+                    
+                    # Run in background thread
+                    Thread(target=process_knowledge_async, daemon=True).start()
                 except Exception as e:
-                    print(f"Warning: Failed to process expert knowledge: {str(e)}")
-                    # Continue even if knowledge processing fails
+                    print(f"Failed to start background knowledge processing: {str(e)}")
                 
                 # Get conversation history
                 history = self._get_conversation_history(expert)
@@ -586,10 +593,10 @@ The expert has provided a response. Please:
             for attempt in range(max_retries):
                 try:
                     response = client.chat.completions.create(
-                        model="gpt-4",
+                        model="gpt-3.5-turbo",
                         messages=messages,
                         temperature=0.7,
-                        max_tokens=400,
+                        max_tokens=200,
                         functions=[{
                             "name": "process_response",
                             "description": "Process the AI's response with metadata",

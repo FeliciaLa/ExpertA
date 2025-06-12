@@ -279,12 +279,14 @@ CORS_ALLOWED_ORIGINS = [
     "https://expert-pml6epi00-felicia-lammertings-projects.vercel.app",
     "https://expert-8vgetbh4z-felicia-lammertings-projects.vercel.app",
     "https://expert-4weyavifq-felicia-lammertings-projects.vercel.app",
+    "https://expert-etciibsr2-felicia-lammertings-projects.vercel.app",
 ]
 
 # Also use regex for Vercel preview URLs
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://expert-[a-z0-9]+\.vercel\.app$",
-    r"^https://expert-[a-z0-9]+-[a-z0-9]+-felicia-lammertings-projects\.vercel\.app$",
+    r"^https://expert-[a-z0-9]+-felicia-lammertings-projects\.vercel\.app$",
+    r"^https://.*\.vercel\.app$",  # More permissive pattern for all Vercel apps
 ]
 
 CORS_ALLOW_METHODS = [
