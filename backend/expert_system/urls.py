@@ -37,6 +37,8 @@ urlpatterns = [
     path('', RedirectView.as_view(url='api/expert-form/', permanent=False)),
     # Simple health endpoint at root level
     path('health/', health, name='health'),
+    # Django RQ admin interface
+    path('django-rq/', include('django_rq.urls')),
 ]
 
 # Import API views only when needed to avoid early initialization

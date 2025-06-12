@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "corsheaders",
     "rest_framework",
-    # "django_rq",  # Django RQ for async tasks - temporarily disabled for deployment
+    "django_rq",  # Django RQ for async tasks
     
     # Our apps
     "api",
@@ -411,30 +411,55 @@ SIMPLE_JWT = {
 }
 
 # Django RQ Configuration
+# Use environment variables for Redis configuration
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', '')
+REDIS_DB = int(os.getenv('REDIS_DB', '0'))
+
+# Default Redis configuration
 RQ_QUEUES = {
     'default': {
-        'HOST': 'localhost',
-        'PORT': 6379,
-        'DB': 0,
-        'PASSWORD': '',
+        'HOST': REDIS_HOST,
+        'PORT': REDIS_PORT,
+        'DB': REDIS_DB,
+        'PASSWORD': REDIS_PASSWORD,
         'DEFAULT_TIMEOUT': 360,
         'CONNECTION_CLASS': 'redis.StrictRedis',
     },
     'knowledge_processing': {
-        'HOST': 'localhost',
-        'PORT': 6379,
-        'DB': 0,
-        'PASSWORD': '',
+        'HOST': REDIS_HOST,
+        'PORT': REDIS_PORT,
+        'DB': REDIS_DB,
+        'PASSWORD': REDIS_PASSWORD,
         'DEFAULT_TIMEOUT': 600,
+        'CONNECTION_CLASS': 'redis.StrictRedis',
+    },
+    'high': {
+        'HOST': REDIS_HOST,
+        'PORT': REDIS_PORT,
+        'DB': REDIS_DB,
+        'PASSWORD': REDIS_PASSWORD,
+        'DEFAULT_TIMEOUT': 300,
+        'CONNECTION_CLASS': 'redis.StrictRedis',
+    },
+    'low': {
+        'HOST': REDIS_HOST,
+        'PORT': REDIS_PORT,
+        'DB': REDIS_DB,
+        'PASSWORD': REDIS_PASSWORD,
+        'DEFAULT_TIMEOUT': 1200,
         'CONNECTION_CLASS': 'redis.StrictRedis',
     }
 }
 
-# Use Redis URL from Heroku if available
+# Use Redis URL from environment (Railway, Heroku, etc.)
 if os.getenv('REDIS_URL'):
     try:
         import redis
         redis_url = os.getenv('REDIS_URL')
+        print(f"Using Redis URL: {redis_url}")
+        
         RQ_QUEUES = {
             'default': {
                 'CONNECTION_CLASS': 'redis.StrictRedis',
@@ -449,8 +474,28 @@ if os.getenv('REDIS_URL'):
                     'connection_pool': redis.ConnectionPool.from_url(redis_url)
                 },
                 'DEFAULT_TIMEOUT': 600,
+            },
+            'high': {
+                'CONNECTION_CLASS': 'redis.StrictRedis',
+                'CONNECTION_KWARGS': {
+                    'connection_pool': redis.ConnectionPool.from_url(redis_url)
+                },
+                'DEFAULT_TIMEOUT': 300,
+            },
+            'low': {
+                'CONNECTION_CLASS': 'redis.StrictRedis',
+                'CONNECTION_KWARGS': {
+                    'connection_pool': redis.ConnectionPool.from_url(redis_url)
+                },
+                'DEFAULT_TIMEOUT': 1200,
             }
         }
     except ImportError:
-        # Redis not available - Django RQ disabled
+        print("Redis package not available - Django RQ will be disabled")
         RQ_QUEUES = {}
+    except Exception as e:
+        print(f"Error configuring Redis: {str(e)}")
+        RQ_QUEUES = {}
+
+# RQ Admin configuration
+RQ_SHOW_ADMIN_LINK = True
