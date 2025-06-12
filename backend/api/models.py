@@ -91,6 +91,10 @@ class TrainingMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     context_depth = models.IntegerField(default=1)
     knowledge_area = models.CharField(max_length=100, blank=True)
+    
+    # Knowledge processing status
+    knowledge_processed = models.BooleanField(default=False)
+    knowledge_processed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['created_at']
@@ -215,6 +219,10 @@ class Document(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=PROCESSING_STATUS, default='processing')
     error_message = models.TextField(blank=True, null=True)
+    
+    # Knowledge processing status
+    knowledge_processed = models.BooleanField(default=False)
+    knowledge_processed_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
         db_table = 'expert_documents'

@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "corsheaders",
     "rest_framework",
+    "background_task",
     
     # Our apps
     "api",

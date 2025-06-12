@@ -310,9 +310,10 @@ class TrainingChatView(RateLimitMixin, APIView):
                     content=message
                 )
                 
-                # TODO: Add knowledge processing back with proper async task queue (Celery/Redis)
-                # Temporarily disabled to improve response speed and avoid threading issues on Heroku
-                print(f"Saved expert message: {expert_msg.id}")
+                # Queue knowledge processing to run asynchronously
+                from .async_tasks import process_training_message_async
+                process_training_message_async(expert_msg.id)
+                print(f"Saved expert message: {expert_msg.id} and queued for knowledge processing")
                 
                 # Get conversation history
                 history = self._get_conversation_history(expert)
@@ -699,28 +700,30 @@ class KnowledgeProcessingView(APIView):
         expert = request.user
         
         try:
-            # Process expert's knowledge
-            knowledge_processor = KnowledgeProcessor(expert)
-            knowledge_processor.process_expert_profile()
+            # Queue expert profile processing to run asynchronously
+            from .async_tasks import process_expert_profile_async
+            process_expert_profile_async(expert.id)
             
-            # Process training messages
-            training_messages = TrainingMessage.objects.filter(
+            # Queue unprocessed training messages for processing
+            from .async_tasks import process_training_message_async
+            unprocessed_messages = TrainingMessage.objects.filter(
                 expert=expert,
-                role='expert'
+                role='expert',
+                knowledge_processed=False
             ).order_by('created_at')
             
-            processed_count = 0
-            for message in training_messages:
+            queued_count = 0
+            for message in unprocessed_messages:
                 try:
-                    knowledge_processor.process_training_message(message)
-                    processed_count += 1
+                    process_training_message_async(message.id)
+                    queued_count += 1
                 except Exception as e:
-                    print(f"Error processing message {message.id}: {str(e)}")
+                    print(f"Error queuing message {message.id}: {str(e)}")
             
             return Response({
                 'status': 'success',
-                'message': f'Successfully processed expert profile and {processed_count} training messages',
-                'processed_count': processed_count
+                'message': f'Successfully queued expert profile and {queued_count} training messages for processing',
+                'queued_count': queued_count
             })
             
         except Exception as e:
