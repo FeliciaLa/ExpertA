@@ -23,7 +23,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import SettingsIcon from '@mui/icons-material/Settings';
 import InfoIcon from '@mui/icons-material/Info';
 import EditIcon from '@mui/icons-material/Edit';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { useAuth } from '../contexts/AuthContext';
 import { userApi, authApi } from '../services/api';
 import { API_URL } from '../services/api';
@@ -37,7 +36,6 @@ const UserProfilePage: React.FC = () => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || '');
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [name, setName] = useState(user?.name || '');
   
   // Account settings state
@@ -473,57 +471,7 @@ const UserProfilePage: React.FC = () => {
     setIsEditingName(false);
   };
 
-  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file.');
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image size must be less than 5MB.');
-        return;
-      }
-      
-      try {
-        setIsUploadingImage(true);
-        console.log('Uploading profile image:', file.name);
-        const updatedUser = await userApi.uploadProfileImage(file);
-        
-        console.log('Upload response:', updatedUser);
-        console.log('Profile image URL from response:', updatedUser.profile_image);
-        
-        // Update user context with the new profile image
-        if (user && setUser) {
-          setUser({
-            ...user,
-            profile_image: updatedUser.profile_image
-          });
-        }
-        
-        // Also try to refresh the user profile to get the latest data
-        try {
-          const refreshedUser = await userApi.getProfile();
-          console.log('Refreshed user data:', refreshedUser);
-          if (setUser) {
-            setUser(refreshedUser);
-          }
-        } catch (refreshError) {
-          console.error('Error refreshing user profile:', refreshError);
-        }
-        
-        console.log('Profile image updated successfully:', updatedUser);
-      } catch (error) {
-        console.error('Error uploading profile image:', error);
-        alert('Failed to upload profile image. Please try again.');
-      } finally {
-        setIsUploadingImage(false);
-      }
-    }
-  };
+
 
   // Determine role text
   const userRole = isExpert ? 'Expert' : isUser ? 'User' : 'Guest';
@@ -594,48 +542,9 @@ const UserProfilePage: React.FC = () => {
               alignItems: 'center',
               minWidth: 200
             }}>
-              <Box sx={{ position: 'relative', mb: 2 }}>
-                <Avatar 
-                  src={user?.profile_image} 
-                  sx={{ width: 120, height: 120, fontSize: '3rem' }}
-                >
-                  {!user?.profile_image && user?.name?.charAt(0).toUpperCase()}
-                </Avatar>
-                <input
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  id="profile-picture-upload"
-                  type="file"
-                  onChange={handleProfilePictureUpload}
-                />
-                <label htmlFor="profile-picture-upload">
-                  <IconButton
-                    component="span"
-                    disabled={isUploadingImage}
-                    sx={{
-                      position: 'absolute',
-                      bottom: -5,
-                      right: -5,
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      width: 35,
-                      height: 35,
-                      '&:hover': {
-                        bgcolor: 'primary.dark',
-                      },
-                      '&:disabled': {
-                        bgcolor: 'grey.400',
-                      },
-                    }}
-                  >
-                    {isUploadingImage ? (
-                      <CircularProgress size={16} sx={{ color: 'white' }} />
-                    ) : (
-                      <CameraAltIcon fontSize="small" />
-                    )}
-                  </IconButton>
-                </label>
-              </Box>
+              <Avatar sx={{ width: 120, height: 120, fontSize: '3rem', mb: 2 }}>
+                {user?.name?.charAt(0).toUpperCase()}
+              </Avatar>
               
               {isEditingName ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
