@@ -11,6 +11,7 @@ interface UserData {
   role: string; // 'user', 'expert', or 'admin'
   is_expert?: boolean; // Whether user is an expert - for backward compatibility
   is_user?: boolean;   // Whether user is a regular user - for backward compatibility
+  date_joined?: string; // When the user joined
   // Expert-related fields
   bio?: string;
   specialties?: string;

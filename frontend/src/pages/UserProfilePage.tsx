@@ -96,6 +96,8 @@ const UserProfilePage: React.FC = () => {
                 console.log('Direct profile fetch successful');
                 const userData = await directResponse.json();
                 console.log('User data received from direct endpoint:', userData);
+                console.log('DEBUG - date_joined field in API response:', userData.date_joined);
+                console.log('DEBUG - typeof date_joined:', typeof userData.date_joined);
                 setUser(userData);
                 setName(userData.name || '');
                 localStorage.setItem('user', JSON.stringify(userData));
