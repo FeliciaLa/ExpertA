@@ -1549,6 +1549,7 @@ class UserProfileView(APIView):
                             'most_used_industry': most_used_industry,
                             'sessions': [{
                                 'id': str(consultation.id),
+                                'expert_id': str(consultation.expert_id),
                                 'expert_name': consultation.expert_name,
                                 'expert_industry': consultation.expert_industry,
                                 'expert_specialty': consultation.expert_specialty,
@@ -1647,6 +1648,7 @@ class UserProfileView(APIView):
                         'most_used_industry': most_used_industry,
                         'sessions': [{
                             'id': str(consultation.id),
+                            'expert_id': str(consultation.expert_id),
                             'expert_name': consultation.expert_name,
                             'expert_industry': consultation.expert_industry,
                             'expert_specialty': consultation.expert_specialty,

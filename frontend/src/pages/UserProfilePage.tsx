@@ -745,9 +745,9 @@ const UserProfilePage: React.FC = () => {
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => navigate('/experts')}
+                        onClick={() => navigate(`/experts/${consultation.expert_id}`)}
                       >
-                        Browse Experts
+                        Chat with {consultation.expert_name.split(' ')[0]}
                       </Button>
                     </Box>
                   </Paper>

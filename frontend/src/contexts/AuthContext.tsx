@@ -31,6 +31,7 @@ interface UserData {
 
 interface ConsultationSession {
   id: string;
+  expert_id: string;
   expert_name: string;
   expert_industry: string;
   expert_specialty: string;
