@@ -62,8 +62,7 @@ const UserProfilePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
 
-  // Consultation history state - empty for now, will be populated when backend is ready
-  const [consultations, setConsultations] = useState<any[]>([]);
+  // Consultation data now comes from user.consultations in the API response
 
   // Fetch user profile data on component mount
   useEffect(() => {
@@ -513,35 +512,24 @@ const UserProfilePage: React.FC = () => {
       console.log('Debug - No date_joined field found in user object');
     }
 
-    // Calculate experts consulted (unique expert IDs)
-    const uniqueExperts = consultations.length > 0 
-      ? new Set(consultations.map((c: any) => c.expertId)).size 
-      : 0;
+    // Use consultation data from API response if available
+    if (user?.consultations) {
+      console.log('Debug - Using consultation data from API:', user.consultations);
+      return {
+        memberSince,
+        expertsConsulted: user.consultations.experts_consulted,
+        totalConsultations: user.consultations.total_consultations,
+        mostUsedIndustry: user.consultations.most_used_industry
+      };
+    }
 
-    // Calculate most used industry
-    const mostUsedIndustry = consultations.length === 0 ? '-' : (() => {
-      const industryCount: { [key: string]: number } = {};
-      consultations.forEach((consultation: any) => {
-        const industry = consultation.industry || 'Other';
-        industryCount[industry] = (industryCount[industry] || 0) + 1;
-      });
-
-      let maxCount = 0;
-      let favorite = '-';
-      Object.entries(industryCount).forEach(([industry, count]) => {
-        if (count > maxCount) {
-          maxCount = count;
-          favorite = industry;
-        }
-      });
-      return favorite;
-    })();
-
+    // Fallback to empty consultation data
+    console.log('Debug - No consultation data available, using fallback values');
     return {
       memberSince,
-      expertsConsulted: uniqueExperts,
-      totalConsultations: consultations.length,
-      mostUsedIndustry
+      expertsConsulted: 0,
+      totalConsultations: 0,
+      mostUsedIndustry: '-'
     };
   };
 
@@ -716,7 +704,7 @@ const UserProfilePage: React.FC = () => {
             Your Consultation History
           </Typography>
           
-          {consultations.length === 0 ? (
+          {(!user?.consultations?.sessions || user.consultations.sessions.length === 0) ? (
             <Paper sx={{ p: 4, textAlign: 'center' }}>
               <Typography variant="h6" color="text.secondary" gutterBottom>
                 No consultations yet
@@ -739,27 +727,30 @@ const UserProfilePage: React.FC = () => {
             </Paper>
           ) : (
             <Grid container spacing={2}>
-              {consultations.map((consultation, index) => (
-                <Grid item xs={12} key={index}>
+              {user.consultations.sessions.map((consultation) => (
+                <Grid item xs={12} key={consultation.id}>
                   <Paper sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Box>
                         <Typography variant="h6" gutterBottom>
-                          {consultation.expertName}
+                          {consultation.expert_name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" gutterBottom>
-                          {consultation.category} • {consultation.date}
+                          {consultation.expert_industry} • {new Date(consultation.started_at).toLocaleDateString()}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          {consultation.total_messages} messages • {consultation.duration_minutes} minutes • {consultation.status}
                         </Typography>
                         <Typography variant="body1">
-                          {consultation.lastMessage}
+                          Consultation with {consultation.expert_name} about {consultation.expert_specialty}
                         </Typography>
                       </Box>
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => navigate(`/experts/${consultation.expertId}`)}
+                        onClick={() => navigate('/experts')}
                       >
-                        Continue Chat
+                        Browse Experts
                       </Button>
                     </Box>
                   </Paper>

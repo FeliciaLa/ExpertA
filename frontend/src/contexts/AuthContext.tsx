@@ -20,6 +20,25 @@ interface UserData {
   profile_image?: string;
   total_training_messages?: number;
   last_training_at?: string;
+  // Consultation data
+  consultations?: {
+    experts_consulted: number;
+    total_consultations: number;
+    most_used_industry: string;
+    sessions: ConsultationSession[];
+  };
+}
+
+interface ConsultationSession {
+  id: string;
+  expert_name: string;
+  expert_industry: string;
+  expert_specialty: string;
+  started_at: string;
+  ended_at?: string;
+  total_messages: number;
+  duration_minutes: number;
+  status: string;
 }
 
 interface AuthResponse {
