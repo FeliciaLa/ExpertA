@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "corsheaders",
     "rest_framework",
-    "django_rq",  # Django RQ for async tasks
+    # "django_rq",  # Django RQ for async tasks - temporarily disabled for deployment
     
     # Our apps
     "api",
@@ -432,21 +432,25 @@ RQ_QUEUES = {
 
 # Use Redis URL from Heroku if available
 if os.getenv('REDIS_URL'):
-    import redis
-    redis_url = os.getenv('REDIS_URL')
-    RQ_QUEUES = {
-        'default': {
-            'CONNECTION_CLASS': 'redis.StrictRedis',
-            'CONNECTION_KWARGS': {
-                'connection_pool': redis.ConnectionPool.from_url(redis_url)
+    try:
+        import redis
+        redis_url = os.getenv('REDIS_URL')
+        RQ_QUEUES = {
+            'default': {
+                'CONNECTION_CLASS': 'redis.StrictRedis',
+                'CONNECTION_KWARGS': {
+                    'connection_pool': redis.ConnectionPool.from_url(redis_url)
+                },
+                'DEFAULT_TIMEOUT': 360,
             },
-            'DEFAULT_TIMEOUT': 360,
-        },
-        'knowledge_processing': {
-            'CONNECTION_CLASS': 'redis.StrictRedis',
-            'CONNECTION_KWARGS': {
-                'connection_pool': redis.ConnectionPool.from_url(redis_url)
-            },
-            'DEFAULT_TIMEOUT': 600,
+            'knowledge_processing': {
+                'CONNECTION_CLASS': 'redis.StrictRedis',
+                'CONNECTION_KWARGS': {
+                    'connection_pool': redis.ConnectionPool.from_url(redis_url)
+                },
+                'DEFAULT_TIMEOUT': 600,
+            }
         }
-    }
+    except ImportError:
+        # Redis not available - Django RQ disabled
+        RQ_QUEUES = {}
