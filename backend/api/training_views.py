@@ -311,9 +311,15 @@ class TrainingChatView(RateLimitMixin, APIView):
                 )
                 
                 # Queue knowledge processing to run asynchronously
-                from .tasks import process_training_message_async
-                process_training_message_async.delay(expert_msg.id)
-                print(f"Saved expert message: {expert_msg.id} and queued for knowledge processing")
+                try:
+                    import django_rq
+                    from .tasks import process_training_message_async
+                    queue = django_rq.get_queue('knowledge_processing')
+                    queue.enqueue(process_training_message_async, expert_msg.id)
+                    print(f"Saved expert message: {expert_msg.id} and queued for knowledge processing")
+                except Exception as e:
+                    print(f"Could not queue async task: {str(e)}")
+                    print(f"Saved expert message: {expert_msg.id} (async processing not available)")
                 
                 # Get conversation history
                 history = self._get_conversation_history(expert)
@@ -701,11 +707,10 @@ class KnowledgeProcessingView(APIView):
         
         try:
             # Queue expert profile processing to run asynchronously
-            from .tasks import process_expert_profile_async
-            process_expert_profile_async.delay(expert.id)
-            
-            # Queue unprocessed training messages for processing
-            from .tasks import process_training_message_async
+            import django_rq
+            from .tasks import process_expert_profile_async, process_training_message_async
+            queue = django_rq.get_queue('knowledge_processing')
+            queue.enqueue(process_expert_profile_async, expert.id)
             unprocessed_messages = TrainingMessage.objects.filter(
                 expert=expert,
                 role='expert',
@@ -715,7 +720,7 @@ class KnowledgeProcessingView(APIView):
             queued_count = 0
             for message in unprocessed_messages:
                 try:
-                    process_training_message_async.delay(message.id)
+                    queue.enqueue(process_training_message_async, message.id)
                     queued_count += 1
                 except Exception as e:
                     print(f"Error queuing message {message.id}: {str(e)}")

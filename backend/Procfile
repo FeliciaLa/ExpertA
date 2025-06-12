@@ -1,3 +1,3 @@
 release: python manage.py migrate --noinput
 web: gunicorn expert_system.wsgi --bind 0.0.0.0:$PORT
-worker: celery -A expert_system worker --loglevel=info --concurrency=1 
+worker: python manage.py rqworker knowledge_processing default 

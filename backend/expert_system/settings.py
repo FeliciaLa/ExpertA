@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "corsheaders",
     "rest_framework",
-    # "background_task",  # Temporarily disabled to get deployment working
+    "django_rq",  # Django RQ for async tasks
     
     # Our apps
     "api",
@@ -410,21 +410,43 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
-# Celery Configuration
-CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_ENABLE_UTC = True
-
-# Celery task routing
-CELERY_TASK_ROUTES = {
-    'api.tasks.*': {'queue': 'knowledge_processing'},
+# Django RQ Configuration
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'PASSWORD': '',
+        'DEFAULT_TIMEOUT': 360,
+        'CONNECTION_CLASS': 'redis.StrictRedis',
+    },
+    'knowledge_processing': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'PASSWORD': '',
+        'DEFAULT_TIMEOUT': 600,
+        'CONNECTION_CLASS': 'redis.StrictRedis',
+    }
 }
 
-# Celery worker settings
-CELERY_WORKER_PREFETCH_MULTIPLIER = 1
-CELERY_TASK_ACKS_LATE = True
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+# Use Redis URL from Heroku if available
+if os.getenv('REDIS_URL'):
+    import redis
+    redis_url = os.getenv('REDIS_URL')
+    RQ_QUEUES = {
+        'default': {
+            'CONNECTION_CLASS': 'redis.StrictRedis',
+            'CONNECTION_KWARGS': {
+                'connection_pool': redis.ConnectionPool.from_url(redis_url)
+            },
+            'DEFAULT_TIMEOUT': 360,
+        },
+        'knowledge_processing': {
+            'CONNECTION_CLASS': 'redis.StrictRedis',
+            'CONNECTION_KWARGS': {
+                'connection_pool': redis.ConnectionPool.from_url(redis_url)
+            },
+            'DEFAULT_TIMEOUT': 600,
+        }
+    }

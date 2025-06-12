@@ -179,8 +179,10 @@ class DocumentUploadView(APIView):
             # If we have content, process it (async temporarily disabled)
             if content.strip():
                 # Queue document processing to run asynchronously
+                import django_rq
                 from .tasks import process_document_async
-                process_document_async.delay(document.id, content)
+                queue = django_rq.get_queue('knowledge_processing')
+                queue.enqueue(process_document_async, document.id, content)
                 print(f"Document {document.id} saved and queued for knowledge processing: {document.filename}")
             else:
                 raise Exception("No text content could be extracted from the document")

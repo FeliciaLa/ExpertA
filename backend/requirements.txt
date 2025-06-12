@@ -1,7 +1,8 @@
 djangorestframework-simplejwt==5.3.1
 PyJWT==2.8.0
 django==4.2.11
-celery[redis]==5.4.0
+django-rq==2.10.2
+rq==1.16.2
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
 gunicorn==21.2.0
@@ -10,8 +11,7 @@ whitenoise==6.6.0
 dj-database-url==2.1.0
 psycopg2-binary==2.9.6
 
-celery==5.4.0
-redis==5.2.1
+
 
 bleach==6.0.0
 PyPDF2==3.0.1

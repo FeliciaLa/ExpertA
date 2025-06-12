@@ -1,7 +1,7 @@
 """
-Celery task functions for background processing
+Django RQ task functions for background processing
 """
-from celery import shared_task
+import django_rq
 from django.utils import timezone
 from .models import TrainingMessage, Document, User
 from .services import KnowledgeProcessor
@@ -9,8 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-@shared_task(bind=True, retry_backoff=True, retry_kwargs={'max_retries': 3})
-def process_training_message_async(self, message_id):
+def process_training_message_async(message_id):
     """
     Process a training message for knowledge extraction in the background
     
@@ -46,13 +45,12 @@ def process_training_message_async(self, message_id):
         
     except TrainingMessage.DoesNotExist:
         logger.error(f"Training message {message_id} not found")
-        raise self.retry(countdown=60, exc=Exception(f"Training message {message_id} not found"))
+        raise Exception(f"Training message {message_id} not found")
     except Exception as e:
         logger.error(f"Error processing knowledge for message {message_id}: {str(e)}")
-        raise self.retry(countdown=60, exc=e)
+        raise e
 
-@shared_task(bind=True, retry_backoff=True, retry_kwargs={'max_retries': 3})
-def process_expert_profile_async(self, expert_id):
+def process_expert_profile_async(expert_id):
     """
     Process an expert's profile for knowledge extraction in the background
     
@@ -74,13 +72,12 @@ def process_expert_profile_async(self, expert_id):
         
     except User.DoesNotExist:
         logger.error(f"Expert {expert_id} not found")
-        raise self.retry(countdown=60, exc=Exception(f"Expert {expert_id} not found"))
+        raise Exception(f"Expert {expert_id} not found")
     except Exception as e:
         logger.error(f"Error processing profile for expert {expert_id}: {str(e)}")
-        raise self.retry(countdown=60, exc=e)
+        raise e
 
-@shared_task(bind=True, retry_backoff=True, retry_kwargs={'max_retries': 3})
-def process_document_async(self, document_id, content):
+def process_document_async(document_id, content):
     """
     Process a document for knowledge extraction in the background
     
@@ -111,7 +108,7 @@ def process_document_async(self, document_id, content):
         
     except Document.DoesNotExist:
         logger.error(f"Document {document_id} not found")
-        raise self.retry(countdown=60, exc=Exception(f"Document {document_id} not found"))
+        raise Exception(f"Document {document_id} not found")
     except Exception as e:
         logger.error(f"Error processing document {document_id}: {str(e)}")
-        raise self.retry(countdown=60, exc=e) 
+        raise e 
