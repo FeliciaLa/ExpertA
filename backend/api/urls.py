@@ -26,7 +26,8 @@ from .views import (
     ExpertOnboardingCompleteView,
     ChangeEmailView,
     VerifyEmailChangeView,
-    ChangePasswordView
+    ChangePasswordView,
+    ConsultationSessionView
 )
 from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView, TrainingStatsView
 from .document_views import DocumentListView, DocumentUploadView, DocumentDeleteView
@@ -206,6 +207,9 @@ urlpatterns = [
     path('profile/change-email/', ChangeEmailView.as_view(), name='change-email'),
     path('verify-email-change/', VerifyEmailChangeView.as_view(), name='verify-email-change'),
     path('profile/change-password/', ChangePasswordView.as_view(), name='change-password'),
+    
+    # Consultation session endpoints
+    path('consultation-session/', ConsultationSessionView.as_view(), name='consultation-session'),
     
     # CORS test endpoint
     path('cors-test/', cors_test, name='cors-test'),

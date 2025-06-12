@@ -1221,12 +1221,15 @@ class ExpertChatbotView(APIView):
                 if not user_id:
                     return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
                 
-                # At this point, token is valid and we have the user_id
-                print(f"Authenticated user ID: {user_id}")
+                # Get the user object
+                user = User.objects.get(id=user_id)
+                print(f"Authenticated user: {user.email} (ID: {user_id})")
             except jwt.DecodeError:
                 return Response({"error": "Invalid token format"}, status=status.HTTP_401_UNAUTHORIZED)
             except jwt.ExpiredSignatureError:
                 return Response({"error": "Token has expired"}, status=status.HTTP_401_UNAUTHORIZED)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
             
             # Get the expert
             expert = User.objects.get(id=expert_id)  # Use User model instead of Expert
@@ -1278,6 +1281,40 @@ class ExpertChatbotView(APIView):
             response = chatbot.get_response(message)
             print(f"\n=== Response Debug ===")
             print(f"AI Response: {response}")
+            
+            # Track consultation session
+            from .models import ConsultationSession
+            from django.utils import timezone
+            
+            try:
+                # Get or create consultation session for this user and expert
+                session, created = ConsultationSession.objects.get_or_create(
+                    user=user,
+                    expert=expert,
+                    status=ConsultationSession.Status.ACTIVE,
+                    defaults={
+                        'expert_name': expert.name or expert.email,
+                        'expert_industry': getattr(expert.profile, 'industry', '') if hasattr(expert, 'profile') else '',
+                        'expert_specialty': expert.specialties or '',
+                        'total_messages': 0,
+                        'duration_minutes': 0,
+                    }
+                )
+                
+                # Increment message count (user message + AI response = 2 messages)
+                session.total_messages += 2
+                session.save()
+                
+                print(f"\n=== Consultation Session Debug ===")
+                print(f"Session ID: {session.id}")
+                print(f"Created: {created}")
+                print(f"Total Messages: {session.total_messages}")
+                print(f"Status: {session.status}")
+                
+            except Exception as e:
+                print(f"Error tracking consultation session: {str(e)}")
+                # Don't fail the entire request if session tracking fails
+                pass
             
             return Response({
                 'expert_id': expert.id,
@@ -2460,48 +2497,102 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        
+        if not current_password or not new_password:
+            return Response({
+                'error': 'Both current and new passwords are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = request.user
+        
+        # Check current password
+        if not user.check_password(current_password):
+            return Response({
+                'error': 'Current password is incorrect'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate new password
+        if len(new_password) < 8:
+            return Response({
+                'error': 'New password must be at least 8 characters long'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Change password
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({
+            'message': 'Password changed successfully'
+        })
+
+
+class ConsultationSessionView(APIView):
+    """
+    API endpoint for managing consultation sessions.
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        """Mark a consultation session as completed"""
         try:
-            current_password = request.data.get('current_password', '')
-            new_password = request.data.get('new_password', '')
+            # Check authentication
+            auth_header = request.headers.get('Authorization', '')
+            if not auth_header.startswith('Bearer '):
+                return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            if not current_password:
-                return Response({
-                    "error": "Current password is required"
-                }, status=status.HTTP_400_BAD_REQUEST)
+            # Validate the token
+            token = auth_header.split(' ')[1]
+            try:
+                import jwt
+                from django.conf import settings
+                decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"], options={"verify_signature": True})
+                user_id = decoded_token.get('user_id')
+                if not user_id:
+                    return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+                
+                user = User.objects.get(id=user_id)
+            except (jwt.DecodeError, jwt.ExpiredSignatureError, User.DoesNotExist):
+                return Response({"error": "Invalid authentication"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            if not new_password:
-                return Response({
-                    "error": "New password is required"
-                }, status=status.HTTP_400_BAD_REQUEST)
+            expert_id = request.data.get('expert_id')
+            action = request.data.get('action', 'complete')
             
-            # Verify current password
-            if not request.user.check_password(current_password):
-                return Response({
-                    "error": "Current password is incorrect"
-                }, status=status.HTTP_400_BAD_REQUEST)
+            if not expert_id:
+                return Response({"error": "expert_id is required"}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Validate new password
-            if len(new_password) < 8:
-                return Response({
-                    "error": "Password must be at least 8 characters long"
-                }, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                expert = User.objects.get(id=expert_id)
+            except User.DoesNotExist:
+                return Response({"error": "Expert not found"}, status=status.HTTP_404_NOT_FOUND)
             
-            # Check if new password is the same as current
-            if request.user.check_password(new_password):
-                return Response({
-                    "error": "New password must be different from your current password"
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Update password
-            request.user.set_password(new_password)
-            request.user.save()
-            
-            return Response({
-                "message": "Password changed successfully"
-            }, status=status.HTTP_200_OK)
-            
+            # Find active session
+            from .models import ConsultationSession
+            try:
+                session = ConsultationSession.objects.get(
+                    user=user,
+                    expert=expert,
+                    status=ConsultationSession.Status.ACTIVE
+                )
+                
+                if action == 'complete':
+                    session.mark_completed()
+                    print(f"Marked consultation session {session.id} as completed")
+                    
+                    return Response({
+                        'message': 'Session marked as completed',
+                        'session_id': str(session.id),
+                        'duration_minutes': session.duration_minutes
+                    })
+                else:
+                    return Response({"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST)
+                    
+            except ConsultationSession.DoesNotExist:
+                return Response({"error": "No active session found"}, status=status.HTTP_404_NOT_FOUND)
+                
         except Exception as e:
-            print(f"Change password error: {e}")
+            print(f"Error in consultation session endpoint: {str(e)}")
             return Response({
-                "error": "Failed to change password"
+                'error': 'Failed to manage consultation session'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
