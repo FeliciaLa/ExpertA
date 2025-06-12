@@ -474,6 +474,8 @@ if os.getenv('REDIS_URL'):
                 'CONNECTION_CLASS': 'redis.StrictRedis',
                 'CONNECTION_KWARGS': {
                     'ssl_cert_reqs': None,
+                    'ssl': True,
+                    'ssl_check_hostname': False,
                 }
             },
             'knowledge_processing': {
@@ -485,6 +487,8 @@ if os.getenv('REDIS_URL'):
                 'CONNECTION_CLASS': 'redis.StrictRedis',
                 'CONNECTION_KWARGS': {
                     'ssl_cert_reqs': None,
+                    'ssl': True,
+                    'ssl_check_hostname': False,
                 }
             },
             'high': {
@@ -496,6 +500,8 @@ if os.getenv('REDIS_URL'):
                 'CONNECTION_CLASS': 'redis.StrictRedis',
                 'CONNECTION_KWARGS': {
                     'ssl_cert_reqs': None,
+                    'ssl': True,
+                    'ssl_check_hostname': False,
                 }
             },
             'low': {
@@ -507,6 +513,8 @@ if os.getenv('REDIS_URL'):
                 'CONNECTION_CLASS': 'redis.StrictRedis',
                 'CONNECTION_KWARGS': {
                     'ssl_cert_reqs': None,
+                    'ssl': True,
+                    'ssl_check_hostname': False,
                 }
             }
         }
