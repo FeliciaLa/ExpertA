@@ -1422,12 +1422,17 @@ class UserProfileView(APIView):
                     print(f"Found user: {user.email}")
                     
                     # Return user profile data
+                    print(f"DEBUG v2.0 - User object: {user}")
+                    print(f"DEBUG v2.0 - User has date_joined attr: {hasattr(user, 'date_joined')}")
+                    print(f"DEBUG v2.0 - User date_joined value: {getattr(user, 'date_joined', 'NOT_FOUND')}")
+                    print(f"DEBUG v2.0 - About to add date_joined to response_data")
                     response_data = {
                         'id': str(user.id),
                         'email': user.email,
                         'name': user.name,
                         'date_joined': user.date_joined.isoformat() if user.date_joined else None,
                     }
+                    print(f"DEBUG v2.0 - response_data with date_joined: {response_data}")
                     
                     # Check if user is an expert or regular user
                     if hasattr(user, 'role'):
@@ -1480,6 +1485,9 @@ class UserProfileView(APIView):
                 print(f"Found user via token: {user.email}")
                 
                 # Return user profile data
+                print(f"DEBUG TOKEN - User object: {user}")
+                print(f"DEBUG TOKEN - User has date_joined attr: {hasattr(user, 'date_joined')}")
+                print(f"DEBUG TOKEN - User date_joined value: {getattr(user, 'date_joined', 'NOT_FOUND')}")
                 response_data = {
                     'id': str(user.id),
                     'email': user.email,

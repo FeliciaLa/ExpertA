@@ -488,6 +488,14 @@ const UserProfilePage: React.FC = () => {
     console.log('Debug - user.date_joined value:', user?.date_joined);
     console.log('Debug - typeof user.date_joined:', typeof user?.date_joined);
     
+    // Check localStorage directly
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      console.log('Debug - User from localStorage:', parsedUser);
+      console.log('Debug - date_joined from localStorage:', parsedUser.date_joined);
+    }
+    
     if (user?.date_joined) {
       try {
         console.log('Debug - Attempting to parse date:', user.date_joined);
