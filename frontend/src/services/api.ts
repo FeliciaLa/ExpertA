@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 
 // Read API URL from environment variable in production, or use production backend as default
-const baseUrl = import.meta.env.VITE_API_URL || 'https://experta-backend.herokuapp.com';
+const baseUrl = import.meta.env.VITE_API_URL || 'https://experta-backend-d64920064058.herokuapp.com';
 
 // Handle API URL construction properly to prevent double /api/
 let finalApiUrl;
