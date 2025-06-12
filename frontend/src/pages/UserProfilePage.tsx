@@ -518,20 +518,20 @@ const UserProfilePage: React.FC = () => {
       ? new Set(consultations.map((c: any) => c.expertId)).size 
       : 0;
 
-    // Calculate favorite category
-    const favoriteCategory = consultations.length === 0 ? '-' : (() => {
-      const categoryCount: { [key: string]: number } = {};
+    // Calculate most used industry
+    const mostUsedIndustry = consultations.length === 0 ? '-' : (() => {
+      const industryCount: { [key: string]: number } = {};
       consultations.forEach((consultation: any) => {
-        const category = consultation.category || 'Other';
-        categoryCount[category] = (categoryCount[category] || 0) + 1;
+        const industry = consultation.industry || 'Other';
+        industryCount[industry] = (industryCount[industry] || 0) + 1;
       });
 
       let maxCount = 0;
       let favorite = '-';
-      Object.entries(categoryCount).forEach(([category, count]) => {
+      Object.entries(industryCount).forEach(([industry, count]) => {
         if (count > maxCount) {
           maxCount = count;
-          favorite = category;
+          favorite = industry;
         }
       });
       return favorite;
@@ -541,7 +541,7 @@ const UserProfilePage: React.FC = () => {
       memberSince,
       expertsConsulted: uniqueExperts,
       totalConsultations: consultations.length,
-      favoriteCategory
+      mostUsedIndustry
     };
   };
 
@@ -698,10 +698,10 @@ const UserProfilePage: React.FC = () => {
                     
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
                       <Typography variant="body1" color="text.secondary">
-                        Favorite Category
+                        Most Used Industry
                       </Typography>
                       <Typography variant="body1" fontWeight="medium">
-                        {stats.favoriteCategory}
+                        {stats.mostUsedIndustry}
                       </Typography>
                     </Box>
                   </>
