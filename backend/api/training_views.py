@@ -310,20 +310,9 @@ class TrainingChatView(RateLimitMixin, APIView):
                     content=message
                 )
                 
-                # Process expert's knowledge asynchronously to improve response time
-                try:
-                    from threading import Thread
-                    def process_knowledge_async():
-                        try:
-                            knowledge_processor = KnowledgeProcessor(expert)
-                            knowledge_processor.process_training_message(expert_msg)
-                        except Exception as e:
-                            print(f"Background knowledge processing failed: {str(e)}")
-                    
-                    # Run in background thread
-                    Thread(target=process_knowledge_async, daemon=True).start()
-                except Exception as e:
-                    print(f"Failed to start background knowledge processing: {str(e)}")
+                # TODO: Add knowledge processing back with proper async task queue (Celery/Redis)
+                # Temporarily disabled to improve response speed and avoid threading issues on Heroku
+                print(f"Saved expert message: {expert_msg.id}")
                 
                 # Get conversation history
                 history = self._get_conversation_history(expert)

@@ -255,6 +255,10 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = True  # Re-enable to debug the issue
 CORS_ALLOW_CREDENTIALS = True
 
+# Additional CORS debugging settings
+CORS_PREFLIGHT_MAX_AGE = 86400
+CORS_ALLOW_PRIVATE_NETWORK = True
+
 # Enable specific origins - be explicit about what we allow
 CORS_ALLOWED_ORIGINS = [
     # Local development
