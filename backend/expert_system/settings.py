@@ -454,10 +454,11 @@ RQ_QUEUES = {
 }
 
 # Use Redis URL from environment (Railway, Heroku, etc.)
-if os.getenv('REDIS_URL'):
+# Try REDIS_TLS_URL first (better SSL support), then fall back to REDIS_URL
+if os.getenv('REDIS_TLS_URL') or os.getenv('REDIS_URL'):
     try:
         import redis
-        redis_url = os.getenv('REDIS_URL')
+        redis_url = os.getenv('REDIS_TLS_URL') or os.getenv('REDIS_URL')
         print(f"Using Redis URL: {redis_url}")
         
         # Parse Redis URL to get connection parameters for Django RQ
