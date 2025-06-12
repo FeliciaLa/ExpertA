@@ -227,7 +227,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
         <Grid item xs={12} md={3}>
           <Box textAlign="center">
             <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', fontSize: '0.85rem', mb: 2 }}>
-              "{aiPersonality.message}"
+              {aiPersonality.message}
             </Typography>
             
             <Button
@@ -246,7 +246,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
             
             {stats.lastTrainingDate && (
               <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
-                Last: {new Date(stats.lastTrainingDate).toLocaleDateString()}
+                Last Training: {new Date(stats.lastTrainingDate).toLocaleDateString()}
               </Typography>
             )}
           </Box>
