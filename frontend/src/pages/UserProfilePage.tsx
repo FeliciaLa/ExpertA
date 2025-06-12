@@ -482,16 +482,25 @@ const UserProfilePage: React.FC = () => {
     // Calculate member since date
     let memberSince = 'Dec 2024'; // Default fallback
     
+    console.log('Debug - Full user object:', user);
+    console.log('Debug - user.date_joined value:', user?.date_joined);
+    console.log('Debug - typeof user.date_joined:', typeof user?.date_joined);
+    
     if (user?.date_joined) {
       try {
+        console.log('Debug - Attempting to parse date:', user.date_joined);
         const joinDate = new Date(user.date_joined);
+        console.log('Debug - Parsed join date:', joinDate);
         memberSince = joinDate.toLocaleDateString('en-US', { 
           month: 'short', 
           year: 'numeric' 
         });
+        console.log('Debug - Formatted member since:', memberSince);
       } catch (error) {
         console.error('Error parsing join date:', error);
       }
+    } else {
+      console.log('Debug - No date_joined field found in user object');
     }
 
     // Calculate experts consulted (unique expert IDs)

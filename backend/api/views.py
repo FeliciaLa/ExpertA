@@ -1426,6 +1426,7 @@ class UserProfileView(APIView):
                         'id': str(user.id),
                         'email': user.email,
                         'name': user.name,
+                        'date_joined': user.date_joined.isoformat() if user.date_joined else None,
                     }
                     
                     # Check if user is an expert or regular user
@@ -1483,6 +1484,7 @@ class UserProfileView(APIView):
                     'id': str(user.id),
                     'email': user.email,
                     'name': user.name,
+                    'date_joined': user.date_joined.isoformat() if user.date_joined else None,
                 }
                 
                 # Check if user is an expert or regular user
