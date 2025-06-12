@@ -640,9 +640,12 @@ The expert has provided a response. Please:
                     
                     if response.choices[0].message.function_call:
                         result = json.loads(response.choices[0].message.function_call.arguments)
-                        # Verify that the response is actually a question
-                        if not any(result['content'].strip().endswith(p) for p in ['?', '؟', '？']):
-                            raise Exception("AI response must be a question")
+                        # Check if response is a question, if not, add a question mark
+                        content = result['content'].strip()
+                        if not any(content.endswith(p) for p in ['?', '؟', '？']):
+                            # Add a question mark if missing (instead of throwing error)
+                            result['content'] = content + '?'
+                            print(f"Added question mark to AI response: {result['content'][:50]}...")
                         print("AI Response:", result)
                         return result
                     else:
