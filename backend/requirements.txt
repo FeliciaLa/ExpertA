@@ -1,8 +1,6 @@
 # JWT packages first to ensure they are installed first
 djangorestframework-simplejwt==5.3.1
 PyJWT==2.8.0
-
-# Background task processing with Celery - moved up for better resolution
 celery==5.4.0
 redis==5.2.1
 
