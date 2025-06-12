@@ -176,14 +176,13 @@ class DocumentUploadView(APIView):
                 # For other file types, just note that we can't process them
                 raise Exception(f"Unsupported file type: {document.mime_type}")
             
-            # If we have content, process it (async temporarily disabled)
+            # If we have content, process it asynchronously
             if content.strip():
                 # Queue document processing to run asynchronously
-                import django_rq
+                from django_q.tasks import async_task
                 from .tasks import process_document_async
-                queue = django_rq.get_queue('knowledge_processing')
-                queue.enqueue(process_document_async, document.id, content)
-                print(f"Document {document.id} saved and queued for knowledge processing: {document.filename}")
+                task_id = async_task(process_document_async, document.id, content)
+                print(f"Document {document.id} saved and queued for knowledge processing: {document.filename} (task: {task_id})")
             else:
                 raise Exception("No text content could be extracted from the document")
                 

@@ -1,7 +1,7 @@
 """
-Django RQ task functions for background processing
+Django Q task functions for background processing (Database-backed!)
 """
-import django_rq
+from django_q.tasks import async_task, result
 from django.utils import timezone
 from .models import TrainingMessage, Document, User
 from .services import KnowledgeProcessor

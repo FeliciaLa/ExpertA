@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "corsheaders",
     "rest_framework",
-    "django_rq",  # Django RQ for async tasks
+    "django_q",  # Django Q2 for async tasks (database-backed)
     
     # Our apps
     "api",
@@ -410,106 +410,20 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
-# Django RQ Configuration
-# Use environment variables for Redis configuration
-REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
-REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', '')
-REDIS_DB = int(os.getenv('REDIS_DB', '0'))
-
-# Default Redis configuration
-RQ_QUEUES = {
-    'default': {
-        'HOST': REDIS_HOST,
-        'PORT': REDIS_PORT,
-        'DB': REDIS_DB,
-        'PASSWORD': REDIS_PASSWORD,
-        'DEFAULT_TIMEOUT': 360,
-        'CONNECTION_CLASS': 'redis.StrictRedis',
-    },
-    'knowledge_processing': {
-        'HOST': REDIS_HOST,
-        'PORT': REDIS_PORT,
-        'DB': REDIS_DB,
-        'PASSWORD': REDIS_PASSWORD,
-        'DEFAULT_TIMEOUT': 600,
-        'CONNECTION_CLASS': 'redis.StrictRedis',
-    },
-    'high': {
-        'HOST': REDIS_HOST,
-        'PORT': REDIS_PORT,
-        'DB': REDIS_DB,
-        'PASSWORD': REDIS_PASSWORD,
-        'DEFAULT_TIMEOUT': 300,
-        'CONNECTION_CLASS': 'redis.StrictRedis',
-    },
-    'low': {
-        'HOST': REDIS_HOST,
-        'PORT': REDIS_PORT,
-        'DB': REDIS_DB,
-        'PASSWORD': REDIS_PASSWORD,
-        'DEFAULT_TIMEOUT': 1200,
-        'CONNECTION_CLASS': 'redis.StrictRedis',
-    }
+# Django Q2 Configuration (Database-backed, no Redis needed!)
+Q_CLUSTER = {
+    'name': 'expert_system',
+    'workers': 2,
+    'recycle': 500,
+    'timeout': 300,  # 5 minutes
+    'compress': True,
+    'save_limit': 250,
+    'queue_limit': 500,
+    'cpu_affinity': 1,
+    'label': 'Django Q',
+    'redis': None,  # Use database instead of Redis
+    'orm': 'default',  # Use default database
+    'retry': 900,  # 15 minutes (must be larger than timeout)
+    'bulk': 10,
+    'catch_up': True,
 }
-
-# Use Redis URL from environment (Railway, Heroku, etc.)
-# Try REDIS_TLS_URL first (better SSL support), then fall back to REDIS_URL
-if os.getenv('REDIS_TLS_URL') or os.getenv('REDIS_URL'):
-    try:
-        import redis
-        redis_url = os.getenv('REDIS_TLS_URL') or os.getenv('REDIS_URL')
-        print(f"Using Redis URL: {redis_url}")
-        
-        # Try using Redis connection pool directly (better for SSL)
-        import redis
-        
-        # Create connection pool from URL
-        connection_pool = redis.ConnectionPool.from_url(
-            redis_url,
-            ssl_cert_reqs=None,
-            ssl_check_hostname=False,
-            socket_connect_timeout=30,
-            socket_timeout=30,
-            retry_on_timeout=True
-        )
-        
-        RQ_QUEUES = {
-            'default': {
-                'CONNECTION_CLASS': 'redis.StrictRedis',
-                'CONNECTION_KWARGS': {
-                    'connection_pool': connection_pool
-                },
-                'DEFAULT_TIMEOUT': 360,
-            },
-            'knowledge_processing': {
-                'CONNECTION_CLASS': 'redis.StrictRedis',
-                'CONNECTION_KWARGS': {
-                    'connection_pool': connection_pool
-                },
-                'DEFAULT_TIMEOUT': 600,
-            },
-            'high': {
-                'CONNECTION_CLASS': 'redis.StrictRedis',
-                'CONNECTION_KWARGS': {
-                    'connection_pool': connection_pool
-                },
-                'DEFAULT_TIMEOUT': 300,
-            },
-            'low': {
-                'CONNECTION_CLASS': 'redis.StrictRedis',
-                'CONNECTION_KWARGS': {
-                    'connection_pool': connection_pool
-                },
-                'DEFAULT_TIMEOUT': 1200,
-            }
-        }
-    except ImportError:
-        print("Redis package not available - Django RQ will be disabled")
-        RQ_QUEUES = {}
-    except Exception as e:
-        print(f"Error configuring Redis: {str(e)}")
-        RQ_QUEUES = {}
-
-# RQ Admin configuration
-RQ_SHOW_ADMIN_LINK = True

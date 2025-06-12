@@ -38,7 +38,7 @@ urlpatterns = [
     # Simple health endpoint at root level
     path('health/', health, name='health'),
     # Django RQ admin interface
-    path('django-rq/', include('django_rq.urls')),
+    # path('django-rq/', include('django_rq.urls')),  # Removed - using Django Q instead
 ]
 
 # Import API views only when needed to avoid early initialization

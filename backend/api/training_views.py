@@ -312,11 +312,10 @@ class TrainingChatView(RateLimitMixin, APIView):
                 
                 # Queue knowledge processing to run asynchronously
                 try:
-                    import django_rq
+                    from django_q.tasks import async_task
                     from .tasks import process_training_message_async
-                    queue = django_rq.get_queue('knowledge_processing')
-                    queue.enqueue(process_training_message_async, expert_msg.id)
-                    print(f"Saved expert message: {expert_msg.id} and queued for knowledge processing")
+                    task_id = async_task(process_training_message_async, expert_msg.id)
+                    print(f"Saved expert message: {expert_msg.id} and queued for knowledge processing (task: {task_id})")
                 except Exception as e:
                     print(f"Could not queue async task: {str(e)}")
                     print(f"Saved expert message: {expert_msg.id} (async processing not available)")
@@ -707,10 +706,12 @@ class KnowledgeProcessingView(APIView):
         
         try:
             # Queue expert profile processing to run asynchronously
-            import django_rq
+            from django_q.tasks import async_task
             from .tasks import process_expert_profile_async, process_training_message_async
-            queue = django_rq.get_queue('knowledge_processing')
-            queue.enqueue(process_expert_profile_async, expert.id)
+            
+            # Queue expert profile processing
+            profile_task_id = async_task(process_expert_profile_async, expert.id)
+            
             unprocessed_messages = TrainingMessage.objects.filter(
                 expert=expert,
                 role='expert',
@@ -720,7 +721,7 @@ class KnowledgeProcessingView(APIView):
             queued_count = 0
             for message in unprocessed_messages:
                 try:
-                    queue.enqueue(process_training_message_async, message.id)
+                    task_id = async_task(process_training_message_async, message.id)
                     queued_count += 1
                 except Exception as e:
                     print(f"Error queuing message {message.id}: {str(e)}")
