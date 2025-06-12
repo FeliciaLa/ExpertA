@@ -686,7 +686,7 @@ const UserProfilePage: React.FC = () => {
                     
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
                       <Typography variant="body1" color="text.secondary">
-                        Most Used Industry
+                        Most Consulted Industry
                       </Typography>
                       <Typography variant="body1" fontWeight="medium">
                         {stats.mostUsedIndustry}
