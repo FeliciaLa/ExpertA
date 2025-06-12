@@ -739,7 +739,7 @@ const UserProfilePage: React.FC = () => {
                           {consultation.expert_industry} • {new Date(consultation.started_at).toLocaleDateString()}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" gutterBottom>
-                          {consultation.total_messages} messages • {consultation.duration_minutes} minutes • {consultation.status}
+                          {consultation.total_messages} messages
                         </Typography>
                         <Typography variant="body1">
                           Consultation with {consultation.expert_name} about {consultation.expert_specialty}
