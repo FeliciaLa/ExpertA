@@ -22,4 +22,4 @@ django-storages==1.14.2
 
 pinecone-client==5.0.1
 openai==1.54.4
-stripe==7.8.0 
+stripe==7.8.0 Forcing new build
