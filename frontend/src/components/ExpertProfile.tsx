@@ -526,43 +526,53 @@ const ExpertProfile: React.FC = () => {
             </Grid>
 
             {/* Industry */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Industry
-              </Typography>
-              
-              {isEditing && (
-                <Box display="flex" gap={1} mb={2}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label="Add an industry"
-                    value={newIndustry}
-                    onChange={(e) => setNewIndustry(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addIndustry()}
-                    placeholder="e.g., Technology, Marketing, Healthcare"
-                  />
-                  <Button variant="outlined" onClick={addIndustry}>
-                    Add
-                  </Button>
-                </Box>
-              )}
-              
-              <Box display="flex" flexWrap="wrap" gap={1}>
-                {profileData.industry.map((industry) => (
-                  <Chip
-                    key={industry}
-                    label={industry}
-                    onDelete={isEditing ? () => removeIndustry(industry) : undefined}
-                    color="primary"
-                    variant="outlined"
-                  />
-                ))}
-                {profileData.industry.length === 0 && (
-                  <Typography variant="body2" color="text.secondary">
-                    No industries added yet
-                  </Typography>
+            <Grid item xs={12} md={6}>
+              <Box>
+                <TextField
+                  fullWidth
+                  label="Industry"
+                  value={profileData.industry.join(', ')}
+                  disabled={true}
+                  multiline
+                  minRows={1}
+                  maxRows={3}
+                  helperText={`${profileData.industry.length} industry${profileData.industry.length !== 1 ? 'ies' : ''} selected`}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+                
+                {isEditing && (
+                  <Box sx={{ mt: 1 }}>
+                    <Box display="flex" gap={1} mb={1}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Add an industry"
+                        value={newIndustry}
+                        onChange={(e) => setNewIndustry(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && addIndustry()}
+                        placeholder="e.g., Technology, Marketing, Healthcare"
+                      />
+                      <Button variant="outlined" onClick={addIndustry} size="small">
+                        Add
+                      </Button>
+                    </Box>
+                  </Box>
                 )}
+                
+                <Box display="flex" flexWrap="wrap" gap={0.5} sx={{ mt: 1 }}>
+                  {profileData.industry.map((industry) => (
+                    <Chip
+                      key={industry}
+                      label={industry}
+                      onDelete={isEditing ? () => removeIndustry(industry) : undefined}
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                    />
+                  ))}
+                </Box>
               </Box>
             </Grid>
 
@@ -599,42 +609,52 @@ const ExpertProfile: React.FC = () => {
 
             {/* Key Skills */}
             <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Key Skills
-              </Typography>
-              
-              {isEditing && (
-                <Box display="flex" gap={1} mb={2}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label="Add a skill"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                    placeholder="e.g., Project Management, Python, SEO"
-                  />
-                  <Button variant="outlined" onClick={addSkill}>
-                    Add
-                  </Button>
-                </Box>
-              )}
-              
-              <Box display="flex" flexWrap="wrap" gap={1}>
-                {profileData.key_skills.map((skill) => (
-                  <Chip
-                    key={skill}
-                    label={skill}
-                    onDelete={isEditing ? () => removeSkill(skill) : undefined}
-                    color="primary"
-                    variant="outlined"
-                  />
-                ))}
-                {profileData.key_skills.length === 0 && (
-                  <Typography variant="body2" color="text.secondary">
-                    No skills added yet
-                  </Typography>
+              <Box>
+                <TextField
+                  fullWidth
+                  label="Key Skills"
+                  value={profileData.key_skills.join(', ')}
+                  disabled={true}
+                  multiline
+                  minRows={1}
+                  maxRows={3}
+                  helperText={`${profileData.key_skills.length} skill${profileData.key_skills.length !== 1 ? 's' : ''} added`}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+                
+                {isEditing && (
+                  <Box sx={{ mt: 1 }}>
+                    <Box display="flex" gap={1} mb={1}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Add a skill"
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+                        placeholder="e.g., Project Management, Python, SEO"
+                      />
+                      <Button variant="outlined" onClick={addSkill} size="small">
+                        Add
+                      </Button>
+                    </Box>
+                  </Box>
                 )}
+                
+                <Box display="flex" flexWrap="wrap" gap={0.5} sx={{ mt: 1 }}>
+                  {profileData.key_skills.map((skill) => (
+                    <Chip
+                      key={skill}
+                      label={skill}
+                      onDelete={isEditing ? () => removeSkill(skill) : undefined}
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                    />
+                  ))}
+                </Box>
               </Box>
             </Grid>
 
