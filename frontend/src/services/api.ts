@@ -853,12 +853,6 @@ export const testBackendConnection = async () => {
   }
 };
 
-// Run the test immediately for diagnostics
-console.log('Running backend connection test...');
-testBackendConnection().then(result => {
-  console.log('Backend connection test result:', result);
-}).catch(error => {
-  console.error('Backend connection test error:', error);
-});
+// Backend connection test available but not run automatically to avoid CORS issues
 
 export default api; 
