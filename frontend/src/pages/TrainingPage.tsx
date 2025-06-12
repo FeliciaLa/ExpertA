@@ -198,7 +198,7 @@ const TrainingPage: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={tabIndex} index={1}>
-          <TrainingChat />
+          {tabIndex === 1 && <TrainingChat />}
         </TabPanel>
       </Paper>
     </Box>
