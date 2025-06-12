@@ -49,8 +49,8 @@ export const TrainingChat: React.FC = () => {
       return;
     }
 
-    // Fetch existing chat history or start new training
-    fetchChatHistory();
+    // Don't automatically fetch - let user manually start training
+    setInitializing(false);
   }, [isAuthenticated, expert?.onboarding_completed, navigate]);
 
   useEffect(() => {
@@ -217,6 +217,17 @@ export const TrainingChat: React.FC = () => {
           Share your expertise through natural conversation. The AI will guide you through various topics,
           starting with broad concepts and gradually exploring specific details.
         </Typography>
+        
+        {messages.length === 0 && (
+          <Button 
+            variant="contained" 
+            onClick={fetchChatHistory}
+            disabled={loading}
+            sx={{ mt: 2 }}
+          >
+            Start Training Session
+          </Button>
+        )}
       </Paper>
 
       <Paper sx={{ height: '60vh', display: 'flex', flexDirection: 'column' }}>
