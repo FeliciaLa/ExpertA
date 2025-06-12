@@ -1426,13 +1426,49 @@ class UserProfileView(APIView):
                     print(f"DEBUG v2.0 - User has date_joined attr: {hasattr(user, 'date_joined')}")
                     print(f"DEBUG v2.0 - User date_joined value: {getattr(user, 'date_joined', 'NOT_FOUND')}")
                     print(f"DEBUG v2.0 - About to add date_joined to response_data")
+                    
+                    # Get consultation data for the user
+                    from .models import ConsultationSession
+                    consultations = ConsultationSession.objects.filter(user=user)
+                    
+                    # Calculate consultation statistics
+                    experts_consulted = consultations.values('expert_id').distinct().count()
+                    total_consultations = consultations.count()
+                    
+                    # Calculate most used industry
+                    most_used_industry = '-'
+                    if consultations.exists():
+                        industry_counts = {}
+                        for consultation in consultations:
+                            industry = consultation.expert_industry or 'Other'
+                            industry_counts[industry] = industry_counts.get(industry, 0) + 1
+                        
+                        if industry_counts:
+                            most_used_industry = max(industry_counts.items(), key=lambda x: x[1])[0]
+                    
                     response_data = {
                         'id': str(user.id),
                         'email': user.email,
                         'name': user.name,
                         'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+                        'consultations': {
+                            'experts_consulted': experts_consulted,
+                            'total_consultations': total_consultations,
+                            'most_used_industry': most_used_industry,
+                            'sessions': [{
+                                'id': str(consultation.id),
+                                'expert_name': consultation.expert_name,
+                                'expert_industry': consultation.expert_industry,
+                                'expert_specialty': consultation.expert_specialty,
+                                'started_at': consultation.started_at.isoformat(),
+                                'ended_at': consultation.ended_at.isoformat() if consultation.ended_at else None,
+                                'total_messages': consultation.total_messages,
+                                'duration_minutes': consultation.duration_minutes,
+                                'status': consultation.status,
+                            } for consultation in consultations.order_by('-started_at')]
+                        }
                     }
-                    print(f"DEBUG v2.0 - response_data with date_joined: {response_data}")
+                    print(f"DEBUG v2.0 - response_data with date_joined and consultations: {response_data}")
                     
                     # Check if user is an expert or regular user
                     if hasattr(user, 'role'):
@@ -1488,11 +1524,47 @@ class UserProfileView(APIView):
                 print(f"DEBUG TOKEN - User object: {user}")
                 print(f"DEBUG TOKEN - User has date_joined attr: {hasattr(user, 'date_joined')}")
                 print(f"DEBUG TOKEN - User date_joined value: {getattr(user, 'date_joined', 'NOT_FOUND')}")
+                
+                # Get consultation data for the user
+                from .models import ConsultationSession
+                consultations = ConsultationSession.objects.filter(user=user)
+                
+                # Calculate consultation statistics
+                experts_consulted = consultations.values('expert_id').distinct().count()
+                total_consultations = consultations.count()
+                
+                # Calculate most used industry
+                most_used_industry = '-'
+                if consultations.exists():
+                    industry_counts = {}
+                    for consultation in consultations:
+                        industry = consultation.expert_industry or 'Other'
+                        industry_counts[industry] = industry_counts.get(industry, 0) + 1
+                    
+                    if industry_counts:
+                        most_used_industry = max(industry_counts.items(), key=lambda x: x[1])[0]
+                
                 response_data = {
                     'id': str(user.id),
                     'email': user.email,
                     'name': user.name,
                     'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+                    'consultations': {
+                        'experts_consulted': experts_consulted,
+                        'total_consultations': total_consultations,
+                        'most_used_industry': most_used_industry,
+                        'sessions': [{
+                            'id': str(consultation.id),
+                            'expert_name': consultation.expert_name,
+                            'expert_industry': consultation.expert_industry,
+                            'expert_specialty': consultation.expert_specialty,
+                            'started_at': consultation.started_at.isoformat(),
+                            'ended_at': consultation.ended_at.isoformat() if consultation.ended_at else None,
+                            'total_messages': consultation.total_messages,
+                            'duration_minutes': consultation.duration_minutes,
+                            'status': consultation.status,
+                        } for consultation in consultations.order_by('-started_at')]
+                    }
                 }
                 
                 # Check if user is an expert or regular user
