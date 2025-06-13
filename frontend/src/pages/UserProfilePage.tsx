@@ -100,6 +100,7 @@ const UserProfilePage: React.FC = () => {
                 console.log('User data received from direct endpoint:', userData);
                 console.log('DEBUG - date_joined field in API response:', userData.date_joined);
                 console.log('DEBUG - typeof date_joined:', typeof userData.date_joined);
+                console.log('DEBUG - profile_image field in API response:', userData.profile_image);
                 setUser(userData);
                 setName(userData.name || '');
                 localStorage.setItem('user', JSON.stringify(userData));
@@ -507,11 +508,20 @@ const UserProfilePage: React.FC = () => {
   };
 
   const getProfileImageUrl = () => {
-    if (!user?.profile_image) return '';
-    if (user.profile_image.startsWith('http')) return user.profile_image;
+    console.log('getProfileImageUrl - user.profile_image:', user?.profile_image);
+    if (!user?.profile_image) {
+      console.log('getProfileImageUrl - No profile image found');
+      return '';
+    }
+    if (user.profile_image.startsWith('http')) {
+      console.log('getProfileImageUrl - Using S3 URL:', user.profile_image);
+      return user.profile_image;
+    }
     
     const baseUrl = API_URL.replace('/api/', '').replace('/api', '');
-    return `${baseUrl}${user.profile_image}`;
+    const constructedUrl = `${baseUrl}${user.profile_image}`;
+    console.log('getProfileImageUrl - Constructed URL:', constructedUrl);
+    return constructedUrl;
   };
 
   // Calculate user statistics
