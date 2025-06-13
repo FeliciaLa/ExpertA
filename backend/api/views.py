@@ -1543,6 +1543,7 @@ class UserProfileView(APIView):
                         'email': user.email,
                         'name': user.name,
                         'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+                        'profile_image': user.profile_image.url if user.profile_image else None,
                         'consultations': {
                             'experts_consulted': experts_consulted,
                             'total_consultations': total_consultations,
@@ -1642,6 +1643,7 @@ class UserProfileView(APIView):
                     'email': user.email,
                     'name': user.name,
                     'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+                    'profile_image': user.profile_image.url if user.profile_image else None,
                     'consultations': {
                         'experts_consulted': experts_consulted,
                         'total_consultations': total_consultations,

@@ -508,20 +508,11 @@ const UserProfilePage: React.FC = () => {
   };
 
   const getProfileImageUrl = () => {
-    console.log('getProfileImageUrl - user.profile_image:', user?.profile_image);
-    if (!user?.profile_image) {
-      console.log('getProfileImageUrl - No profile image found');
-      return '';
-    }
-    if (user.profile_image.startsWith('http')) {
-      console.log('getProfileImageUrl - Using S3 URL:', user.profile_image);
-      return user.profile_image;
-    }
+    if (!user?.profile_image) return '';
+    if (user.profile_image.startsWith('http')) return user.profile_image;
     
     const baseUrl = API_URL.replace('/api/', '').replace('/api', '');
-    const constructedUrl = `${baseUrl}${user.profile_image}`;
-    console.log('getProfileImageUrl - Constructed URL:', constructedUrl);
-    return constructedUrl;
+    return `${baseUrl}${user.profile_image}`;
   };
 
   // Calculate user statistics
