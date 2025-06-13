@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Container,
@@ -23,6 +23,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SettingsIcon from '@mui/icons-material/Settings';
 import InfoIcon from '@mui/icons-material/Info';
 import EditIcon from '@mui/icons-material/Edit';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { useAuth } from '../contexts/AuthContext';
 import { userApi, authApi } from '../services/api';
 import { API_URL } from '../services/api';
@@ -31,12 +32,14 @@ import { useNavigate } from 'react-router-dom';
 const UserProfilePage: React.FC = () => {
   const { user, setUser, isUser, isExpert } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || '');
   const [name, setName] = useState(user?.name || '');
+  const [uploading, setUploading] = useState(false);
   const [userStats, setUserStats] = useState({
     memberSince: '',
     expertsConsulted: 0,
@@ -478,6 +481,39 @@ const UserProfilePage: React.FC = () => {
     setIsEditingName(false);
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      setError(null);
+      
+      const updatedUser = await userApi.uploadProfileImage(file);
+      
+      // Update user context with new profile image
+      setUser(updatedUser);
+      
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      setSuccessMessage('Profile image uploaded successfully!');
+    } catch (err: any) {
+      console.error('Failed to upload image:', err);
+      setError('Failed to upload profile image. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const getProfileImageUrl = () => {
+    if (!user?.profile_image) return '';
+    if (user.profile_image.startsWith('http')) return user.profile_image;
+    
+    const baseUrl = API_URL.replace('/api/', '').replace('/api', '');
+    return `${baseUrl}${user.profile_image}`;
+  };
+
   // Calculate user statistics
   const calculateUserStats = () => {
     // Calculate member since date
@@ -604,9 +640,53 @@ const UserProfilePage: React.FC = () => {
               alignItems: 'center',
               minWidth: 200
             }}>
-              <Avatar sx={{ width: 120, height: 120, fontSize: '3rem', mb: 2 }}>
-                {user?.name?.charAt(0).toUpperCase()}
-              </Avatar>
+              <Box sx={{ position: 'relative', mb: 2 }}>
+                <Avatar 
+                  src={getProfileImageUrl()}
+                  sx={{ 
+                    width: 120, 
+                    height: 120, 
+                    fontSize: '3rem',
+                    bgcolor: 'primary.main'
+                  }}
+                >
+                  {user?.name?.charAt(0).toUpperCase()}
+                </Avatar>
+                
+                {/* Profile Image Upload Button */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                <IconButton
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    width: 36,
+                    height: 36,
+                    '&:hover': {
+                      bgcolor: 'primary.dark',
+                    },
+                    '&:disabled': {
+                      bgcolor: 'grey.400',
+                    }
+                  }}
+                >
+                  {uploading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <CameraAltIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </Box>
               
               {isEditingName ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>

@@ -128,14 +128,15 @@ class UserSerializer(serializers.ModelSerializer):
         """Conditionally include expert fields based on user role"""
         representation = super().to_representation(instance)
         
-        # If not an expert user, remove expert-specific fields
+        # If not an expert user, remove expert-specific fields (but keep profile_image for all users)
         if instance.role != User.Role.EXPERT:
             expert_fields = [
                 'bio', 'specialties', 'title', 'onboarding_completed',
-                'profile_image', 'total_training_messages', 'last_training_at'
+                'total_training_messages', 'last_training_at'
             ]
             for field in expert_fields:
                 representation.pop(field, None)
+            # Keep profile_image for all users, regardless of role
                 
         return representation
 

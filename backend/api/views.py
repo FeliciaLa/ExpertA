@@ -1701,6 +1701,7 @@ class UserProfileUpdateView(APIView):
     API endpoint for updating user profile information.
     """
     permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]  # Add multipart parser for file uploads
     
     def options(self, request, *args, **kwargs):
         # Handle CORS preflight requests
@@ -1809,6 +1810,12 @@ class UserProfileUpdateView(APIView):
             # Update title if provided (for expert users)
             if 'title' in data and user.is_expert_user():
                 user.title = data['title']
+            
+            # Handle profile image upload for all users (not just experts)
+            if 'profile_image' in request.FILES:
+                print(f"Update view - Profile image upload detected for user {user.id}")
+                user.profile_image = request.FILES['profile_image']
+                print(f"Update view - Profile image uploaded: {user.profile_image}")
             
             user.save()
             print(f"Update view - User {user.id} updated successfully")
