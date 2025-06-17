@@ -208,7 +208,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             gap: 2
           }}>
             <Typography variant="body2" color="text.secondary">
-              © 2024 Duplix AI. All rights reserved.
+              © 2024 Duplix AI Ltd. All rights reserved.
             </Typography>
             <Box sx={{ display: 'flex', gap: 3 }}>
               <Link 
