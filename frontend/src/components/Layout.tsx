@@ -156,7 +156,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 mr: 2
               }}
             >
-              {expert?.onboarding_completed ? 'TRAIN AI' : 'SETUP PROFILE'}
+                              {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
             </Button>
           )}
           
