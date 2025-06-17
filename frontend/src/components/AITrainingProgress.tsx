@@ -13,6 +13,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TestTubeIcon from '@mui/icons-material/Science';
+import ShareIcon from '@mui/icons-material/Share';
 import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -223,6 +224,23 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
         {/* AI Message and Test Button */}
         <Grid item xs={12} md={3}>
           <Box textAlign="center">
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ShareIcon />}
+              sx={{ 
+                mb: 1,
+                color: 'primary.main',
+                borderColor: 'primary.main',
+                '&:hover': { 
+                  bgcolor: 'primary.light',
+                  borderColor: 'primary.dark' 
+                }
+              }}
+            >
+              Share your AI
+            </Button>
+            
             <Button
               variant="contained"
               size="small"
