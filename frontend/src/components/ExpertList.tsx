@@ -26,21 +26,23 @@ const FORCE_MOCK_DATA = false;
 // Mock data for when backend is not available
 const MOCK_EXPERTS = [
   {
-    id: "3ce3731a-cc37-4fd8-a3e2-ec34dc8b83b2",
-    name: "Flu1",
-    email: "f@lu1.com",
-    specialties: "Methodologies and Tools",
-    bio: "Marketing expert bio",
-    title: "Marketing expert",
+    id: "ee9bae34-3039-4141-af4f-4b7a5fcdd43a",
+    slug: "sophia-r",
+    name: "sophia r",
+    email: "sophia@example.com",
+    specialties: "marketing",
+    bio: "Marketing expert with extensive experience in digital marketing strategies and brand development.",
+    title: "marketing expert",
     profile_image: null
   },
   {
-    id: "a3823504-6333-487a-9b31-e1ee24bebb11",
-    name: "fla1",
-    email: "f@la.com",
-    specialties: "",
-    bio: "",
-    title: "",
+    id: "f1234567-8901-2345-6789-abcdef123456",
+    slug: "alex-carter",
+    name: "Alex Carter",
+    email: "alex@example.com",
+    specialties: "Business Strategy, Leadership",
+    bio: "Senior business strategist with 15+ years experience helping companies scale and optimize operations.",
+    title: "Business Strategy Consultant",
     profile_image: null
   }
 ];
@@ -72,6 +74,7 @@ const formatApiUrl = (path: string) => {
 
 interface Expert {
   id: string;
+  slug: string;
   name: string;
   specialties: string;
   bio: string;
@@ -157,25 +160,31 @@ export const ExpertList: React.FC = () => {
     expert.specialties?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleExpertClick = (expertId: string) => {
-    // Check if expertId is undefined or empty
-    if (!expertId || expertId === 'undefined') {
-      console.error('Invalid expert ID, cannot navigate:', expertId);
+  const handleExpertClick = (expert: Expert) => {
+    // Use slug if available, fallback to ID for backwards compatibility
+    const identifier = expert.slug || expert.id;
+    
+    // Check if identifier is undefined or empty
+    if (!identifier || identifier === 'undefined') {
+      console.error('Invalid expert identifier, cannot navigate:', identifier);
       // Show an error or fallback behavior
       return;
     }
     
-    console.log('Navigating to expert with ID:', expertId);
+    console.log('Navigating to expert with identifier:', identifier);
     // Navigate to expert detail page regardless of authentication status
-    navigate(`/experts/${expertId}`);
+    navigate(`/experts/${identifier}`);
   };
 
-  const handleChatButtonClick = (e: React.MouseEvent, expertId: string) => {
+  const handleChatButtonClick = (e: React.MouseEvent, expert: Expert) => {
     e.stopPropagation(); // Prevent card click event
     
-    // Check if expertId is undefined or empty
-    if (!expertId || expertId === 'undefined') {
-      console.error('Invalid expert ID, cannot navigate:', expertId);
+    // Use slug if available, fallback to ID for backwards compatibility
+    const identifier = expert.slug || expert.id;
+    
+    // Check if identifier is undefined or empty
+    if (!identifier || identifier === 'undefined') {
+      console.error('Invalid expert identifier, cannot navigate:', identifier);
       return;
     }
     
@@ -185,7 +194,7 @@ export const ExpertList: React.FC = () => {
       setIsAuthDialogOpen(true);
     } else {
       // Both users and experts can chat with AI
-      navigate(`/experts/${expertId}`);
+      navigate(`/experts/${identifier}`);
     }
   };
 
@@ -287,7 +296,7 @@ export const ExpertList: React.FC = () => {
                   },
                   cursor: 'pointer',
                 }}
-                onClick={() => handleExpertClick(expert.id)}
+                onClick={() => handleExpertClick(expert)}
               >
                 <CardContent sx={{ 
                   flexGrow: 1, 
@@ -364,7 +373,7 @@ export const ExpertList: React.FC = () => {
                       fullWidth
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent card click
-                        handleChatButtonClick(e, expert.id);
+                        handleChatButtonClick(e, expert);
                       }}
                     >
                       Chat with {expert.name.split(' ')[0]}'s AI
