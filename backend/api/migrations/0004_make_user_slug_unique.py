@@ -1,4 +1,4 @@
-# Generated manually to add slug field to User model
+# Generated manually to make slug field unique
 
 from django.db import migrations, models
 
@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0001_initial'),
+        ('api', '0003_populate_user_slugs'),
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.AlterField(
             model_name='user',
             name='slug',
-            field=models.SlugField(blank=True, max_length=100, null=True),
+            field=models.SlugField(blank=True, max_length=100, unique=True),
         ),
     ] 
