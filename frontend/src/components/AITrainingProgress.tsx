@@ -21,7 +21,6 @@ interface TrainingStats {
   documentsUploaded: number;
   qaMessagesCount: number;
   trainingMinutes: number;
-  lastTrainingDate?: string;
 }
 
 interface AITrainingProgressProps {
@@ -83,8 +82,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
       setStats({
         documentsUploaded: documentsCount,
         qaMessagesCount: trainingStatsResponse.total_messages,
-        trainingMinutes: trainingStatsResponse.training_minutes,
-        lastTrainingDate: trainingStatsResponse.last_training_at
+        trainingMinutes: trainingStatsResponse.training_minutes
       });
     } catch (error) {
       console.error('Error loading training stats:', error);
@@ -96,8 +94,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
       setStats({
         documentsUploaded: 0,
         qaMessagesCount: qaMessages,
-        trainingMinutes: trainingMinutes,
-        lastTrainingDate: expert?.last_training_at
+        trainingMinutes: trainingMinutes
       });
     } finally {
       setLoading(false);
@@ -232,19 +229,12 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
               startIcon={<TestTubeIcon />}
               onClick={handleTestAI}
               sx={{ 
-                mb: 1,
                 bgcolor: 'secondary.main',
                 '&:hover': { bgcolor: 'secondary.dark' }
               }}
             >
               Test Your AI
             </Button>
-            
-            {stats.lastTrainingDate && (
-              <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
-                Last Training: {new Date(stats.lastTrainingDate).toLocaleDateString()}
-              </Typography>
-            )}
           </Box>
         </Grid>
       </Grid>
