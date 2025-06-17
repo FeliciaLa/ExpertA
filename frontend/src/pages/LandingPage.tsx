@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
                 mx: 'auto'
               }}
             >
-              Find and create AI experts built on real-world knowledge from professionals across industries
+              Find and create AI experts trained on real-world knowledge from professionals across industries
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
