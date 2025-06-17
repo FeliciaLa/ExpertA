@@ -6,11 +6,14 @@ const PrivacyPolicy: React.FC = () => {
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper sx={{ p: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
-          📑 Expert A — Privacy Policy
+          Duplix AI — Privacy Policy
         </Typography>
         
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           Effective Date: June 6, 2024
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+          Last Updated: June 17, 2025
         </Typography>
 
         <Box sx={{ '& > *': { mb: 3 } }}>
@@ -74,7 +77,7 @@ const PrivacyPolicy: React.FC = () => {
               <strong>For Experts:</strong> Expert-uploaded content is used to train AI models specific to each expert's chatbot. This data is:
             </Typography>
             <Typography component="ul" sx={{ pl: 3 }}>
-              <Typography component="li">Processed using secure third-party AI services (OpenAI)</Typography>
+              <Typography component="li">Processed using secure third-party AI services (e.g., OpenAI)</Typography>
               <Typography component="li">Stored in encrypted vector databases</Typography>
               <Typography component="li">Used only for the specific expert's chatbot and not shared with other experts</Typography>
             </Typography>
@@ -113,7 +116,7 @@ const PrivacyPolicy: React.FC = () => {
               <Typography component="li">Request correction of inaccurate information</Typography>
             </Typography>
             <Typography variant="body1" paragraph>
-              To exercise these rights, please contact us at a00938724@gmail.com.
+              To exercise these rights, please contact us at admin@duplixai.co.uk.
             </Typography>
           </Box>
 
@@ -173,7 +176,7 @@ const PrivacyPolicy: React.FC = () => {
               If you have questions about this Privacy Policy or our data practices, please contact us at:
             </Typography>
             <Typography variant="body1" paragraph>
-              Email: a00938724@gmail.com
+              Email: admin@duplixai.co.uk
             </Typography>
           </Box>
         </Box>
