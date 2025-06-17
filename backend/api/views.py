@@ -2114,7 +2114,7 @@ class PasswordResetRequestView(APIView):
                 frontend_url = "https://expert-a.vercel.app"
                 reset_url = f"{frontend_url}/reset-password/{uid}/{token}/"
                 
-                subject = f"Password Reset for {settings.SITE_NAME if hasattr(settings, 'SITE_NAME') else 'ExpertA'}"
+                subject = f"Password Reset for {settings.SITE_NAME if hasattr(settings, 'SITE_NAME') else 'Duplix AI'}"
                 message = f"""
 Hello {user.name},
 
@@ -2128,7 +2128,7 @@ If you did not request this password reset, please ignore this email.
 The link will expire in 24 hours.
 
 Best regards,
-The ExpertA Team
+The Duplix AI Team
                 """
                 
                 try:
@@ -2396,11 +2396,11 @@ class ChangeEmailView(APIView):
                 
                 verification_url = f"https://expert-a.vercel.app/verify-email-change/{verification_token}"
                 
-                subject = "Verify Your New Email Address - ExpertA"
+                subject = "Verify Your New Email Address - Duplix AI"
                 message = f"""
 Hello {request.user.name},
 
-You recently requested to change your email address on ExpertA.
+You recently requested to change your email address on Duplix AI.
 
 Please click the link below to verify your new email address:
 {verification_url}
@@ -2410,7 +2410,7 @@ If you did not request this change, please ignore this email or contact support.
 This link will expire in 24 hours.
 
 Best regards,
-The ExpertA Team
+The Duplix AI Team
                 """
                 
                 send_mail(
@@ -2422,7 +2422,7 @@ The ExpertA Team
                 )
                 
                 # Also notify the current email about the change attempt
-                current_email_subject = "Email Change Request - ExpertA"
+                current_email_subject = "Email Change Request - Duplix AI"
                 current_email_message = f"""
 Hello {request.user.name},
 
@@ -2432,7 +2432,7 @@ If this was you, please check the new email address for a verification link.
 If this was not you, please secure your account immediately.
 
 Best regards,
-The ExpertA Team
+The Duplix AI Team
                 """
                 
                 send_mail(
@@ -2533,7 +2533,7 @@ class VerifyEmailChangeView(APIView):
                 from django.core.mail import send_mail
                 from django.conf import settings
                 
-                subject = "Email Successfully Changed - ExpertA"
+                subject = "Email Successfully Changed - Duplix AI"
                 message = f"""
 Hello {user.name},
 
@@ -2542,7 +2542,7 @@ Your email address has been successfully changed from {old_email} to {user.email
 If you did not make this change, please contact support immediately.
 
 Best regards,
-The ExpertA Team
+The Duplix AI Team
                 """
                 
                 send_mail(
