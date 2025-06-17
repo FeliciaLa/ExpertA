@@ -99,7 +99,7 @@ const TrainingPage: React.FC = () => {
       {/* Header with optional info icon */}
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={4}>
         <Typography variant="h4">
-          AI Training
+          AI Training Dashboard
         </Typography>
         
         {hasSeenWelcome && (

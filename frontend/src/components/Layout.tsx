@@ -100,18 +100,18 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             ExpertA
           </Typography>
           
-          {/* Browse Experts button - only visible when authenticated */}
-          {isAuthenticated && (
+          {/* Show Train AI button only for experts */}
+          {isExpert && (
             <Button
-              data-tour="browse-experts"
+              data-tour="train-ai"
               color="primary"
-              onClick={() => navigate('/experts')}
+              onClick={handleTrainAIClick}
               sx={{ 
-                color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
+                color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
                 mr: 2
               }}
             >
-              BROWSE EXPERTS
+              {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
             </Button>
           )}
           
@@ -131,6 +131,21 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Button>
           )}
           
+          {/* Browse Experts button - only visible when authenticated */}
+          {isAuthenticated && (
+            <Button
+              data-tour="browse-experts"
+              color="primary"
+              onClick={() => navigate('/experts')}
+              sx={{ 
+                color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
+                mr: 2
+              }}
+            >
+              BROWSE EXPERTS
+            </Button>
+          )}
+          
           {/* Login button - only visible when not authenticated */}
           {!isAuthenticated && (
             <Button
@@ -142,21 +157,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               }}
             >
               LOGIN / SIGN UP
-            </Button>
-          )}
-          
-          {/* Show Train AI button only for experts */}
-          {isExpert && (
-            <Button
-              data-tour="train-ai"
-              color="primary"
-              onClick={handleTrainAIClick}
-              sx={{ 
-                color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
-                mr: 2
-              }}
-            >
-                              {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
             </Button>
           )}
           
