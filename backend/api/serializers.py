@@ -25,9 +25,9 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'first_name', 'last_name', 'email', 'bio', 'specialties', 'title',
             'onboarding_completed', 'onboarding_completed_at', 'total_training_messages',
-            'last_training_at', 'profile', 'profile_image'
+            'last_training_at', 'profile', 'profile_image', 'slug'
         ]
-        read_only_fields = ['id', 'email', 'onboarding_completed', 'onboarding_completed_at']
+        read_only_fields = ['id', 'email', 'onboarding_completed', 'onboarding_completed_at', 'slug']
     
     def get_first_name(self, obj):
         """Split the name field to get first name"""
@@ -102,7 +102,7 @@ class ExpertSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'name', 'email', 'specialties', 'bio', 'title', 
-            'onboarding_completed', 'profile_image', 'profile'
+            'onboarding_completed', 'profile_image', 'profile', 'slug'
         ]
         
     def get_id(self, obj):
@@ -117,9 +117,9 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'name', 'date_joined', 'role', 
             # Expert-related fields
             'bio', 'specialties', 'title', 'onboarding_completed',
-            'profile_image', 'total_training_messages', 'last_training_at'
+            'profile_image', 'total_training_messages', 'last_training_at', 'slug'
         ]
-        read_only_fields = ['id', 'date_joined', 'role']
+        read_only_fields = ['id', 'date_joined', 'role', 'slug']
         
     def get_id(self, obj):
         return str(obj.id)
