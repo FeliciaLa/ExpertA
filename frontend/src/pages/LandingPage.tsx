@@ -99,7 +99,7 @@ const LandingPage: React.FC = () => {
                 fontSize: { xs: '2.5rem', md: '3.5rem' }
               }}
             >
-              Learn from AI trained by real experts
+              Your AI expert marketplace
             </Typography>
             
             <Typography 
@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
                 mx: 'auto'
               }}
             >
-              AI experts built on real-world knowledge from professionals across industries.
+              Find and create AI experts built on real-world knowledge from professionals across industries
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
