@@ -10,7 +10,7 @@ import PyPDF2
 import docx
 import io
 
-from .models import Document, Expert
+from .models import Document, User
 from .services import KnowledgeProcessor
 
 class DocumentListView(APIView):

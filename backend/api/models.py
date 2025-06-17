@@ -8,60 +8,7 @@ import uuid
 
 # Create your models here.
 
-class Expert(AbstractUser):
-    """Custom user model for experts"""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(unique=True)
-    bio = models.TextField(blank=True)
-    specialties = models.TextField(blank=True)
-    title = models.CharField(max_length=100, blank=True)
-    onboarding_completed = models.BooleanField(default=False)
-    onboarding_completed_at = models.DateTimeField(null=True, blank=True)
-    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
-    
-    # Fields to track training progress
-    total_training_messages = models.IntegerField(default=0)
-    last_training_at = models.DateTimeField(null=True, blank=True)
-    
-    # Email verification fields
-    verification_token = models.CharField(max_length=100, blank=True, null=True)
-    verification_token_created_at = models.DateTimeField(null=True, blank=True)
-    
-    # Use email as the username field
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']  # Email & password are required by default
-
-    # Override groups and user_permissions with custom related_names
-    groups = models.ManyToManyField(
-        'auth.Group',
-        verbose_name='groups',
-        blank=True,
-        help_text='The groups this user belongs to.',
-        related_name='expert_set',
-        related_query_name='expert',
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        verbose_name='user permissions',
-        blank=True,
-        help_text='Specific permissions for this user.',
-        related_name='expert_set',
-        related_query_name='expert',
-    )
-
-    class Meta:
-        db_table = 'experts'
-        verbose_name = 'Expert'
-        verbose_name_plural = 'Experts'
-
-    def __str__(self):
-        return self.email
-
-    def save(self, *args, **kwargs):
-        # Set username to email if not provided
-        if not self.username:
-            self.username = self.email
-        super().save(*args, **kwargs)
+# Old Expert model removed - now using unified User model with role field
 
 class ExpertProfile(models.Model):
     """Model to store expert profile information from onboarding"""
@@ -290,6 +237,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)  # For friendly URLs
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=False)  # New users inactive until verified
     is_staff = models.BooleanField(default=False)
@@ -328,6 +276,20 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    def save(self, *args, **kwargs):
+        """Auto-generate slug from name if not provided"""
+        if not self.slug and self.name:
+            base_slug = slugify(self.name)
+            if base_slug:  # Only proceed if slugify produced something
+                slug = base_slug
+                # Check for existing slugs and append number if needed
+                counter = 1
+                while User.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                    slug = f"{base_slug}-{counter}"
+                    counter += 1
+                self.slug = slug
+        super().save(*args, **kwargs)
         
     def is_expert_user(self):
         """Check if user has expert role"""

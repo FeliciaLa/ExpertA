@@ -18,7 +18,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import ModelSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import Expert, TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile
+from .models import TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile
 from .serializers import ExpertSerializer, ExpertProfileSerializer, UserSerializer, UserRegistrationSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -1086,7 +1086,7 @@ class ExpertListView(APIView):
     
     def get(self, request):
         try:
-            experts = Expert.objects.filter(is_superuser=False, is_staff=False, is_active=True)
+            experts = User.objects.filter(role=User.Role.EXPERT, is_active=True)
             # Manually serialize the data to avoid UUID conversion issues
             data = []
             for expert in experts:
@@ -1096,6 +1096,7 @@ class ExpertListView(APIView):
                 
                 expert_data = {
                     'id': str(expert.id),  # Ensure ID is explicitly converted to string
+                    'slug': expert.slug,
                     'name': expert.name or expert.email,
                     'email': expert.email,
                     'specialties': getattr(expert, 'specialties', ''),
@@ -1136,9 +1137,20 @@ class ExpertDetailView(APIView):
     
     def get(self, request, pk):
         try:
-            expert = User.objects.get(pk=pk)  # Use User model instead of Expert
+            # Try to find expert by slug first, then by UUID
+            try:
+                # First try to find by slug
+                expert = User.objects.get(slug=pk, role=User.Role.EXPERT, is_active=True)
+            except User.DoesNotExist:
+                # If not found by slug, try by UUID
+                expert = User.objects.get(pk=pk, role=User.Role.EXPERT, is_active=True)
+            
             serializer = ExpertSerializer(expert)
-            response = Response(serializer.data)
+            response_data = serializer.data
+            # Add slug to response for frontend URL generation
+            response_data['slug'] = expert.slug
+            
+            response = Response(response_data)
             # Add CORS headers to response
             response["Access-Control-Allow-Origin"] = "*"
             response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Cache-Control, Pragma"
@@ -1952,8 +1964,8 @@ class PublicExpertListView(APIView):
     
     def get(self, request):
         try:
-            # Query the User model, which is the Expert model in this case
-            experts = Expert.objects.filter(is_superuser=False, is_staff=False, is_active=True)
+            # Query the User model for experts
+            experts = User.objects.filter(role=User.Role.EXPERT, is_active=True)
             
             # Manually serialize the data to avoid UUID conversion issues
             data = []
@@ -1964,6 +1976,7 @@ class PublicExpertListView(APIView):
                 
                 expert_data = {
                     'id': str(expert.id),  # Ensure ID is explicitly converted to string
+                    'slug': expert.slug,
                     'name': expert.name or expert.email,
                     'email': expert.email,
                     'specialties': getattr(expert, 'specialties', ''),

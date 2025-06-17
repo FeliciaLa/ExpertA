@@ -78,6 +78,7 @@ def public_experts_direct(request):
             for expert in experts:
                 expert_data = {
                     'id': str(expert.id),
+                    'slug': expert.slug,
                     'name': expert.name or expert.email,  # Use same logic as PublicExpertListView
                     'email': expert.email,
                     'specialties': getattr(expert, 'specialties', ''),

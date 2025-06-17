@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Expert, ExpertProfile, User
+from .models import ExpertProfile, User
 
 class ExpertProfileDetailSerializer(serializers.ModelSerializer):
     class Meta:

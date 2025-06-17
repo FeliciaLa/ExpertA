@@ -1,7 +1,7 @@
 from django.utils import timezone
 from openai import OpenAI
 from django.conf import settings
-from .models import Expert, TrainingQuestion
+from .models import User, TrainingQuestion
 from .pinecone_utils import init_pinecone
 import json
 
