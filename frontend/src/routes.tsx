@@ -21,6 +21,7 @@ import TrainingPage from './pages/TrainingPage';
 import PasswordResetPage from './pages/PasswordResetPage';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Contact from './pages/Contact';
 
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -65,6 +66,7 @@ function AppRoutes() {
       <Route path="/reset-password/:uidb64/:token" element={<Layout><PasswordResetPage /></Layout>} />
       <Route path="/terms" element={<Layout><TermsOfService /></Layout>} />
       <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
+      <Route path="/contact" element={<Layout><Contact /></Layout>} />
       
       {/* Expert routes */}
       <Route path="/expert/*" element={
