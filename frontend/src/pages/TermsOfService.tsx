@@ -6,11 +6,14 @@ const TermsOfService: React.FC = () => {
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper sx={{ p: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
-          Expert A — Terms of Use
+          Duplix AI — Terms of Use
         </Typography>
         
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           Effective Date: June 6, 2024
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+          Last Updated: June 17, 2025
         </Typography>
 
         <Box sx={{ '& > *': { mb: 3 } }}>
@@ -19,10 +22,9 @@ const TermsOfService: React.FC = () => {
               1. Introduction
             </Typography>
             <Typography variant="body1" paragraph>
-              Welcome to Expert A! These Terms of Use ("Terms") govern your access to and use of the 
-              Expert A platform ("Platform"), operated by the Platform Operator ("Operator", "we", "us", 
-              or "our"), currently under individual ownership and later possibly through a registered 
-              business entity. By using our Platform, you agree to comply with these Terms.
+              Welcome to Duplix AI! These Terms of Use ("Terms") govern your access to and use of the 
+              Duplix AI platform ("Platform"), operated by Duplix AI Ltd ("Operator", "we", "us", 
+              or "our"), a company registered in the United Kingdom. By using our Platform, you agree to comply with these Terms.
             </Typography>
           </Box>
 
@@ -31,7 +33,7 @@ const TermsOfService: React.FC = () => {
               2. Eligibility
             </Typography>
             <Typography variant="body1" paragraph>
-              To use our Platform, you must be at least 16 years old. By using Expert A, you represent and 
+              To use our Platform, you must be at least 16 years old. By using Duplix AI, you represent and 
               warrant that you meet this requirement.
             </Typography>
           </Box>
@@ -41,7 +43,7 @@ const TermsOfService: React.FC = () => {
               3. Platform Purpose
             </Typography>
             <Typography variant="body1" paragraph>
-              Expert A provides a marketplace where experts can build AI-powered chatbot personas and 
+              Duplix AI provides a marketplace where experts can build AI-powered chatbot personas and 
               offer them to users for informational and educational purposes.
             </Typography>
           </Box>
@@ -89,7 +91,7 @@ const TermsOfService: React.FC = () => {
               7. Payment Terms
             </Typography>
             <Typography variant="body1" paragraph>
-              <strong>For Users:</strong> Some experts may charge fees for their consultation services. Payment processing is handled 
+              <strong>For Users:</strong> Some experts may charge fees for their chatbot consultation services. Payment processing is handled 
               through secure third-party providers. All fees are clearly displayed before any transaction. 
               Refunds are subject to our refund policy and expert discretion.
             </Typography>
@@ -113,7 +115,7 @@ const TermsOfService: React.FC = () => {
               9. Privacy
             </Typography>
             <Typography variant="body1" paragraph>
-              Your privacy is important to us. Please review our Privacy Policy to understand how we 
+              Your privacy is important to us. Please review our [Privacy Policy] to understand how we 
               collect, use, and protect your information.
             </Typography>
           </Box>
@@ -136,7 +138,7 @@ const TermsOfService: React.FC = () => {
               If you have questions about these Terms, please contact us at:
             </Typography>
             <Typography variant="body1" paragraph>
-              Email: a00938724@gmail.com
+              Email: admin@duplixai.co.uk
             </Typography>
           </Box>
         </Box>
