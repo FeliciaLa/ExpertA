@@ -45,7 +45,7 @@ export const ExpertWelcomeDialog: React.FC<ExpertWelcomeDialogProps> = ({
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
           <CheckCircle sx={{ fontSize: 40, color: 'success.main', mr: 1 }} />
           <Typography variant="h4" component="span" color="primary">
-            Welcome to ExpertA!
+            Welcome to Duplix AI!
           </Typography>
         </Box>
         <Typography variant="subtitle1" color="text.secondary">

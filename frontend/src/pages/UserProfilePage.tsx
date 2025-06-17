@@ -607,7 +607,7 @@ const UserProfilePage: React.FC = () => {
             <Typography variant="h4" color="primary">
               My Profile
             </Typography>
-            <Tooltip title="How ExpertA Works">
+                            <Tooltip title="How Duplix AI Works">
               <IconButton
                 onClick={() => setIsHowItWorksOpen(true)}
                 sx={{ ml: 1 }}
@@ -991,7 +991,7 @@ const UserProfilePage: React.FC = () => {
           </DialogActions>
         </Dialog>
 
-        {/* How ExpertA Works Dialog */}
+                  {/* How Duplix AI Works Dialog */}
         <Dialog 
           open={isHowItWorksOpen}
           onClose={() => setIsHowItWorksOpen(false)}
@@ -1000,7 +1000,7 @@ const UserProfilePage: React.FC = () => {
         >
           <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h5">
-              How ExpertA Works
+              How Duplix AI Works
             </Typography>
             <IconButton onClick={() => setIsHowItWorksOpen(false)}>
               <CloseIcon />
