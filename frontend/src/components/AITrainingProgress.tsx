@@ -7,7 +7,9 @@ import {
   Grid,
   CircularProgress,
   Badge,
-  Button
+  Button,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -38,6 +40,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   });
   const [loading, setLoading] = useState(true);
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   useEffect(() => {
     loadTrainingStats();
@@ -152,6 +155,44 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
     }
   };
 
+  const handleShareAI = async () => {
+    if (!expert) return;
+    
+    // Construct the clean URL using slug or fallback to ID
+    const expertUrl = expert.slug 
+      ? `${window.location.origin}/experts/${expert.slug}`
+      : `${window.location.origin}/experts/${expert.id}`;
+    
+    try {
+      // Try to use the modern clipboard API
+      await navigator.clipboard.writeText(expertUrl);
+      setShareSuccess(true);
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = expertUrl;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        setShareSuccess(true);
+      } catch (fallbackError) {
+        console.error('Failed to copy to clipboard:', fallbackError);
+      } finally {
+        document.body.removeChild(textArea);
+      }
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setShareSuccess(false);
+  };
+
   if (loading) {
     return (
       <Paper sx={{ p: 3, mb: 4 }}>
@@ -231,6 +272,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
               variant="outlined"
               size="small"
               startIcon={<ShareIcon />}
+              onClick={handleShareAI}
               sx={{ 
                 mb: 1,
                 color: 'primary.main',
@@ -259,6 +301,18 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
           </Box>
         </Grid>
       </Grid>
+
+      {/* Success notification for sharing */}
+      <Snackbar
+        open={shareSuccess}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+          AI link copied to clipboard! Share it with anyone to let them chat with your AI.
+        </Alert>
+      </Snackbar>
 
       <style>
         {`
