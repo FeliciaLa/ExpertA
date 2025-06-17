@@ -9,13 +9,22 @@ import {
   Badge,
   Button,
   Snackbar,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  IconButton,
+  Divider
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TestTubeIcon from '@mui/icons-material/Science';
 import ShareIcon from '@mui/icons-material/Share';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +50,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const [loading, setLoading] = useState(true);
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   useEffect(() => {
     loadTrainingStats();
@@ -155,18 +165,25 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
     }
   };
 
-  const handleShareAI = async () => {
-    if (!expert) return;
-    
-    // Construct the clean URL using slug or fallback to ID
-    const expertUrl = expert.slug 
+  const handleShareAI = () => {
+    setShareModalOpen(true);
+  };
+
+  const getShareUrl = () => {
+    if (!expert) return '';
+    return expert.slug 
       ? `${window.location.origin}/experts/${expert.slug}`
       : `${window.location.origin}/experts/${expert.id}`;
+  };
+
+  const handleCopyUrl = async () => {
+    const expertUrl = getShareUrl();
     
     try {
       // Try to use the modern clipboard API
       await navigator.clipboard.writeText(expertUrl);
       setShareSuccess(true);
+      setShareModalOpen(false);
     } catch (error) {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
@@ -181,6 +198,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
       try {
         document.execCommand('copy');
         setShareSuccess(true);
+        setShareModalOpen(false);
       } catch (fallbackError) {
         console.error('Failed to copy to clipboard:', fallbackError);
       } finally {
@@ -191,6 +209,10 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
 
   const handleCloseSnackbar = () => {
     setShareSuccess(false);
+  };
+
+  const handleCloseModal = () => {
+    setShareModalOpen(false);
   };
 
   if (loading) {
@@ -301,6 +323,65 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
           </Box>
         </Grid>
       </Grid>
+
+      {/* Share Modal */}
+      <Dialog 
+        open={shareModalOpen} 
+        onClose={handleCloseModal}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="div">
+            Share Your AI
+          </Typography>
+          <IconButton onClick={handleCloseModal} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        
+        <DialogContent>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+            Share this link with anyone to let them interact with your AI assistant. They'll be able to ask questions and get responses based on your expertise and training.
+          </Typography>
+          
+          <TextField
+            fullWidth
+            label="Your AI Link"
+            value={getShareUrl()}
+            variant="outlined"
+            sx={{ mb: 2 }}
+            InputProps={{
+              readOnly: true,
+              endAdornment: (
+                <IconButton onClick={handleCopyUrl} edge="end">
+                  <ContentCopyIcon />
+                </IconButton>
+              ),
+            }}
+          />
+          
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="body2" color="textSecondary">
+            <strong>Pro tip:</strong> This is your clean, shareable URL that you can post on social media, include in your email signature, or share in professional networks.
+          </Typography>
+        </DialogContent>
+        
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleCloseModal} color="secondary">
+            Close
+          </Button>
+          <Button 
+            onClick={handleCopyUrl} 
+            variant="contained" 
+            startIcon={<ContentCopyIcon />}
+            color="primary"
+          >
+            Copy Link
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Success notification for sharing */}
       <Snackbar
