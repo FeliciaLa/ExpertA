@@ -144,7 +144,10 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const aiPersonality = getAIPersonality();
 
   const handleTestAI = () => {
-    if (expert?.id) {
+    if (expert?.slug) {
+      navigate(`/experts/${expert.slug}`);
+    } else if (expert?.id) {
+      // Fallback to ID if slug is not available
       navigate(`/experts/${expert.id}`);
     }
   };

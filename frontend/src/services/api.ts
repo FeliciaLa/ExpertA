@@ -67,6 +67,7 @@ export interface ExpertData {
   profile?: ExpertProfileData;
   total_training_messages?: number;
   last_training_at?: string;
+  slug?: string;
 }
 
 export interface LoginResponse {
@@ -90,6 +91,7 @@ export interface UserData {
   is_user?: boolean;
   profile_image?: string;
   date_joined?: string;
+  slug?: string;
 }
 
 export interface UserAuthResponse {
