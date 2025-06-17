@@ -271,6 +271,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5178",
     "http://localhost:5179",
     "http://localhost:5180",
+    # Custom domain - Duplix AI
+    "https://duplixai.co.uk",
+    "https://www.duplixai.co.uk",
     # Vercel domains - exact match
     "https://expert-a.vercel.app",
     "https://expert-a-git-main.vercel.app", 
@@ -334,12 +337,14 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5178",
     "http://localhost:5179",
     "http://localhost:5180",
+    # Custom domain - Duplix AI
+    "https://duplixai.co.uk",
+    "https://www.duplixai.co.uk",
     # Vercel domains
     "https://expert-a.vercel.app",
     "https://expert-a-git-main.vercel.app",
     "https://expert-a-feliciala.vercel.app",
     "https://*.vercel.app",  # Wildcard to cover all Vercel subdomains
-    # Add your custom Vercel domain once you have it
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to CSRF token
