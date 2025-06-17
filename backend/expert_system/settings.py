@@ -382,11 +382,11 @@ LOGIN_REDIRECT_URL = '/api/expert-form/'
 AUTH_USER_MODEL = 'api.User'
 
 # Frontend URL for email verification
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://expert-a.vercel.app')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://duplixai.co.uk')
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'experta@example.com')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'admin@duplixai.co.uk')
 
 # Production email settings (used when EMAIL_HOST_USER is set)
 if os.getenv('EMAIL_HOST_USER'):

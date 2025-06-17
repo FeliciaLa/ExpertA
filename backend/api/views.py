@@ -2111,7 +2111,7 @@ class PasswordResetRequestView(APIView):
                 from django.conf import settings
                 
                 # Use frontend URL for password reset
-                frontend_url = "https://expert-a.vercel.app"
+                frontend_url = "https://duplixai.co.uk"
                 reset_url = f"{frontend_url}/reset-password/{uid}/{token}/"
                 
                 subject = f"Password Reset for {settings.SITE_NAME if hasattr(settings, 'SITE_NAME') else 'Duplix AI'}"
@@ -2394,7 +2394,7 @@ class ChangeEmailView(APIView):
                 from django.core.mail import send_mail
                 from django.conf import settings
                 
-                verification_url = f"https://expert-a.vercel.app/verify-email-change/{verification_token}"
+                verification_url = f"https://duplixai.co.uk/verify-email-change/{verification_token}"
                 
                 subject = "Verify Your New Email Address - Duplix AI"
                 message = f"""
