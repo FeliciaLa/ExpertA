@@ -137,6 +137,17 @@ const stepSections = [
     ]
   },
   {
+    title: 'Professional Profile',
+    description: 'Complete your professional profile',
+    steps: [
+      {
+        label: 'Professional Bio',
+        description: 'Write your professional bio which will be visible to clients',
+        field: 'bio'
+      }
+    ]
+  },
+  {
     title: 'Monetization',
     description: 'Set up how you want to charge for your expertise',
     steps: [
@@ -154,13 +165,8 @@ const stepSections = [
   },
   {
     title: 'Finish Setup',
-    description: 'Complete your profile',
+    description: 'Complete your setup',
     steps: [
-      {
-        label: 'Professional Bio',
-        description: 'Finally, write your professional bio which will be visible to clients',
-        field: 'bio'
-      },
       {
         label: 'Profile Complete!',
         description: 'Congratulations! Your expert profile is ready',
@@ -845,7 +851,7 @@ const StepByStepOnboarding: React.FC = () => {
             </Box>
             <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
               {stepData.monetization_enabled ? 
-                "Great! You'll be able to charge for focused 15-minute consultations. You keep 80% of all earnings." :
+                "Great! You'll be able to charge for focused 15-minute consultations." :
                 "Your AI expert will be completely free for anyone to use. You can change this later."
               }
             </Typography>
