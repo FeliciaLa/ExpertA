@@ -777,7 +777,7 @@ const StepByStepOnboarding: React.FC = () => {
             <TextField
               fullWidth
               type="number"
-              label="Your earnings per consultation (£)"
+              label="£"
               value={currentValue}
               onChange={(e) => setCurrentValue(e.target.value)}
               placeholder="15"
@@ -797,7 +797,7 @@ const StepByStepOnboarding: React.FC = () => {
               💡 Tip: Most experts charge £5-15 for 15-minute sessions. You can adjust this anytime.
             </Typography>
             <Typography variant="caption" color="textSecondary" sx={{ mt: 3, display: 'block', borderTop: 1, borderColor: 'divider', pt: 2 }}>
-              *Clients pay 20% more to cover platform services like hosting, payments, and maintenance. You receive 100% of your set price.
+              *Clients pay an additional 20% to cover platform services like hosting, payments, and maintenance. You receive 100% of your set price.
             </Typography>
           </Box>
         );
