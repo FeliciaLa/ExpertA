@@ -965,11 +965,13 @@ const StepByStepOnboarding: React.FC = () => {
         </Box>
 
         {/* Section Header */}
-        <Box sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
-          <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
-            {currentSectionInfo.section.title}
-          </Typography>
-        </Box>
+        {steps[activeStep].field !== 'completion' && (
+          <Box sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+            <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
+              {currentSectionInfo.section.title}
+            </Typography>
+          </Box>
+        )}
 
         {/* Current Step */}
         <Box sx={{ mb: 4 }}>
