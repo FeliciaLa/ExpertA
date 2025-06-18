@@ -789,15 +789,15 @@ const StepByStepOnboarding: React.FC = () => {
               <Typography variant="body2" color="textSecondary">
                 <strong>You earn:</strong> £{currentValue || '0'} per consultation
               </Typography>
-              <Typography variant="body2" color="textSecondary">
-                <strong>Customer pays:</strong> £{(parseFloat(currentValue || '0') * 1.2).toFixed(2)}
+              <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+                Clients will pay: £{(parseFloat(currentValue || '0') * 1.2).toFixed(2)} total
               </Typography>
             </Box>
             <Typography variant="body2" color="primary" sx={{ mt: 2, fontStyle: 'italic' }}>
               💡 Tip: Most experts charge £5-15 for 15-minute sessions. You can adjust this anytime.
             </Typography>
             <Typography variant="caption" color="textSecondary" sx={{ mt: 3, display: 'block', borderTop: 1, borderColor: 'divider', pt: 2 }}>
-              *Clients pay an additional 20% to cover platform services like hosting, payments, and maintenance. You receive 100% of your set price.
+              *Clients pay 20% extra to cover platform services like hosting, secure payments, and maintenance. You receive 100% of your chosen rate.
             </Typography>
           </Box>
         );
