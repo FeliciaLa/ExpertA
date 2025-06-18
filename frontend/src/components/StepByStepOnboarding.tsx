@@ -147,7 +147,7 @@ const stepSections = [
       },
       {
         label: 'Set Your Price',
-        description: 'Set your rate for 15-minute consultations*',
+        description: 'Set your pricing for expert consultations',
         field: 'monetization_price'
       }
     ]
@@ -780,7 +780,7 @@ const StepByStepOnboarding: React.FC = () => {
         return (
           <Box sx={{ mt: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Set your price for 15-minute consultations
+              Set your rate for 15-minute consultations*
             </Typography>
             <TextField
               fullWidth
