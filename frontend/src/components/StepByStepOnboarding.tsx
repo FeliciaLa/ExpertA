@@ -173,10 +173,6 @@ const stepSections = [
 // Flatten steps for compatibility with existing code
 const steps = stepSections.flatMap(section => section.steps);
 
-console.log('🔥 DEBUG: Total steps:', steps.length);
-console.log('🔥 DEBUG: All steps:', steps.map((s, i) => `${i}: ${s.field}`));
-alert(`DEBUG: Total steps: ${steps.length}, Should be 15. Steps: ${steps.map(s => s.field).join(', ')}`);
-
 const StepByStepOnboarding: React.FC = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
@@ -207,7 +203,7 @@ const StepByStepOnboarding: React.FC = () => {
   
   const { expert, refreshExpert } = useAuth();
 
-  console.log('🔥 DEBUG: Current step:', activeStep, 'Field:', steps[activeStep]?.field);
+
 
   // Helper functions for section management
   const getCurrentSection = () => {
@@ -242,8 +238,6 @@ const StepByStepOnboarding: React.FC = () => {
   const loadExistingData = async () => {
     try {
       const profile = await expertApi.getProfile();
-      console.log('🔥 DEBUG: Loaded profile data:', profile);
-      
       const existingData = {
         name: profile.name || '',
         title: profile.title || '',
@@ -261,7 +255,6 @@ const StepByStepOnboarding: React.FC = () => {
         monetization_price: profile.profile?.monetization_price || 5,
         completion: ''
       };
-      console.log('🔥 DEBUG: Setting stepData to:', existingData);
       setStepData(existingData);
     } catch (error) {
       console.error('Failed to load existing profile data:', error);
@@ -454,7 +447,6 @@ const StepByStepOnboarding: React.FC = () => {
 
   const renderStepContent = () => {
     const currentField = steps[activeStep].field;
-    console.log('🔥 DEBUG: Rendering step', activeStep, 'with field:', currentField);
     
     switch (currentField) {
       case 'name':
@@ -780,7 +772,7 @@ const StepByStepOnboarding: React.FC = () => {
         return (
           <Box sx={{ mt: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Set your rate for 15-minute consultations*
+              How much would you like to earn for each 15-minute consultation?*
             </Typography>
             <TextField
               fullWidth
@@ -798,14 +790,14 @@ const StepByStepOnboarding: React.FC = () => {
                 <strong>You earn:</strong> £{currentValue || '0'} per consultation
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                <strong>Customer pays:</strong> £{(parseFloat(currentValue || '0') / 0.8).toFixed(2)}
+                <strong>Customer pays:</strong> £{(parseFloat(currentValue || '0') * 1.2).toFixed(2)}
               </Typography>
             </Box>
             <Typography variant="body2" color="primary" sx={{ mt: 2, fontStyle: 'italic' }}>
               💡 Tip: Most experts charge £5-15 for 15-minute sessions. You can adjust this anytime.
             </Typography>
             <Typography variant="caption" color="textSecondary" sx={{ mt: 3, display: 'block', borderTop: 1, borderColor: 'divider', pt: 2 }}>
-              *The customer pays 25% more to cover payment processing, platform maintenance, and support.
+              *Clients pay 20% more to cover platform services like hosting, payments, and maintenance. You receive 100% of your set price.
             </Typography>
           </Box>
         );
@@ -816,7 +808,6 @@ const StepByStepOnboarding: React.FC = () => {
   };
 
   if (expert?.onboarding_completed) {
-    console.log('🔥 DEBUG: Onboarding already completed, showing completion screen');
     return (
       <Box sx={{ textAlign: 'center', p: 4 }}>
         <CheckCircle sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
