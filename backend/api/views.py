@@ -1038,46 +1038,75 @@ class ExpertOnboardingCompleteView(APIView):
             if years_of_experience < 1:
                 years_of_experience = 1
             
+            # Validate and prepare monetization_price
+            monetization_price = profile_data.get('monetization_price', 5.00)
+            try:
+                monetization_price = float(monetization_price)
+                if monetization_price < 0:
+                    monetization_price = 5.00
+            except (ValueError, TypeError):
+                monetization_price = 5.00
+            
+            print(f"Prepared values: industry={industry}, years_of_experience={years_of_experience}, key_skills={key_skills}, monetization_price={monetization_price}")
+            
             # Create or update the expert profile
-            profile, created = ExpertProfile.objects.update_or_create(
-                expert=expert,
-                defaults={
-                    'industry': industry,
-                    'years_of_experience': years_of_experience,
-                    'key_skills': key_skills,
-                    'typical_problems': profile_data.get('typical_problems', ''),
-                    'background': background,
-                    'certifications': profile_data.get('certifications', ''),
-                    'methodologies': profile_data.get('methodologies', ''),
-                    'tools_technologies': profile_data.get('tools_technologies', ''),
-                    'monetization_enabled': profile_data.get('monetization_enabled', False),
-                    'monetization_price': profile_data.get('monetization_price', 5.00)
-                }
-            )
+            try:
+                profile, created = ExpertProfile.objects.update_or_create(
+                    expert=expert,
+                    defaults={
+                        'industry': industry,
+                        'years_of_experience': years_of_experience,
+                        'key_skills': key_skills,
+                        'typical_problems': profile_data.get('typical_problems', ''),
+                        'background': background,
+                        'certifications': profile_data.get('certifications', ''),
+                        'methodologies': profile_data.get('methodologies', ''),
+                        'tools_technologies': profile_data.get('tools_technologies', ''),
+                        'monetization_enabled': profile_data.get('monetization_enabled', False),
+                        'monetization_price': monetization_price
+                    }
+                )
+                print(f"Profile created/updated successfully: created={created}")
+            except Exception as profile_error:
+                print(f"Error creating/updating profile: {str(profile_error)}")
+                raise profile_error
             
             # Update the expert's main fields (these exist in User model)
-            expert.title = profile_data.get('title', expert.title or '')
-            expert.bio = profile_data.get('bio', expert.bio or '')
-            expert.specialties = profile_data.get('expertise', expert.specialties or '')  # Map expertise to specialties
+            try:
+                expert.title = profile_data.get('title', expert.title or '')
+                expert.bio = profile_data.get('bio', expert.bio or '')
+                expert.specialties = profile_data.get('expertise', expert.specialties or '')  # Map expertise to specialties
+                print(f"Expert fields updated: title={expert.title}, bio length={len(expert.bio or '')}, specialties={expert.specialties}")
+            except Exception as expert_fields_error:
+                print(f"Error updating expert fields: {str(expert_fields_error)}")
+                raise expert_fields_error
             
             # Mark onboarding as complete
-            expert.onboarding_completed = True
-            expert.onboarding_completed_at = timezone.now()
-            expert.save()
-            print(f"Expert onboarding marked as complete: {expert.onboarding_completed}")
+            try:
+                expert.onboarding_completed = True
+                expert.onboarding_completed_at = timezone.now()
+                expert.save()
+                print(f"Expert onboarding marked as complete: {expert.onboarding_completed}")
+            except Exception as save_error:
+                print(f"Error saving expert: {str(save_error)}")
+                raise save_error
             
             # Initialize knowledge base
-            knowledge_base, kb_created = ExpertKnowledgeBase.objects.get_or_create(
-                expert=expert,
-                defaults={
-                    'knowledge_areas': {
-                        industry: years_of_experience,
-                        'Professional Experience': years_of_experience,
-                    },
-                    'training_summary': f"Expert in {industry} with {years_of_experience} years of experience. Skills: {key_skills}. Specialties: {expert.specialties or 'General consulting'}."
-                }
-            )
-            print(f"Knowledge base created: {kb_created}")
+            try:
+                knowledge_base, kb_created = ExpertKnowledgeBase.objects.get_or_create(
+                    expert=expert,
+                    defaults={
+                        'knowledge_areas': {
+                            industry: years_of_experience,
+                            'Professional Experience': years_of_experience,
+                        },
+                        'training_summary': f"Expert in {industry} with {years_of_experience} years of experience. Skills: {key_skills}. Specialties: {expert.specialties or 'General consulting'}."
+                    }
+                )
+                print(f"Knowledge base created: {kb_created}")
+            except Exception as kb_error:
+                print(f"Error creating knowledge base: {str(kb_error)}")
+                raise kb_error
             print(f"=== ONBOARDING COMPLETION DEBUG END ===")
             
             return Response({
