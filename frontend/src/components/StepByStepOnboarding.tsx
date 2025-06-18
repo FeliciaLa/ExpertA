@@ -231,7 +231,12 @@ const StepByStepOnboarding: React.FC = () => {
   useEffect(() => {
     const currentField = steps[activeStep]?.field;
     if (currentField && stepData) {
-      setCurrentValue(stepData[currentField as keyof StepData]?.toString() || '');
+      if (currentField === 'monetization_price') {
+        // For monetization price, show the current stepData value
+        setCurrentValue(stepData.monetization_price?.toString() || '5');
+      } else {
+        setCurrentValue(stepData[currentField as keyof StepData]?.toString() || '');
+      }
     }
   }, [activeStep, stepData]);
 
@@ -395,13 +400,19 @@ const StepByStepOnboarding: React.FC = () => {
         } else if (currentField === 'monetization_enabled') {
           fieldValue = stepData.monetization_enabled;
         } else if (currentField === 'monetization_price') {
-          fieldValue = parseFloat(currentValue) || 0;
+          // For monetization price, use the current input value if valid, otherwise use stepData value
+          if (stepData.monetization_enabled) {
+            const priceValue = parseFloat(currentValue);
+            fieldValue = !isNaN(priceValue) && priceValue > 0 ? priceValue : stepData.monetization_price;
+          } else {
+            fieldValue = stepData.monetization_price; // Keep existing value even if disabled
+          }
         } else {
           fieldValue = currentValue;
         }
         
+        // Only send the specific field being updated to avoid array/object conflicts
         updateData.profile = {
-          ...stepData,
           [currentField]: fieldValue
         };
       }
@@ -440,13 +451,19 @@ const StepByStepOnboarding: React.FC = () => {
         } else if (currentField === 'monetization_enabled') {
           fieldValue = stepData.monetization_enabled;
         } else if (currentField === 'monetization_price') {
-          fieldValue = parseFloat(currentValue) || 0;
+          // For monetization price, use the current input value if valid, otherwise use stepData value
+          if (stepData.monetization_enabled) {
+            const priceValue = parseFloat(currentValue);
+            fieldValue = !isNaN(priceValue) && priceValue > 0 ? priceValue : stepData.monetization_price;
+          } else {
+            fieldValue = stepData.monetization_price; // Keep existing value even if disabled
+          }
         } else {
           fieldValue = currentValue;
         }
         
+        // Only send the specific field being updated to avoid array/object conflicts
         updateData.profile = {
-          ...stepData,
           [currentField]: fieldValue
         };
       }
