@@ -172,6 +172,9 @@ const stepSections = [
 // Flatten steps for compatibility with existing code
 const steps = stepSections.flatMap(section => section.steps);
 
+console.log('🔥 DEBUG: Total steps:', steps.length);
+console.log('🔥 DEBUG: All steps:', steps.map((s, i) => `${i}: ${s.field}`));
+
 const StepByStepOnboarding: React.FC = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
@@ -201,6 +204,8 @@ const StepByStepOnboarding: React.FC = () => {
   const [completing, setCompleting] = useState(false);
   
   const { expert, refreshExpert } = useAuth();
+
+  console.log('🔥 DEBUG: Current step:', activeStep, 'Field:', steps[activeStep]?.field);
 
   // Helper functions for section management
   const getCurrentSection = () => {
