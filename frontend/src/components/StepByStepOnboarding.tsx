@@ -10,9 +10,10 @@ import {
   CircularProgress,
   Chip,
   Grid,
-  LinearProgress
+  LinearProgress,
+  IconButton
 } from '@mui/material';
-import { ArrowBack, ArrowForward, CheckCircle } from '@mui/icons-material';
+import { ArrowBack, ArrowForward, CheckCircle, InfoOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { expertApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -174,6 +175,7 @@ const steps = stepSections.flatMap(section => section.steps);
 
 console.log('🔥 DEBUG: Total steps:', steps.length);
 console.log('🔥 DEBUG: All steps:', steps.map((s, i) => `${i}: ${s.field}`));
+alert(`DEBUG: Total steps: ${steps.length}, Should be 15. Steps: ${steps.map(s => s.field).join(', ')}`);
 
 const StepByStepOnboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -791,11 +793,18 @@ const StepByStepOnboarding: React.FC = () => {
               inputProps={{ min: 1, max: 100, step: 1 }}
               sx={{ mt: 2, maxWidth: 200 }}
             />
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-              <strong>Your earnings:</strong> £{(parseFloat(currentValue || '0') * 0.8).toFixed(2)} per consultation (80% of £{currentValue || '0'})
-              <br />
-              <strong>Platform fee:</strong> £{(parseFloat(currentValue || '0') * 0.2).toFixed(2)} (20%)
-            </Typography>
+            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" color="textSecondary">
+                <strong>Your earnings:</strong> £{(parseFloat(currentValue || '0') * 0.8).toFixed(2)} per consultation
+              </Typography>
+              <IconButton 
+                size="small" 
+                sx={{ p: 0.5 }}
+                onClick={() => setError('Platform fee: £' + (parseFloat(currentValue || '0') * 0.2).toFixed(2) + ' (20%) - covers payment processing, platform maintenance, and support.')}
+              >
+                <InfoOutlined fontSize="small" />
+              </IconButton>
+            </Box>
             <Typography variant="body2" color="primary" sx={{ mt: 2, fontStyle: 'italic' }}>
               💡 Tip: Most experts charge £5-15 for 15-minute sessions. You can adjust this anytime.
             </Typography>
