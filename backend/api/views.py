@@ -892,7 +892,9 @@ class ExpertProfileView(APIView):
                 background='',
                 certifications='',
                 methodologies='',
-                tools_technologies=''
+                tools_technologies='',
+                monetization_enabled=False,
+                monetization_price=5.00
             )
             print(f"✓ Created new profile: {profile}")
         
@@ -1030,7 +1032,9 @@ class ExpertOnboardingCompleteView(APIView):
                     'background': profile_data.get('background', ''),
                     'certifications': profile_data.get('certifications', ''),
                     'methodologies': profile_data.get('methodologies', ''),
-                    'tools_technologies': profile_data.get('tools_technologies', '')
+                    'tools_technologies': profile_data.get('tools_technologies', ''),
+                    'monetization_enabled': profile_data.get('monetization_enabled', False),
+                    'monetization_price': profile_data.get('monetization_price', 5.00)
                 }
             )
             
@@ -2285,13 +2289,16 @@ class ExpertProfileUpdateView(APIView):
                     background='',
                     certifications='',
                     methodologies='',
-                    tools_technologies=''
+                    tools_technologies='',
+                    monetization_enabled=False,
+                    monetization_price=5.00
                 )
             
             # Update profile fields
             profile_fields = [
                 'industry', 'years_of_experience', 'key_skills', 'typical_problems',
-                'background', 'certifications', 'methodologies', 'tools_technologies'
+                'background', 'certifications', 'methodologies', 'tools_technologies',
+                'monetization_enabled', 'monetization_price'
             ]
             
             for field in profile_fields:
