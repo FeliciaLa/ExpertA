@@ -790,7 +790,7 @@ const StepByStepOnboarding: React.FC = () => {
                 <strong>You earn:</strong> £{currentValue || '0'} per consultation
               </Typography>
               <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
-                Clients will pay: £{(parseFloat(currentValue || '0') * 1.2).toFixed(2)} total
+                <strong>Clients will pay:</strong> £{(parseFloat(currentValue || '0') * 1.2).toFixed(2)} total
               </Typography>
             </Box>
             <Typography variant="body2" color="primary" sx={{ mt: 2, fontStyle: 'italic' }}>
