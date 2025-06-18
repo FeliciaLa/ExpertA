@@ -1038,6 +1038,13 @@ class ExpertOnboardingCompleteView(APIView):
             if years_of_experience < 1:
                 years_of_experience = 1
             
+            # Validate and prepare monetization_enabled (convert string to boolean if needed)
+            monetization_enabled = profile_data.get('monetization_enabled', False)
+            if isinstance(monetization_enabled, str):
+                monetization_enabled = monetization_enabled.lower() in ['true', '1', 'yes', 'on']
+            elif monetization_enabled is None:
+                monetization_enabled = False
+            
             # Validate and prepare monetization_price
             monetization_price = profile_data.get('monetization_price', 5.00)
             try:
@@ -1047,7 +1054,7 @@ class ExpertOnboardingCompleteView(APIView):
             except (ValueError, TypeError):
                 monetization_price = 5.00
             
-            print(f"Prepared values: industry={industry}, years_of_experience={years_of_experience}, key_skills={key_skills}, monetization_price={monetization_price}")
+            print(f"Prepared values: industry={industry}, years_of_experience={years_of_experience}, key_skills={key_skills}, monetization_enabled={monetization_enabled}, monetization_price={monetization_price}")
             
             # Create or update the expert profile
             try:
@@ -1062,7 +1069,7 @@ class ExpertOnboardingCompleteView(APIView):
                         'certifications': profile_data.get('certifications', ''),
                         'methodologies': profile_data.get('methodologies', ''),
                         'tools_technologies': profile_data.get('tools_technologies', ''),
-                        'monetization_enabled': profile_data.get('monetization_enabled', False),
+                        'monetization_enabled': monetization_enabled,
                         'monetization_price': monetization_price
                     }
                 )
