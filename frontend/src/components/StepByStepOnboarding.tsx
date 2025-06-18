@@ -56,6 +56,8 @@ interface StepData {
   tools_technologies: string;
   certifications: string;
   bio: string;
+  monetization_enabled: boolean;
+  monetization_price: number;
   completion: string;
 }
 
@@ -134,6 +136,22 @@ const stepSections = [
     ]
   },
   {
+    title: 'Monetization',
+    description: 'Set up how you want to charge for your expertise',
+    steps: [
+      {
+        label: 'Monetization Option',
+        description: 'Do you want to monetize your AI expert consultations?',
+        field: 'monetization_enabled'
+      },
+      {
+        label: 'Set Your Price',
+        description: 'Set your rate for 15-minute consultations (you keep 80% of earnings)',
+        field: 'monetization_price'
+      }
+    ]
+  },
+  {
     title: 'Finish Setup',
     description: 'Complete your profile',
     steps: [
@@ -170,6 +188,8 @@ const StepByStepOnboarding: React.FC = () => {
     tools_technologies: '',
     certifications: '',
     bio: '',
+    monetization_enabled: false,
+    monetization_price: 5,
     completion: ''
   });
   
@@ -228,6 +248,8 @@ const StepByStepOnboarding: React.FC = () => {
         tools_technologies: profile.profile?.tools_technologies || '',
         certifications: profile.profile?.certifications || '',
         bio: profile.bio || '',
+        monetization_enabled: profile.profile?.monetization_enabled || false,
+        monetization_price: profile.profile?.monetization_price || 5,
         completion: ''
       };
       setStepData(existingData);
@@ -290,6 +312,13 @@ const StepByStepOnboarding: React.FC = () => {
         setError('Please select your experience level');
         return false;
       }
+    } else if (currentField === 'monetization_enabled') {
+      // No validation needed - boolean field
+    } else if (currentField === 'monetization_price') {
+      if (stepData.monetization_enabled && (!currentValue || parseFloat(currentValue) < 1)) {
+        setError('Please set a price of at least £1');
+        return false;
+      }
     } else if (!currentValue.trim()) {
       setError('This field is required');
       return false;
@@ -317,10 +346,22 @@ const StepByStepOnboarding: React.FC = () => {
         updateData[currentField] = currentValue;
       } else {
         // Profile fields - update expert profile
+        let fieldValue;
+        if (currentField === 'key_skills') {
+          fieldValue = stepData.key_skills;
+        } else if (currentField === 'industry') {
+          fieldValue = stepData.industry;
+        } else if (currentField === 'monetization_enabled') {
+          fieldValue = stepData.monetization_enabled;
+        } else if (currentField === 'monetization_price') {
+          fieldValue = parseFloat(currentValue) || 0;
+        } else {
+          fieldValue = currentValue;
+        }
+        
         updateData.profile = {
           ...stepData,
-          [currentField]: currentField === 'key_skills' ? stepData.key_skills : 
-                         currentField === 'industry' ? stepData.industry : currentValue
+          [currentField]: fieldValue
         };
       }
 
@@ -347,7 +388,9 @@ const StepByStepOnboarding: React.FC = () => {
         typical_problems: stepData.typical_problems || `As a ${stepData.title}, I help clients solve complex challenges in my field.`,
         certifications: stepData.certifications,
         methodologies: stepData.methodologies,
-        tools_technologies: stepData.tools_technologies
+        tools_technologies: stepData.tools_technologies,
+        monetization_enabled: stepData.monetization_enabled,
+        monetization_price: stepData.monetization_price
       };
 
       await expertApi.completeOnboarding(onboardingData);
@@ -669,6 +712,85 @@ const StepByStepOnboarding: React.FC = () => {
             variant="outlined"
             sx={{ mt: 2 }}
           />
+        );
+        
+      case 'monetization_enabled':
+        return (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Do you want to monetize your AI expert consultations?
+            </Typography>
+            <Box sx={{ mt: 3 }}>
+              <Button
+                variant={stepData.monetization_enabled ? "outlined" : "contained"}
+                onClick={() => {
+                  setStepData(prev => ({ ...prev, monetization_enabled: false }));
+                  setCurrentValue('false');
+                }}
+                sx={{ mr: 2, mb: 2, minWidth: 120 }}
+              >
+                No - Keep it FREE
+              </Button>
+              <Button
+                variant={stepData.monetization_enabled ? "contained" : "outlined"}
+                onClick={() => {
+                  setStepData(prev => ({ ...prev, monetization_enabled: true }));
+                  setCurrentValue('true');
+                }}
+                sx={{ mb: 2, minWidth: 120 }}
+              >
+                Yes - Charge for consultations
+              </Button>
+            </Box>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              {stepData.monetization_enabled ? 
+                "Great! You'll be able to charge for focused 15-minute consultations. You keep 80% of all earnings." :
+                "Your AI expert will be completely free for anyone to use. You can change this later."
+              }
+            </Typography>
+          </Box>
+        );
+        
+      case 'monetization_price':
+        if (!stepData.monetization_enabled) {
+          // Skip this step if monetization is disabled
+          return (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Typography variant="h6" color="textSecondary">
+                Your AI expert will be free to use
+              </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                You can enable monetization later from your profile settings.
+              </Typography>
+            </Box>
+          );
+        }
+        
+        return (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Set your price for 15-minute consultations
+            </Typography>
+            <TextField
+              fullWidth
+              type="number"
+              label="Price in £ (GBP)"
+              value={currentValue}
+              onChange={(e) => setCurrentValue(e.target.value)}
+              placeholder="5"
+              variant="outlined"
+              inputProps={{ min: 1, max: 100, step: 1 }}
+              sx={{ mt: 2, maxWidth: 200 }}
+            />
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              <strong>Your earnings:</strong> £{(parseFloat(currentValue || '0') * 0.8).toFixed(2)} per consultation (80% of £{currentValue || '0'})
+              <br />
+              <strong>Platform fee:</strong> £{(parseFloat(currentValue || '0') * 0.2).toFixed(2)} (20%)
+            </Typography>
+            <Typography variant="body2" color="primary" sx={{ mt: 2, fontStyle: 'italic' }}>
+              💡 Tip: Most experts charge £5-15 for 15-minute sessions. You can adjust this anytime.
+            </Typography>
+          </Box>
         );
         
       default:
