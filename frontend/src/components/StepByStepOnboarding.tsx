@@ -487,6 +487,9 @@ const StepByStepOnboarding: React.FC = () => {
       
       // Prepare final onboarding data
       const onboardingData = {
+        name: stepData.name,
+        title: stepData.title,
+        bio: stepData.bio,
         expertise: stepData.expertise,
         industry: (stepData.industry || []).join(', '),
         years_of_experience: stepData.years_of_experience,
