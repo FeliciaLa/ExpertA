@@ -1073,10 +1073,11 @@ class ExpertOnboardingCompleteView(APIView):
             
             # Update the expert's main fields (these exist in User model)
             try:
+                expert.name = profile_data.get('name', expert.name or '')
                 expert.title = profile_data.get('title', expert.title or '')
                 expert.bio = profile_data.get('bio', expert.bio or '')
                 expert.specialties = profile_data.get('expertise', expert.specialties or '')  # Map expertise to specialties
-                print(f"Expert fields updated: title={expert.title}, bio length={len(expert.bio or '')}, specialties={expert.specialties}")
+                print(f"Expert fields updated: name={expert.name}, title={expert.title}, bio length={len(expert.bio or '')}, specialties={expert.specialties}")
             except Exception as expert_fields_error:
                 print(f"Error updating expert fields: {str(expert_fields_error)}")
                 raise expert_fields_error
