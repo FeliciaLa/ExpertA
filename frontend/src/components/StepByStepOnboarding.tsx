@@ -88,11 +88,11 @@ const stepSections = [
     title: 'Experience Info',
     description: 'Tell us about your expertise and experience',
     steps: [
-      {
-        label: 'Describe Your Expertise',
-        description: 'What do you specialize in? What\'s your core area of expertise?',
-        field: 'expertise'
-      },
+      // {
+      //   label: 'Describe Your Expertise',
+      //   description: 'What do you specialize in? What\'s your core area of expertise?',
+      //   field: 'expertise'
+      // },
       {
         label: 'Experience Level',
         description: 'How many years of experience do you have?',
@@ -490,7 +490,7 @@ const StepByStepOnboarding: React.FC = () => {
         name: stepData.name,
         title: stepData.title,
         bio: stepData.bio,
-        expertise: stepData.expertise,
+        // expertise: stepData.expertise,
         industry: (stepData.industry || []).join(', '),
         years_of_experience: stepData.years_of_experience,
         background: stepData.background,

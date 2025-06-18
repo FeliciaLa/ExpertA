@@ -1076,8 +1076,8 @@ class ExpertOnboardingCompleteView(APIView):
                 expert.name = profile_data.get('name', expert.name or '')
                 expert.title = profile_data.get('title', expert.title or '')
                 expert.bio = profile_data.get('bio', expert.bio or '')
-                expert.specialties = profile_data.get('expertise', expert.specialties or '')  # Map expertise to specialties
-                print(f"Expert fields updated: name={expert.name}, title={expert.title}, bio length={len(expert.bio or '')}, specialties={expert.specialties}")
+                # expert.specialties = profile_data.get('expertise', expert.specialties or '')  # Map expertise to specialties
+                print(f"Expert fields updated: name={expert.name}, title={expert.title}, bio length={len(expert.bio or '')}")
             except Exception as expert_fields_error:
                 print(f"Error updating expert fields: {str(expert_fields_error)}")
                 raise expert_fields_error
