@@ -240,6 +240,8 @@ const StepByStepOnboarding: React.FC = () => {
   const loadExistingData = async () => {
     try {
       const profile = await expertApi.getProfile();
+      console.log('🔥 DEBUG: Loaded profile data:', profile);
+      
       const existingData = {
         name: profile.name || '',
         title: profile.title || '',
@@ -257,6 +259,7 @@ const StepByStepOnboarding: React.FC = () => {
         monetization_price: profile.profile?.monetization_price || 5,
         completion: ''
       };
+      console.log('🔥 DEBUG: Setting stepData to:', existingData);
       setStepData(existingData);
     } catch (error) {
       console.error('Failed to load existing profile data:', error);
@@ -449,6 +452,7 @@ const StepByStepOnboarding: React.FC = () => {
 
   const renderStepContent = () => {
     const currentField = steps[activeStep].field;
+    console.log('🔥 DEBUG: Rendering step', activeStep, 'with field:', currentField);
     
     switch (currentField) {
       case 'name':
@@ -804,6 +808,7 @@ const StepByStepOnboarding: React.FC = () => {
   };
 
   if (expert?.onboarding_completed) {
+    console.log('🔥 DEBUG: Onboarding already completed, showing completion screen');
     return (
       <Box sx={{ textAlign: 'center', p: 4 }}>
         <CheckCircle sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
