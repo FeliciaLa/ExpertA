@@ -1019,7 +1019,9 @@ class ExpertOnboardingCompleteView(APIView):
             
             background = profile_data.get('background', '').strip()
             if not background:
-                background = f"Professional with expertise in {profile_data.get('expertise', 'their field')}."
+                # Use title or a generic default since expertise field doesn't exist in model
+                title = profile_data.get('title', 'professional')
+                background = f"Professional with experience in {title.lower()} and {industry.lower()}."
             
             key_skills = profile_data.get('key_skills', '').strip()
             if not key_skills:
@@ -1053,6 +1055,11 @@ class ExpertOnboardingCompleteView(APIView):
                 }
             )
             
+            # Update the expert's main fields (these exist in User model)
+            expert.title = profile_data.get('title', expert.title or '')
+            expert.bio = profile_data.get('bio', expert.bio or '')
+            expert.specialties = profile_data.get('expertise', expert.specialties or '')  # Map expertise to specialties
+            
             # Mark onboarding as complete
             expert.onboarding_completed = True
             expert.onboarding_completed_at = timezone.now()
@@ -1067,7 +1074,7 @@ class ExpertOnboardingCompleteView(APIView):
                         industry: years_of_experience,
                         'Professional Experience': years_of_experience,
                     },
-                    'training_summary': f"Expert in {industry} with {years_of_experience} years of experience. Skills: {key_skills}"
+                    'training_summary': f"Expert in {industry} with {years_of_experience} years of experience. Skills: {key_skills}. Specialties: {expert.specialties or 'General consulting'}."
                 }
             )
             print(f"Knowledge base created: {kb_created}")
