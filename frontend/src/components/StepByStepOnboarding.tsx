@@ -147,7 +147,7 @@ const stepSections = [
       },
       {
         label: 'Set Your Price',
-        description: 'Set your rate for 15-minute consultations (you keep 80% of earnings)',
+        description: 'Set your rate for 15-minute consultations*',
         field: 'monetization_price'
       }
     ]
@@ -793,20 +793,14 @@ const StepByStepOnboarding: React.FC = () => {
               inputProps={{ min: 1, max: 100, step: 1 }}
               sx={{ mt: 2, maxWidth: 200 }}
             />
-            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" color="textSecondary">
-                <strong>Your earnings:</strong> £{(parseFloat(currentValue || '0') * 0.8).toFixed(2)} per consultation
-              </Typography>
-              <IconButton 
-                size="small" 
-                sx={{ p: 0.5 }}
-                onClick={() => setError('Platform fee: £' + (parseFloat(currentValue || '0') * 0.2).toFixed(2) + ' (20%) - covers payment processing, platform maintenance, and support.')}
-              >
-                <InfoOutlined fontSize="small" />
-              </IconButton>
-            </Box>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              <strong>Your earnings:</strong> £{(parseFloat(currentValue || '0') * 0.8).toFixed(2)} per consultation
+            </Typography>
             <Typography variant="body2" color="primary" sx={{ mt: 2, fontStyle: 'italic' }}>
               💡 Tip: Most experts charge £5-15 for 15-minute sessions. You can adjust this anytime.
+            </Typography>
+            <Typography variant="caption" color="textSecondary" sx={{ mt: 3, display: 'block', borderTop: 1, borderColor: 'divider', pt: 2 }}>
+              *Duplix AI deducts 20% for payment processing, platform maintenance, and support.
             </Typography>
           </Box>
         );
