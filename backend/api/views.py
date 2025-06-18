@@ -2265,9 +2265,13 @@ class ExpertProfileUpdateView(APIView):
         
         # Extract valid fields from request data
         valid_data = {}
-        for field in ['bio', 'specialties', 'title', 'name']:
+        for field in ['bio', 'specialties', 'title', 'name', 'expertise']:
             if field in request.data:
-                valid_data[field] = request.data[field]
+                if field == 'expertise':
+                    # Map expertise to specialties
+                    valid_data['specialties'] = request.data[field]
+                else:
+                    valid_data[field] = request.data[field]
         
         # Handle first_name and last_name by combining them into name (for backward compatibility)
         first_name = request.data.get('first_name', '').strip()

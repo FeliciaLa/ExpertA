@@ -289,7 +289,7 @@ const StepByStepOnboarding: React.FC = () => {
       const existingData = {
         name: profile.name || '',
         title: profile.title || '',
-        expertise: profile.profile?.expertise || '',
+        expertise: profile.specialties || '',
         industry: parseArrayField(profile.profile?.industry),
         years_of_experience: profile.profile?.years_of_experience || 1,
         background: profile.profile?.background || '',
@@ -392,8 +392,8 @@ const StepByStepOnboarding: React.FC = () => {
       
       let updateData: any = {};
       
-      if (['name', 'title', 'bio'].includes(currentField)) {
-        // Basic fields - update user model
+      if (['name', 'title', 'bio', 'expertise'].includes(currentField)) {
+        // Basic fields - update user model (expertise maps to specialties in backend)
         updateData[currentField] = currentValue;
       } else {
         // Profile fields - update expert profile
@@ -443,8 +443,8 @@ const StepByStepOnboarding: React.FC = () => {
     try {
       let updateData: any = {};
       
-      if (['name', 'title', 'bio'].includes(currentField)) {
-        // Basic fields - update user model
+      if (['name', 'title', 'bio', 'expertise'].includes(currentField)) {
+        // Basic fields - update user model (expertise maps to specialties in backend)
         updateData[currentField] = currentValue;
       } else {
         // Profile fields - update expert profile
