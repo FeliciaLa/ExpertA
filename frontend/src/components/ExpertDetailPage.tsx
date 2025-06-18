@@ -15,7 +15,6 @@ import { Chat } from './Chat';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
-import PaymentSection from './PaymentSection';
 
 interface ExpertProfile {
   industry?: string;
@@ -343,12 +342,6 @@ export const ExpertDetailPage: React.FC = () => {
             <Typography paragraph>
               {expert.bio || 'No bio available'}
             </Typography>
-
-            {/* Payment Section - Only shows on staging */}
-            <PaymentSection 
-              expertName={expert.name}
-              price={29.99}
-            />
           </Paper>
         </Grid>
 
