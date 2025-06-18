@@ -235,6 +235,32 @@ const StepByStepOnboarding: React.FC = () => {
     }
   }, [activeStep, stepData]);
 
+  // Auto-save for text fields when value changes (with debounce)
+  useEffect(() => {
+    const currentField = steps[activeStep]?.field;
+    if (!currentField || currentField === 'completion' || 
+        currentField === 'key_skills' || currentField === 'industry' || 
+        currentField === 'monetization_enabled') {
+      return; // Skip auto-save for these fields
+    }
+
+    // Also update stepData immediately for text fields
+    if (['expertise', 'background', 'typical_problems', 'methodologies', 'tools_technologies', 'certifications'].includes(currentField)) {
+      setStepData(prev => ({
+        ...prev,
+        [currentField]: currentValue
+      }));
+    }
+
+    const timeoutId = setTimeout(() => {
+      if (currentValue.trim()) {
+        saveCurrentFieldQuietly();
+      }
+    }, 2000); // Save after 2 seconds of no typing
+
+    return () => clearTimeout(timeoutId);
+  }, [currentValue, activeStep]);
+
   const loadExistingData = async () => {
     try {
       const profile = await expertApi.getProfile();
@@ -374,6 +400,48 @@ const StepByStepOnboarding: React.FC = () => {
       setError('Failed to save. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveCurrentFieldQuietly = async () => {
+    const currentField = steps[activeStep].field;
+    
+    // Skip saving for completion step
+    if (currentField === 'completion') {
+      return;
+    }
+    
+    try {
+      let updateData: any = {};
+      
+      if (['name', 'title', 'bio'].includes(currentField)) {
+        // Basic fields - update user model
+        updateData[currentField] = currentValue;
+      } else {
+        // Profile fields - update expert profile
+        let fieldValue;
+        if (currentField === 'key_skills') {
+          fieldValue = stepData.key_skills;
+        } else if (currentField === 'industry') {
+          fieldValue = stepData.industry;
+        } else if (currentField === 'monetization_enabled') {
+          fieldValue = stepData.monetization_enabled;
+        } else if (currentField === 'monetization_price') {
+          fieldValue = parseFloat(currentValue) || 0;
+        } else {
+          fieldValue = currentValue;
+        }
+        
+        updateData.profile = {
+          ...stepData,
+          [currentField]: fieldValue
+        };
+      }
+
+      await expertApi.updateProfile(updateData);
+    } catch (error) {
+      // Fail silently for auto-save
+      console.error('Auto-save failed:', error);
     }
   };
 
