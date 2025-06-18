@@ -1012,24 +1012,39 @@ class ExpertOnboardingCompleteView(APIView):
             print(f"Expert: {expert.email}")
             print(f"Profile data received: {profile_data}")
             
-            # Validate required fields
-            required_fields = ['industry', 'years_of_experience', 'key_skills', 'background']
-            for field in required_fields:
-                if field not in profile_data:
-                    print(f"Missing required field: {field}")
-                    return Response({
-                        'error': f'Missing required field: {field}'
-                    }, status=status.HTTP_400_BAD_REQUEST)
+            # Validate and prepare required fields with defaults
+            industry = profile_data.get('industry', '').strip()
+            if not industry:
+                industry = 'General'
+            
+            background = profile_data.get('background', '').strip()
+            if not background:
+                background = f"Professional with expertise in {profile_data.get('expertise', 'their field')}."
+            
+            key_skills = profile_data.get('key_skills', '').strip()
+            if not key_skills:
+                key_skills = 'Problem solving, Communication, Analysis'
+            
+            years_of_experience = profile_data.get('years_of_experience', 1)
+            if isinstance(years_of_experience, str):
+                try:
+                    years_of_experience = int(years_of_experience)
+                except ValueError:
+                    years_of_experience = 1
+            
+            # Ensure minimum experience
+            if years_of_experience < 1:
+                years_of_experience = 1
             
             # Create or update the expert profile
             profile, created = ExpertProfile.objects.update_or_create(
                 expert=expert,
                 defaults={
-                    'industry': profile_data.get('industry', ''),
-                    'years_of_experience': profile_data.get('years_of_experience', 0),
-                    'key_skills': profile_data.get('key_skills', ''),
+                    'industry': industry,
+                    'years_of_experience': years_of_experience,
+                    'key_skills': key_skills,
                     'typical_problems': profile_data.get('typical_problems', ''),
-                    'background': profile_data.get('background', ''),
+                    'background': background,
                     'certifications': profile_data.get('certifications', ''),
                     'methodologies': profile_data.get('methodologies', ''),
                     'tools_technologies': profile_data.get('tools_technologies', ''),
@@ -1049,10 +1064,10 @@ class ExpertOnboardingCompleteView(APIView):
                 expert=expert,
                 defaults={
                     'knowledge_areas': {
-                        profile_data.get('industry', 'General'): 100,
-                        'Professional Experience': profile_data.get('years_of_experience', 0),
+                        industry: years_of_experience,
+                        'Professional Experience': years_of_experience,
                     },
-                    'training_summary': f"Expert in {profile_data.get('industry', 'their field')} with {profile_data.get('years_of_experience', 0)} years of experience. Skills: {profile_data.get('key_skills', '')}"
+                    'training_summary': f"Expert in {industry} with {years_of_experience} years of experience. Skills: {key_skills}"
                 }
             )
             print(f"Knowledge base created: {kb_created}")
@@ -1070,7 +1085,7 @@ class ExpertOnboardingCompleteView(APIView):
             import traceback
             print(f"Traceback: {traceback.format_exc()}")
             return Response({
-                'error': 'Failed to complete onboarding'
+                'error': f'Failed to complete onboarding: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ExpertListView(APIView):
