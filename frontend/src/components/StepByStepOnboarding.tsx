@@ -621,7 +621,7 @@ const StepByStepOnboarding: React.FC = () => {
             </Typography>
             <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
               You've successfully set up your expert profile with all your skills, experience, and expertise. 
-              Now it's time to train your AI assistant to help users with questions in your area of expertise.
+              Now it's time to train your AI assistant.
             </Typography>
             <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
               Click "Complete Setup" to start training your AI assistant
@@ -975,12 +975,16 @@ const StepByStepOnboarding: React.FC = () => {
 
         {/* Current Step */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" color="primary" gutterBottom>
-            {steps[activeStep].label}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            {steps[activeStep].description}
-          </Typography>
+          {steps[activeStep].field !== 'completion' && (
+            <>
+              <Typography variant="h6" color="primary" gutterBottom>
+                {steps[activeStep].label}
+              </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                {steps[activeStep].description}
+              </Typography>
+            </>
+          )}
           
           {renderStepContent()}
         </Box>
