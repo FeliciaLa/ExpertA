@@ -794,7 +794,7 @@ const StepByStepOnboarding: React.FC = () => {
               </Typography>
             </Box>
             <Typography variant="body2" color="primary" sx={{ mt: 2, fontStyle: 'italic' }}>
-              💡 Tip: Most experts charge £5-15 for 15-minute sessions. You can adjust this anytime.
+              💡 Set a price you feel reflects your time and knowledge — you can adjust it whenever you like.
             </Typography>
             <Typography variant="caption" color="textSecondary" sx={{ mt: 3, display: 'block', borderTop: 1, borderColor: 'divider', pt: 2 }}>
               *Clients pay 20% extra to cover platform services like hosting, secure payments, and maintenance. You receive 100% of your chosen rate.
