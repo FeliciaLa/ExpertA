@@ -244,14 +244,6 @@ const StepByStepOnboarding: React.FC = () => {
       return; // Skip auto-save for these fields
     }
 
-    // Also update stepData immediately for text fields
-    if (['expertise', 'background', 'typical_problems', 'methodologies', 'tools_technologies', 'certifications'].includes(currentField)) {
-      setStepData(prev => ({
-        ...prev,
-        [currentField]: currentValue
-      }));
-    }
-
     const timeoutId = setTimeout(() => {
       if (currentValue.trim()) {
         saveCurrentFieldQuietly();
@@ -264,14 +256,33 @@ const StepByStepOnboarding: React.FC = () => {
   const loadExistingData = async () => {
     try {
       const profile = await expertApi.getProfile();
+      
+      // Helper function to safely parse array fields that might be JSON strings or comma-separated strings
+      const parseArrayField = (field: string | undefined | null): string[] => {
+        if (!field || field.trim() === '') return [];
+        
+        // First, try to parse as JSON (handles cases like '["Tech", "Marketing"]')
+        try {
+          const parsed = JSON.parse(field);
+          if (Array.isArray(parsed)) {
+            return parsed.filter((item: any) => typeof item === 'string' && item.trim().length > 0);
+          }
+        } catch (e) {
+          // Not valid JSON, continue with comma-separated parsing
+        }
+        
+        // Fallback to comma-separated parsing (handles cases like 'Tech, Marketing')
+        return field.split(/,\s*/).filter((item: string) => item.trim().length > 0);
+      };
+      
       const existingData = {
         name: profile.name || '',
         title: profile.title || '',
         expertise: profile.profile?.expertise || '',
-        industry: profile.profile?.industry ? profile.profile.industry.split(/,\s*/).filter((item: string) => item.trim().length > 0) : [],
+        industry: parseArrayField(profile.profile?.industry),
         years_of_experience: profile.profile?.years_of_experience || 1,
         background: profile.profile?.background || '',
-        key_skills: profile.profile?.key_skills ? profile.profile.key_skills.split(/,\s*/).filter((item: string) => item.trim().length > 0) : [],
+        key_skills: parseArrayField(profile.profile?.key_skills),
         typical_problems: profile.profile?.typical_problems || '',
         methodologies: profile.profile?.methodologies || '',
         tools_technologies: profile.profile?.tools_technologies || '',
@@ -379,6 +390,7 @@ const StepByStepOnboarding: React.FC = () => {
         if (currentField === 'key_skills') {
           fieldValue = Array.isArray(stepData.key_skills) ? stepData.key_skills.join(', ') : stepData.key_skills;
         } else if (currentField === 'industry') {
+          // Ensure we always save as comma-separated string, never JSON
           fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
         } else if (currentField === 'monetization_enabled') {
           fieldValue = stepData.monetization_enabled;
@@ -423,6 +435,7 @@ const StepByStepOnboarding: React.FC = () => {
         if (currentField === 'key_skills') {
           fieldValue = Array.isArray(stepData.key_skills) ? stepData.key_skills.join(', ') : stepData.key_skills;
         } else if (currentField === 'industry') {
+          // Ensure we always save as comma-separated string, never JSON
           fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
         } else if (currentField === 'monetization_enabled') {
           fieldValue = stepData.monetization_enabled;
