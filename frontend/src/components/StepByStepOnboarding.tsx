@@ -327,12 +327,12 @@ const StepByStepOnboarding: React.FC = () => {
     }
     
     if (currentField === 'key_skills') {
-      if (stepData.key_skills.length === 0) {
+      if ((stepData.key_skills || []).length === 0) {
         setError('Please add at least one skill');
         return false;
       }
     } else if (currentField === 'industry') {
-      if (stepData.industry.length === 0) {
+      if ((stepData.industry || []).length === 0) {
         setError('Please add at least one industry');
         return false;
       }
@@ -377,9 +377,9 @@ const StepByStepOnboarding: React.FC = () => {
         // Profile fields - update expert profile
         let fieldValue;
         if (currentField === 'key_skills') {
-          fieldValue = stepData.key_skills;
+          fieldValue = Array.isArray(stepData.key_skills) ? stepData.key_skills.join(', ') : stepData.key_skills;
         } else if (currentField === 'industry') {
-          fieldValue = stepData.industry;
+          fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
         } else if (currentField === 'monetization_enabled') {
           fieldValue = stepData.monetization_enabled;
         } else if (currentField === 'monetization_price') {
@@ -421,9 +421,9 @@ const StepByStepOnboarding: React.FC = () => {
         // Profile fields - update expert profile
         let fieldValue;
         if (currentField === 'key_skills') {
-          fieldValue = stepData.key_skills;
+          fieldValue = Array.isArray(stepData.key_skills) ? stepData.key_skills.join(', ') : stepData.key_skills;
         } else if (currentField === 'industry') {
-          fieldValue = stepData.industry;
+          fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
         } else if (currentField === 'monetization_enabled') {
           fieldValue = stepData.monetization_enabled;
         } else if (currentField === 'monetization_price') {
@@ -452,10 +452,10 @@ const StepByStepOnboarding: React.FC = () => {
       // Prepare final onboarding data
       const onboardingData = {
         expertise: stepData.expertise,
-        industry: stepData.industry.join(', '),
+        industry: (stepData.industry || []).join(', '),
         years_of_experience: stepData.years_of_experience,
         background: stepData.background,
-        key_skills: stepData.key_skills.join(', '),
+        key_skills: (stepData.key_skills || []).join(', '),
         typical_problems: stepData.typical_problems || `As a ${stepData.title}, I help clients solve complex challenges in my field.`,
         certifications: stepData.certifications,
         methodologies: stepData.methodologies,
@@ -480,10 +480,10 @@ const StepByStepOnboarding: React.FC = () => {
   };
 
   const addSkill = () => {
-    if (newSkill.trim() && !stepData.key_skills.includes(newSkill.trim())) {
+    if (newSkill.trim() && !(stepData.key_skills || []).includes(newSkill.trim())) {
       setStepData(prev => ({
         ...prev,
-        key_skills: [...prev.key_skills, newSkill.trim()]
+        key_skills: [...(prev.key_skills || []), newSkill.trim()]
       }));
       setNewSkill('');
     }
@@ -492,15 +492,15 @@ const StepByStepOnboarding: React.FC = () => {
   const removeSkill = (skillToRemove: string) => {
     setStepData(prev => ({
       ...prev,
-      key_skills: prev.key_skills.filter(skill => skill !== skillToRemove)
+      key_skills: (prev.key_skills || []).filter(skill => skill !== skillToRemove)
     }));
   };
 
   const addIndustry = () => {
-    if (newIndustry.trim() && !stepData.industry.includes(newIndustry.trim())) {
+    if (newIndustry.trim() && !(stepData.industry || []).includes(newIndustry.trim())) {
       setStepData(prev => ({
         ...prev,
-        industry: [...prev.industry, newIndustry.trim()]
+        industry: [...(prev.industry || []), newIndustry.trim()]
       }));
       setNewIndustry('');
     }
@@ -509,7 +509,7 @@ const StepByStepOnboarding: React.FC = () => {
   const removeIndustry = (industryToRemove: string) => {
     setStepData(prev => ({
       ...prev,
-      industry: prev.industry.filter(industry => industry !== industryToRemove)
+      industry: (prev.industry || []).filter(industry => industry !== industryToRemove)
     }));
   };
 
@@ -621,7 +621,7 @@ const StepByStepOnboarding: React.FC = () => {
             </Grid>
             
             <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {stepData.industry.map((industry, index) => (
+              {(stepData.industry || []).map((industry, index) => (
                 <Chip
                   key={index}
                   label={industry}
@@ -632,7 +632,7 @@ const StepByStepOnboarding: React.FC = () => {
               ))}
             </Box>
             
-            {stepData.industry.length === 0 && (
+            {(stepData.industry || []).length === 0 && (
               <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                 Add at least one industry to continue
               </Typography>
@@ -691,7 +691,7 @@ const StepByStepOnboarding: React.FC = () => {
             </Grid>
             
             <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {stepData.key_skills.map((skill, index) => (
+              {(stepData.key_skills || []).map((skill, index) => (
                 <Chip
                   key={index}
                   label={skill}
@@ -702,7 +702,7 @@ const StepByStepOnboarding: React.FC = () => {
               ))}
             </Box>
             
-            {stepData.key_skills.length === 0 && (
+            {(stepData.key_skills || []).length === 0 && (
               <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                 Add at least one skill to continue
               </Typography>
