@@ -15,7 +15,6 @@ import { Chat } from './Chat';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
-import PaymentSection from './PaymentSection';
 
 interface ExpertProfile {
   industry?: string;
@@ -24,6 +23,8 @@ interface ExpertProfile {
   typical_problems?: string;
   methodologies?: string;
   tools_technologies?: string;
+  monetization_enabled?: boolean;
+  monetization_price?: number;
 }
 
 interface ExpertDetail {
@@ -182,7 +183,14 @@ export const ExpertDetailPage: React.FC = () => {
   const renderChatSection = () => {
     // Simple check: if authenticated (user OR expert), allow chat with ANY AI
     if (isAuthenticated) {
-      return <Chat expertId={expert.id} expertName={expert.name} />;
+      return (
+        <Chat 
+          expertId={expert.id} 
+          expertName={expert.name}
+          monetizationEnabled={expert.profile?.monetization_enabled || false}
+          expertPrice={expert.profile?.monetization_price || 5}
+        />
+      );
     }
     
     // Sample preview messages to show when not logged in
@@ -344,11 +352,17 @@ export const ExpertDetailPage: React.FC = () => {
               {expert.bio || 'No bio available'}
             </Typography>
 
-            {/* Payment Section - Only shows on staging */}
-            <PaymentSection 
-              expertName={expert.name}
-              price={29.99}
-            />
+            {/* Monetization Info */}
+            {expert.profile?.monetization_enabled && (
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  💡 This expert offers paid consultations
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  3 free questions, then £{((expert.profile.monetization_price || 5) * 1.2).toFixed(2)} for 15-min session
+                </Typography>
+              </Box>
+            )}
           </Paper>
         </Grid>
 
