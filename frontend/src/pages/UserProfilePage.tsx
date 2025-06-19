@@ -765,21 +765,12 @@ const UserProfilePage: React.FC = () => {
                       </Typography>
                     </Box>
                     
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
                       <Typography variant="body1" color="text.secondary">
                         Most Consulted Industry
                       </Typography>
                       <Typography variant="body1" fontWeight="medium">
                         {stats.mostUsedIndustry}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
-                      <Typography variant="body1" color="text.secondary">
-                        Total Spent
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium" color="primary">
-                        £21.60
                       </Typography>
                     </Box>
                   </>
