@@ -142,7 +142,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h3 className="font-semibold text-gray-900 mb-2">15-Minute Expert Consultation</h3>
             <p className="text-sm text-gray-600 mb-3">
-              Get personalized, in-depth advice from <span className="font-medium">{expertName}</span>
+              Chat with <span className="font-medium">{expertName}</span> for 15 minutes
             </p>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
