@@ -39,6 +39,8 @@ export const Chat: React.FC<ChatProps> = ({
   expertPrice = 5,
   monetizationEnabled = false 
 }) => {
+  // Ensure expertPrice is a valid number
+  const validExpertPrice = typeof expertPrice === 'number' && !isNaN(expertPrice) ? expertPrice : 5;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -65,9 +67,9 @@ export const Chat: React.FC<ChatProps> = ({
       isExpert, 
       expertId,
       monetizationEnabled,
-      expertPrice
+      validExpertPrice
     });
-  }, [isAuthenticated, isUser, isExpert, expertId, monetizationEnabled, expertPrice]);
+      }, [isAuthenticated, isUser, isExpert, expertId, monetizationEnabled, validExpertPrice]);
 
   // Check if user should be blocked from sending more messages
   const shouldBlockMessage = () => {
@@ -137,7 +139,7 @@ export const Chat: React.FC<ChatProps> = ({
   const handlePayment = async () => {
     try {
       setLoading(true);
-      console.log('Processing payment for 15-min session with', expertName, 'for £', expertPrice * 1.2);
+      console.log('Processing payment for 15-min session with', expertName, 'for £', validExpertPrice * 1.2);
       
       // TODO: Replace with actual Stripe payment flow
       // For now, simulate payment processing
@@ -249,7 +251,7 @@ export const Chat: React.FC<ChatProps> = ({
                     size="small" 
                   />
                   <Typography variant="body2" color="text.secondary">
-                    Then £{(expertPrice * 1.2).toFixed(2)} for 15-min session
+                    Then £{(validExpertPrice * 1.2).toFixed(2)} for 15-min session
                   </Typography>
                 </Box>
               </Box>
@@ -391,7 +393,7 @@ export const Chat: React.FC<ChatProps> = ({
         onClose={() => setShowPaymentDialog(false)}
         onPayment={handlePayment}
         expertName={firstName}
-        expertPrice={expertPrice}
+        expertPrice={validExpertPrice}
         loading={loading}
         error={error}
       />
@@ -401,7 +403,7 @@ export const Chat: React.FC<ChatProps> = ({
         onClose={() => setShowPaymentSuccess(false)}
         expertName={firstName}
         sessionDuration={15}
-        amountPaid={expertPrice * 1.2}
+        amountPaid={validExpertPrice * 1.2}
       />
     </Box>
   );
