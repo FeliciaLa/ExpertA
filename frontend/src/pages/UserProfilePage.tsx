@@ -788,6 +788,65 @@ const UserProfilePage: React.FC = () => {
             </Box>
           </Box>
 
+        {/* Consultation History Section */}
+        <Box sx={{ mt: 6 }}>
+          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+            Your Consultation History
+          </Typography>
+          
+          {(!user?.consultations?.sessions || user.consultations.sessions.length === 0) ? (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No consultations yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Start exploring our experts to begin your first AI consultation. 
+                Each conversation will appear here for easy access to your consultation history.
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={() => navigate('/experts')}
+                sx={{ 
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: 2
+                }}
+              >
+                Browse Experts Now
+              </Button>
+            </Paper>
+          ) : (
+            <Grid container spacing={2}>
+              {user.consultations.sessions.map((consultation) => (
+                <Grid item xs={12} key={consultation.id}>
+                  <Paper sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Box>
+                        <Typography variant="h6" gutterBottom>
+                          {consultation.expert_name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          {consultation.expert_industry} • {new Date(consultation.started_at).toLocaleDateString()} • {consultation.total_messages} messages
+                        </Typography>
+                        <Typography variant="body1">
+                          Consultation with {consultation.expert_name} about {consultation.expert_specialty}
+                        </Typography>
+                      </Box>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => navigate(`/experts/${consultation.expert_id}`)}
+                      >
+                        Chat with {consultation.expert_name.split(' ')[0]}
+                      </Button>
+                    </Box>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Box>
+
         {/* Payment Methods Section */}
         <Box sx={{ mt: 6 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -944,65 +1003,6 @@ const UserProfilePage: React.FC = () => {
               </Grid>
             </Grid>
           </Paper>
-        </Box>
-
-        {/* Consultation History Section */}
-        <Box sx={{ mt: 6 }}>
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            Your Consultation History
-          </Typography>
-          
-          {(!user?.consultations?.sessions || user.consultations.sessions.length === 0) ? (
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No consultations yet
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Start exploring our experts to begin your first AI consultation. 
-                Each conversation will appear here for easy access to your consultation history.
-              </Typography>
-              <Button
-                variant="contained"
-                onClick={() => navigate('/experts')}
-                sx={{ 
-                  py: 1.5,
-                  px: 3,
-                  borderRadius: 2
-                }}
-              >
-                Browse Experts Now
-              </Button>
-            </Paper>
-          ) : (
-            <Grid container spacing={2}>
-              {user.consultations.sessions.map((consultation) => (
-                <Grid item xs={12} key={consultation.id}>
-                  <Paper sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box>
-                        <Typography variant="h6" gutterBottom>
-                          {consultation.expert_name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
-                          {consultation.expert_industry} • {new Date(consultation.started_at).toLocaleDateString()} • {consultation.total_messages} messages
-                        </Typography>
-                        <Typography variant="body1">
-                          Consultation with {consultation.expert_name} about {consultation.expert_specialty}
-                        </Typography>
-                      </Box>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => navigate(`/experts/${consultation.expert_id}`)}
-                      >
-                        Chat with {consultation.expert_name.split(' ')[0]}
-                      </Button>
-                    </Box>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          )}
         </Box>
 
         {/* Account Settings Dialog */}
