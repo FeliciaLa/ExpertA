@@ -1001,10 +1001,13 @@ const ExpertProfile: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Last Active
+                Last Consultation
               </Typography>
               <Typography variant="h6">
-                Today
+                No consultations yet
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Most recent user session
               </Typography>
             </Paper>
           </Grid>
