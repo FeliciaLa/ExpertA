@@ -788,81 +788,112 @@ const UserProfilePage: React.FC = () => {
             </Box>
           </Box>
 
-        {/* Payment History Section */}
+        {/* Payment Methods Section */}
         <Box sx={{ mt: 6 }}>
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            Payment History
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" gutterBottom>
+              Payment Methods
+            </Typography>
+            <Button variant="outlined" size="small">
+              Add Payment Method
+            </Button>
+          </Box>
           
           {(() => {
-            // Mock payment data - replace with actual API call later
-            const mockPayments = [
+            // Mock saved payment methods - replace with actual API call later
+            const mockPaymentMethods = [
               {
                 id: 1,
-                expertName: 'feli',
-                amount: 9.60,
-                date: '2025-06-19',
-                status: 'completed',
-                sessionDuration: 15,
-                transactionId: 'txn_1234567890'
+                type: 'card',
+                brand: 'visa',
+                last4: '4242',
+                expiryMonth: 12,
+                expiryYear: 2025,
+                isDefault: true
               },
               {
                 id: 2,
-                expertName: 'Dr. Smith',
-                amount: 12.00,
-                date: '2025-06-18',
-                status: 'completed',
-                sessionDuration: 15,
-                transactionId: 'txn_0987654321'
+                type: 'card',
+                brand: 'mastercard',
+                last4: '5678',
+                expiryMonth: 6,
+                expiryYear: 2026,
+                isDefault: false
               }
             ];
 
-            return mockPayments.length === 0 ? (
+            return mockPaymentMethods.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No payments yet
+                  No payment methods saved
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  When you purchase expert consultation sessions, your payment history will appear here.
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Add a payment method to make future purchases faster and easier.
                 </Typography>
+                <Button variant="contained" color="primary">
+                  Add Your First Payment Method
+                </Button>
               </Paper>
             ) : (
               <Grid container spacing={2}>
-                {mockPayments.map((payment) => (
-                  <Grid item xs={12} key={payment.id}>
-                    <Paper sx={{ p: 3 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="h6" gutterBottom>
-                            {payment.sessionDuration}-minute session with {payment.expertName}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            {new Date(payment.date).toLocaleDateString()} • Transaction ID: {payment.transactionId}
-                          </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
-                            <Typography variant="body2" color="text.secondary">
-                              Status:
-                            </Typography>
-                            <Typography 
-                              variant="body2" 
-                              sx={{ 
-                                color: payment.status === 'completed' ? 'success.main' : 'warning.main',
-                                fontWeight: 'medium',
-                                textTransform: 'capitalize'
-                              }}
-                            >
-                              {payment.status}
-                            </Typography>
-                          </Box>
+                {mockPaymentMethods.map((method) => (
+                  <Grid item xs={12} sm={6} key={method.id}>
+                    <Paper sx={{ p: 3, position: 'relative' }}>
+                      {method.isDefault && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 12,
+                            right: 12,
+                            bgcolor: 'success.main',
+                            color: 'white',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            fontSize: '0.75rem',
+                            fontWeight: 'medium'
+                          }}
+                        >
+                          Default
                         </Box>
-                        <Box sx={{ textAlign: 'right' }}>
-                          <Typography variant="h6" color="primary">
-                            £{payment.amount.toFixed(2)}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Paid
-                          </Typography>
+                      )}
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 25,
+                            borderRadius: 1,
+                            bgcolor: method.brand === 'visa' ? '#1A1F71' : '#EB001B',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            mr: 2
+                          }}
+                        >
+                          {method.brand.toUpperCase()}
                         </Box>
+                        <Typography variant="h6">
+                          •••• •••• •••• {method.last4}
+                        </Typography>
+                      </Box>
+                      
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Expires {method.expiryMonth.toString().padStart(2, '0')}/{method.expiryYear}
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                        {!method.isDefault && (
+                          <Button size="small" variant="outlined">
+                            Set as Default
+                          </Button>
+                        )}
+                        <Button size="small" variant="outlined" color="error">
+                          Remove
+                        </Button>
                       </Box>
                     </Paper>
                   </Grid>
@@ -870,6 +901,49 @@ const UserProfilePage: React.FC = () => {
               </Grid>
             );
           })()}
+        </Box>
+
+        {/* Billing Information Section */}
+        <Box sx={{ mt: 6 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" gutterBottom>
+              Billing Information
+            </Typography>
+            <Button variant="outlined" size="small">
+              Edit Details
+            </Button>
+          </Box>
+          
+          <Paper sx={{ p: 3 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Billing Address
+                </Typography>
+                <Typography variant="body1">
+                  123 Main Street<br />
+                  London, UK<br />
+                  SW1A 1AA
+                </Typography>
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Billing Email
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  {user?.email || 'alex@example.com'}
+                </Typography>
+                
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
+                  Tax ID (Optional)
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Not provided
+                </Typography>
+              </Grid>
+            </Grid>
+          </Paper>
         </Box>
 
         {/* Consultation History Section */}
