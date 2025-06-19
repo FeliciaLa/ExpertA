@@ -39,8 +39,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
   if (!isOpen) return null;
 
-  // Ensure expertPrice is a valid number
-  const validExpertPrice = typeof expertPrice === 'number' && !isNaN(expertPrice) ? expertPrice : 5;
+  // Ensure expertPrice is a valid number (handle both number and string inputs)
+  const validExpertPrice = (() => {
+    const price = Number(expertPrice);
+    return !isNaN(price) && price > 0 ? price : 5;
+  })();
   const sessionPrice = Math.round(validExpertPrice * 1.2 * 100) / 100; // 20% platform fee
   const expertFee = validExpertPrice;
   const platformFee = Math.round((sessionPrice - expertFee) * 100) / 100;

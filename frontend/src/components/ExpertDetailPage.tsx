@@ -188,7 +188,7 @@ export const ExpertDetailPage: React.FC = () => {
           expertId={expert.id} 
           expertName={expert.name}
           monetizationEnabled={expert.profile?.monetization_enabled || false}
-          expertPrice={expert.profile?.monetization_price || 5}
+          expertPrice={Number(expert.profile?.monetization_price) || 5}
         />
       );
     }
@@ -359,7 +359,7 @@ export const ExpertDetailPage: React.FC = () => {
                   💡 This expert offers paid consultations
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  3 free questions, then £{((expert.profile.monetization_price || 5) * 1.2).toFixed(2)} for 15-min session
+                  3 free questions, then £{((Number(expert.profile.monetization_price) || 5) * 1.2).toFixed(2)} for 15-min session
                 </Typography>
               </Box>
             )}

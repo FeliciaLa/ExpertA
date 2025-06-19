@@ -39,8 +39,11 @@ export const Chat: React.FC<ChatProps> = ({
   expertPrice = 5,
   monetizationEnabled = false 
 }) => {
-  // Ensure expertPrice is a valid number
-  const validExpertPrice = typeof expertPrice === 'number' && !isNaN(expertPrice) ? expertPrice : 5;
+  // Ensure expertPrice is a valid number (handle both number and string inputs)
+  const validExpertPrice = (() => {
+    const price = Number(expertPrice);
+    return !isNaN(price) && price > 0 ? price : 5;
+  })();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
