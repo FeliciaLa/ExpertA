@@ -83,7 +83,7 @@ export const Chat: React.FC<ChatProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (loading) return;
     
     console.log('Submit pressed - auth state:', { isAuthenticated, isExpert, isUser });
 
@@ -100,6 +100,9 @@ export const Chat: React.FC<ChatProps> = ({
       setShowPaymentDialog(true);
       return;
     }
+    
+    // Only proceed with message sending if there's actual input
+    if (!input.trim()) return;
     
     const userMessage = input.trim();
     setInput('');
