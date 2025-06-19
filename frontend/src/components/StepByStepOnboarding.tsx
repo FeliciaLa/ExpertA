@@ -499,7 +499,7 @@ const StepByStepOnboarding: React.FC = () => {
         certifications: stepData.certifications,
         methodologies: stepData.methodologies,
         tools_technologies: stepData.tools_technologies,
-        monetization_enabled: stepData.monetization_enabled,
+        monetization_enabled: Boolean(stepData.monetization_enabled), // Ensure it's a boolean
         monetization_price: stepData.monetization_price
       };
 
