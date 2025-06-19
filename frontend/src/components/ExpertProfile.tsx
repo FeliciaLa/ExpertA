@@ -87,11 +87,9 @@ interface ExpertProfileData {
   monetization_enabled: boolean;
   monetization_price: number;
   
-  // Payment details
-  payment_method: string;
-  account_holder_name: string;
-  bank_account_number: string;
-  sort_code: string;
+  // Stripe Connect
+  stripe_account_id?: string;
+  stripe_connected: boolean;
 }
 
 // Tab panel component
@@ -165,10 +163,8 @@ const ExpertProfile: React.FC = () => {
     certifications: '',
     monetization_enabled: false,
     monetization_price: 5,
-    payment_method: 'bank_transfer',
-    account_holder_name: '',
-    bank_account_number: '',
-    sort_code: ''
+    stripe_account_id: '',
+    stripe_connected: false
   });
 
   // Load profile data on mount
@@ -216,10 +212,8 @@ const ExpertProfile: React.FC = () => {
         certifications: data.profile?.certifications || '',
         monetization_enabled: data.profile?.monetization_enabled || false,
         monetization_price: data.profile?.monetization_price || 5,
-        payment_method: data.profile?.payment_method || 'bank_transfer',
-        account_holder_name: data.profile?.account_holder_name || '',
-        bank_account_number: data.profile?.bank_account_number || '',
-        sort_code: data.profile?.sort_code || ''
+        stripe_account_id: data.profile?.stripe_account_id || '',
+        stripe_connected: data.profile?.stripe_connected || false
       });
       
     } catch (err: any) {
@@ -252,10 +246,8 @@ const ExpertProfile: React.FC = () => {
           certifications: profileData.certifications,
           monetization_enabled: profileData.monetization_enabled,
           monetization_price: profileData.monetization_price,
-          payment_method: profileData.payment_method,
-          account_holder_name: profileData.account_holder_name,
-          bank_account_number: profileData.bank_account_number,
-          sort_code: profileData.sort_code
+          stripe_account_id: profileData.stripe_account_id,
+          stripe_connected: profileData.stripe_connected
         }
       };
       
@@ -895,70 +887,70 @@ const ExpertProfile: React.FC = () => {
               <Grid item xs={12}>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom>
-                  Payment Details
+                  Payment Setup
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  How would you like to receive your earnings?
+                  Connect your Stripe account to receive automatic payouts
                 </Typography>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Payment Method"
-                  value={profileData.payment_method}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, payment_method: e.target.value }))}
-                  disabled={!isEditing}
-                  helperText="Select how you want to receive payments"
-                >
-                  <MenuItem value="bank_transfer">Bank Transfer</MenuItem>
-                  <MenuItem value="paypal">PayPal</MenuItem>
-                  <MenuItem value="stripe">Stripe Connect</MenuItem>
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Account Holder Name"
-                  value={profileData.account_holder_name}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, account_holder_name: e.target.value }))}
-                  placeholder="Full name on bank account"
-                  disabled={!isEditing}
-                  helperText="Name as it appears on your bank account"
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Bank Account Number"
-                  value={profileData.bank_account_number}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, bank_account_number: e.target.value }))}
-                  placeholder="12345678"
-                  disabled={!isEditing}
-                  helperText="Your bank account number"
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Sort Code"
-                  value={profileData.sort_code}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, sort_code: e.target.value }))}
-                  placeholder="12-34-56"
-                  disabled={!isEditing}
-                  helperText="6-digit sort code"
-                />
               </Grid>
 
               <Grid item xs={12}>
-                <Alert severity="info" sx={{ mt: 2 }}>
+                <Paper sx={{ p: 3, bgcolor: 'grey.50' }}>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography variant="h6" gutterBottom>
+                        Stripe Connect
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Connect your Stripe account to receive automatic payments directly to your bank account
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        • Automatic weekly payouts • Secure & trusted • No manual processing required
+                      </Typography>
+                    </Box>
+                    <Box>
+                      {profileData.stripe_connected ? (
+                        <Box textAlign="center">
+                          <Typography variant="body2" color="success.main" gutterBottom>
+                            ✓ Connected to Stripe
+                          </Typography>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            disabled={!isEditing}
+                          >
+                            Disconnect
+                          </Button>
+                        </Box>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          sx={{ 
+                            bgcolor: '#635bff',
+                            '&:hover': { bgcolor: '#5449d4' },
+                            minWidth: 160
+                          }}
+                          disabled={!isEditing}
+                          onClick={() => {
+                            // TODO: Implement Stripe Connect OAuth flow
+                            console.log('Starting Stripe Connect flow...');
+                          }}
+                        >
+                          Connect with Stripe
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                </Paper>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Alert severity="info">
                   <Typography variant="body2">
-                    <strong>Payment Schedule:</strong> Earnings are paid out weekly on Fridays. 
-                    Minimum payout threshold is £25. All payments are processed securely through our banking partner.
+                    <strong>How it works:</strong> Click "Connect with Stripe" to securely link your bank account. 
+                    Stripe will handle all payouts automatically - you'll receive your earnings directly to your bank account 
+                    every Friday. Stripe takes care of all banking compliance and tax reporting.
                   </Typography>
                 </Alert>
               </Grid>
