@@ -76,6 +76,10 @@ interface ExpertProfileData {
   methodologies: string;
   tools_technologies: string;
   certifications: string;
+  
+  // Monetization settings
+  monetization_enabled: boolean;
+  monetization_price: number;
 }
 
 const ExpertProfile: React.FC = () => {
@@ -111,7 +115,9 @@ const ExpertProfile: React.FC = () => {
     typical_problems: '',
     methodologies: '',
     tools_technologies: '',
-    certifications: ''
+    certifications: '',
+    monetization_enabled: false,
+    monetization_price: 5
   });
 
   // Load profile data on mount
@@ -152,7 +158,9 @@ const ExpertProfile: React.FC = () => {
         typical_problems: data.profile?.typical_problems || '',
         methodologies: data.profile?.methodologies || '',
         tools_technologies: data.profile?.tools_technologies || '',
-        certifications: data.profile?.certifications || ''
+        certifications: data.profile?.certifications || '',
+        monetization_enabled: data.profile?.monetization_enabled || false,
+        monetization_price: data.profile?.monetization_price || 5
       });
       
     } catch (err: any) {
@@ -182,7 +190,9 @@ const ExpertProfile: React.FC = () => {
           typical_problems: profileData.typical_problems,
           methodologies: profileData.methodologies,
           tools_technologies: profileData.tools_technologies,
-          certifications: profileData.certifications
+          certifications: profileData.certifications,
+          monetization_enabled: profileData.monetization_enabled,
+          monetization_price: profileData.monetization_price
         }
       };
       
@@ -218,7 +228,9 @@ const ExpertProfile: React.FC = () => {
             background: profileData.background,
             certifications: profileData.certifications,
             methodologies: profileData.methodologies,
-            tools_technologies: profileData.tools_technologies
+            tools_technologies: profileData.tools_technologies,
+            monetization_enabled: profileData.monetization_enabled,
+            monetization_price: profileData.monetization_price
           };
           console.log('Onboarding data:', onboardingData);
           
@@ -729,6 +741,86 @@ const ExpertProfile: React.FC = () => {
                 helperText="Professional certifications and credentials"
               />
             </Grid>
+
+            {/* Monetization Settings */}
+            <Grid item xs={12}>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Monetization Settings
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box>
+                <Typography variant="body1" gutterBottom>
+                  Do you want to monetize your AI expert consultations?
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Button
+                    variant={profileData.monetization_enabled ? "outlined" : "contained"}
+                    onClick={() => {
+                      if (isEditing) {
+                        setProfileData(prev => ({ ...prev, monetization_enabled: false }));
+                      }
+                    }}
+                    disabled={!isEditing}
+                    sx={{ mr: 2, mb: 2, minWidth: 120 }}
+                  >
+                    No - Keep it FREE
+                  </Button>
+                  <Button
+                    variant={profileData.monetization_enabled ? "contained" : "outlined"}
+                    onClick={() => {
+                      if (isEditing) {
+                        setProfileData(prev => ({ ...prev, monetization_enabled: true }));
+                      }
+                    }}
+                    disabled={!isEditing}
+                    sx={{ mb: 2, minWidth: 120 }}
+                  >
+                    Yes - Charge for consultations
+                  </Button>
+                </Box>
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                  {profileData.monetization_enabled ? 
+                    "Your AI expert will charge for focused 15-minute consultations." :
+                    "Your AI expert will be completely free for anyone to use."
+                  }
+                </Typography>
+              </Box>
+            </Grid>
+
+            {profileData.monetization_enabled && (
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Price per 15-minute consultation (£)"
+                  value={profileData.monetization_price}
+                  onChange={(e) => {
+                    const price = parseFloat(e.target.value);
+                    if (!isNaN(price) && price >= 1) {
+                      setProfileData(prev => ({ ...prev, monetization_price: price }));
+                    }
+                  }}
+                  disabled={!isEditing}
+                  inputProps={{ min: 1, max: 100, step: 1 }}
+                  helperText={
+                    <Box>
+                      <Typography variant="caption" display="block">
+                        <strong>You earn:</strong> £{profileData.monetization_price} per consultation
+                      </Typography>
+                      <Typography variant="caption" display="block">
+                        <strong>Clients pay:</strong> £{(profileData.monetization_price * 1.2).toFixed(2)} total
+                      </Typography>
+                      <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                        *Clients pay 20% extra to cover platform services
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </Grid>
+            )}
 
             {/* Delete Profile Button - Only shown when editing */}
             {isEditing && (
