@@ -86,6 +86,12 @@ interface ExpertProfileData {
   // Monetization settings
   monetization_enabled: boolean;
   monetization_price: number;
+  
+  // Payment details
+  payment_method: string;
+  account_holder_name: string;
+  bank_account_number: string;
+  sort_code: string;
 }
 
 // Tab panel component
@@ -158,7 +164,11 @@ const ExpertProfile: React.FC = () => {
     tools_technologies: '',
     certifications: '',
     monetization_enabled: false,
-    monetization_price: 5
+    monetization_price: 5,
+    payment_method: 'bank_transfer',
+    account_holder_name: '',
+    bank_account_number: '',
+    sort_code: ''
   });
 
   // Load profile data on mount
@@ -205,7 +215,11 @@ const ExpertProfile: React.FC = () => {
         tools_technologies: data.profile?.tools_technologies || '',
         certifications: data.profile?.certifications || '',
         monetization_enabled: data.profile?.monetization_enabled || false,
-        monetization_price: data.profile?.monetization_price || 5
+        monetization_price: data.profile?.monetization_price || 5,
+        payment_method: data.profile?.payment_method || 'bank_transfer',
+        account_holder_name: data.profile?.account_holder_name || '',
+        bank_account_number: data.profile?.bank_account_number || '',
+        sort_code: data.profile?.sort_code || ''
       });
       
     } catch (err: any) {
@@ -237,7 +251,11 @@ const ExpertProfile: React.FC = () => {
           tools_technologies: profileData.tools_technologies,
           certifications: profileData.certifications,
           monetization_enabled: profileData.monetization_enabled,
-          monetization_price: profileData.monetization_price
+          monetization_price: profileData.monetization_price,
+          payment_method: profileData.payment_method,
+          account_holder_name: profileData.account_holder_name,
+          bank_account_number: profileData.bank_account_number,
+          sort_code: profileData.sort_code
         }
       };
       
@@ -842,35 +860,109 @@ const ExpertProfile: React.FC = () => {
           </Grid>
 
           {profileData.monetization_enabled && (
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                type="number"
-                label="Price per 15-minute consultation (£)"
-                value={profileData.monetization_price}
-                onChange={(e) => {
-                  const price = parseFloat(e.target.value);
-                  if (!isNaN(price) && price >= 1) {
-                    setProfileData(prev => ({ ...prev, monetization_price: price }));
+            <>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Price per 15-minute consultation (£)"
+                  value={profileData.monetization_price}
+                  onChange={(e) => {
+                    const price = parseFloat(e.target.value);
+                    if (!isNaN(price) && price >= 1) {
+                      setProfileData(prev => ({ ...prev, monetization_price: price }));
+                    }
+                  }}
+                  disabled={!isEditing}
+                  inputProps={{ min: 1, max: 100, step: 1 }}
+                  helperText={
+                    <Box>
+                      <Typography variant="caption" display="block">
+                        <strong>You earn:</strong> £{profileData.monetization_price} per consultation
+                      </Typography>
+                      <Typography variant="caption" display="block">
+                        <strong>Clients pay:</strong> £{(profileData.monetization_price * 1.2).toFixed(2)} total
+                      </Typography>
+                      <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                        *Clients pay 20% extra to cover platform services
+                      </Typography>
+                    </Box>
                   }
-                }}
-                disabled={!isEditing}
-                inputProps={{ min: 1, max: 100, step: 1 }}
-                helperText={
-                  <Box>
-                    <Typography variant="caption" display="block">
-                      <strong>You earn:</strong> £{profileData.monetization_price} per consultation
-                    </Typography>
-                    <Typography variant="caption" display="block">
-                      <strong>Clients pay:</strong> £{(profileData.monetization_price * 1.2).toFixed(2)} total
-                    </Typography>
-                    <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                      *Clients pay 20% extra to cover platform services
-                    </Typography>
-                  </Box>
-                }
-              />
-            </Grid>
+                />
+              </Grid>
+
+              {/* Payment Details Section */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Payment Details
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  How would you like to receive your earnings?
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  select
+                  label="Payment Method"
+                  value={profileData.payment_method}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, payment_method: e.target.value }))}
+                  disabled={!isEditing}
+                  helperText="Select how you want to receive payments"
+                >
+                  <MenuItem value="bank_transfer">Bank Transfer</MenuItem>
+                  <MenuItem value="paypal">PayPal</MenuItem>
+                  <MenuItem value="stripe">Stripe Connect</MenuItem>
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Account Holder Name"
+                  value={profileData.account_holder_name}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, account_holder_name: e.target.value }))}
+                  placeholder="Full name on bank account"
+                  disabled={!isEditing}
+                  helperText="Name as it appears on your bank account"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Bank Account Number"
+                  value={profileData.bank_account_number}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, bank_account_number: e.target.value }))}
+                  placeholder="12345678"
+                  disabled={!isEditing}
+                  helperText="Your bank account number"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Sort Code"
+                  value={profileData.sort_code}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, sort_code: e.target.value }))}
+                  placeholder="12-34-56"
+                  disabled={!isEditing}
+                  helperText="6-digit sort code"
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  <Typography variant="body2">
+                    <strong>Payment Schedule:</strong> Earnings are paid out weekly on Fridays. 
+                    Minimum payout threshold is £25. All payments are processed securely through our banking partner.
+                  </Typography>
+                </Alert>
+              </Grid>
+            </>
           )}
 
           {/* Delete Profile Button - Only shown when editing */}
