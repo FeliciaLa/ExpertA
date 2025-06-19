@@ -321,24 +321,30 @@ export const Chat: React.FC<ChatProps> = ({
             variant="outlined"
             placeholder={
               shouldBlockMessage() 
-                ? "Upgrade to continue chatting..."
+                ? "Click Upgrade to continue chatting..."
                 : "Type your message..."
             }
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={loading || shouldBlockMessage()}
+            onClick={() => {
+              if (shouldBlockMessage()) {
+                setShowPaymentDialog(true);
+              }
+            }}
+            disabled={loading}
             size="medium"
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
                 backgroundColor: shouldBlockMessage() ? '#f5f5f5' : '#f8f9fa',
+                cursor: shouldBlockMessage() ? 'pointer' : 'text',
               }
             }}
           />
           <Button
             type="submit"
             variant="contained"
-            disabled={loading || !input.trim() || shouldBlockMessage()}
+            disabled={loading || (!shouldBlockMessage() && !input.trim())}
             sx={{
               px: 4,
               borderRadius: 2,
