@@ -18,6 +18,8 @@ import { Payment } from '@mui/icons-material';
 import { chatService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
+import PaymentDialog from './PaymentDialog';
+import PaymentSuccessDialog from './PaymentSuccessDialog';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -43,6 +45,7 @@ export const Chat: React.FC<ChatProps> = ({
   const [error, setError] = useState('');
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   const [sessionStats, setSessionStats] = useState({
     messageCount: 0,
     hasActivePaidSession: false,
@@ -133,11 +136,19 @@ export const Chat: React.FC<ChatProps> = ({
   // Handle payment (mock implementation)
   const handlePayment = async () => {
     try {
-      // TODO: Implement actual payment flow
+      setLoading(true);
       console.log('Processing payment for 15-min session with', expertName, 'for £', expertPrice * 1.2);
       
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // TODO: Replace with actual Stripe payment flow
+      // For now, simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Simulate random payment success/failure for testing
+      const paymentSuccess = Math.random() > 0.1; // 90% success rate
+      
+      if (!paymentSuccess) {
+        throw new Error('Payment failed. Please try again.');
+      }
       
       // Update session to paid status
       setSessionStats(prev => ({
@@ -147,16 +158,19 @@ export const Chat: React.FC<ChatProps> = ({
       }));
       
       setShowPaymentDialog(false);
+      setShowPaymentSuccess(true);
       
       // Add a system message about the paid session
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice.`
+        content: `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice. Your session is active now.`
       }]);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment error:', error);
-      setError('Payment failed. Please try again.');
+      setError(error.message || 'Payment failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -182,67 +196,7 @@ export const Chat: React.FC<ChatProps> = ({
     }
   };
 
-  // Render payment dialog
-  const renderPaymentDialog = () => (
-    <Dialog
-      open={showPaymentDialog}
-      onClose={() => setShowPaymentDialog(false)}
-      maxWidth="sm"
-      fullWidth
-    >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Payment color="primary" />
-          <Typography variant="h6">
-            Continue Consultation with {firstName}
-          </Typography>
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        <Alert severity="info" sx={{ mb: 3 }}>
-          You've used your 3 free questions! To continue getting expert advice from {firstName}, 
-          upgrade to a 15-minute consultation session.
-        </Alert>
-        
-        <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1, mb: 2 }}>
-          <Typography variant="h6" color="primary" gutterBottom>
-            15-Minute Expert Consultation
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Get unlimited questions and in-depth expert advice for the next 15 minutes.
-          </Typography>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="body1">You pay:</Typography>
-            <Typography variant="h6" color="primary">£{(expertPrice * 1.2).toFixed(2)}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">Expert receives:</Typography>
-            <Typography variant="body2" color="text.secondary">£{expertPrice}</Typography>
-          </Box>
-          <Typography variant="caption" color="text.secondary">
-            *20% platform fee covers hosting, payments & maintenance
-          </Typography>
-        </Box>
-      </DialogContent>
-      <DialogActions sx={{ p: 3 }}>
-        <Button 
-          onClick={() => setShowPaymentDialog(false)}
-          color="inherit"
-        >
-          Maybe Later
-        </Button>
-        <Button
-          onClick={handlePayment}
-          variant="contained"
-          size="large"
-          sx={{ px: 4 }}
-        >
-          Pay £{(expertPrice * 1.2).toFixed(2)} & Continue
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
+
 
   // Create login prompt or chat based on authentication status
   const renderChatOrPrompt = () => {
@@ -426,7 +380,23 @@ export const Chat: React.FC<ChatProps> = ({
         onRegister={handleUserRegister}
       />
 
-      {renderPaymentDialog()}
+      <PaymentDialog
+        isOpen={showPaymentDialog}
+        onClose={() => setShowPaymentDialog(false)}
+        onPayment={handlePayment}
+        expertName={firstName}
+        expertPrice={expertPrice}
+        loading={loading}
+        error={error}
+      />
+      
+      <PaymentSuccessDialog
+        isOpen={showPaymentSuccess}
+        onClose={() => setShowPaymentSuccess(false)}
+        expertName={firstName}
+        sessionDuration={15}
+        amountPaid={expertPrice * 1.2}
+      />
     </Box>
   );
 }; 
