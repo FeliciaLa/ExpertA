@@ -765,7 +765,7 @@ const UserProfilePage: React.FC = () => {
                       </Typography>
                     </Box>
                     
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
                       <Typography variant="body1" color="text.secondary">
                         Most Consulted Industry
                       </Typography>
@@ -773,11 +773,104 @@ const UserProfilePage: React.FC = () => {
                         {stats.mostUsedIndustry}
                       </Typography>
                     </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Total Spent
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium" color="primary">
+                        £21.60
+                      </Typography>
+                    </Box>
                   </>
                 );
               })()}
             </Box>
           </Box>
+
+        {/* Payment History Section */}
+        <Box sx={{ mt: 6 }}>
+          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+            Payment History
+          </Typography>
+          
+          {(() => {
+            // Mock payment data - replace with actual API call later
+            const mockPayments = [
+              {
+                id: 1,
+                expertName: 'feli',
+                amount: 9.60,
+                date: '2025-06-19',
+                status: 'completed',
+                sessionDuration: 15,
+                transactionId: 'txn_1234567890'
+              },
+              {
+                id: 2,
+                expertName: 'Dr. Smith',
+                amount: 12.00,
+                date: '2025-06-18',
+                status: 'completed',
+                sessionDuration: 15,
+                transactionId: 'txn_0987654321'
+              }
+            ];
+
+            return mockPayments.length === 0 ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No payments yet
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  When you purchase expert consultation sessions, your payment history will appear here.
+                </Typography>
+              </Paper>
+            ) : (
+              <Grid container spacing={2}>
+                {mockPayments.map((payment) => (
+                  <Grid item xs={12} key={payment.id}>
+                    <Paper sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="h6" gutterBottom>
+                            {payment.sessionDuration}-minute session with {payment.expertName}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            {new Date(payment.date).toLocaleDateString()} • Transaction ID: {payment.transactionId}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Status:
+                            </Typography>
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                color: payment.status === 'completed' ? 'success.main' : 'warning.main',
+                                fontWeight: 'medium',
+                                textTransform: 'capitalize'
+                              }}
+                            >
+                              {payment.status}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography variant="h6" color="primary">
+                            £{payment.amount.toFixed(2)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Paid
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            );
+          })()}
+        </Box>
 
         {/* Consultation History Section */}
         <Box sx={{ mt: 6 }}>
