@@ -2968,7 +2968,7 @@ def disconnect_stripe_account(request):
 def get_stripe_connect_status(request, expert_id):
     """Get Stripe Connect status for an expert"""
     try:
-        expert_profile = ExpertProfile.objects.get(user_id=expert_id)
+        expert_profile = ExpertProfile.objects.get(expert_id=expert_id)
         return Response({
             'connected': expert_profile.stripe_connected,
             'details_submitted': expert_profile.stripe_details_submitted,
@@ -2996,7 +2996,7 @@ def create_payment_intent(request):
         
         # Get expert and pricing info
         try:
-            expert_profile = ExpertProfile.objects.get(user_id=expert_id)
+            expert_profile = ExpertProfile.objects.get(expert_id=expert_id)
             if not expert_profile.monetization_enabled:
                 return Response({'error': 'This expert does not accept payments'}, status=400)
                 
