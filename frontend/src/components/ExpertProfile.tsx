@@ -408,9 +408,16 @@ const ExpertProfile: React.FC = () => {
 
   const handleConnectStripe = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      const tokensStr = localStorage.getItem('tokens');
+      if (!tokensStr) {
         throw new Error('No authentication token found');
+      }
+      
+      const tokens = JSON.parse(tokensStr);
+      const token = tokens.access;
+      
+      if (!token) {
+        throw new Error('No access token found');
       }
 
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -440,9 +447,16 @@ const ExpertProfile: React.FC = () => {
 
   const handleDisconnectStripe = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      const tokensStr = localStorage.getItem('tokens');
+      if (!tokensStr) {
         throw new Error('No authentication token found');
+      }
+      
+      const tokens = JSON.parse(tokensStr);
+      const token = tokens.access;
+      
+      if (!token) {
+        throw new Error('No access token found');
       }
 
       const user = JSON.parse(localStorage.getItem('user') || '{}');
