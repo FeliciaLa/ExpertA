@@ -416,7 +416,7 @@ const ExpertProfile: React.FC = () => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const expertId = user.id;
 
-      const response = await fetch(`${API_URL}/stripe/connect/url/`, {
+      const response = await fetch(`${API_URL}stripe/connect/url/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -448,7 +448,7 @@ const ExpertProfile: React.FC = () => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const expertId = user.id;
 
-      const response = await fetch(`${API_URL}/stripe/connect/disconnect/`, {
+      const response = await fetch(`${API_URL}stripe/connect/disconnect/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

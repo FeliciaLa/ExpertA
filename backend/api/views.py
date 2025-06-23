@@ -45,23 +45,37 @@ Expert = get_user_model()
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(["POST", "OPTIONS"])
 def create_stripe_connect_url(request):
     """Create a Stripe Connect OAuth URL for expert onboarding"""
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight OK'})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+    
     try:
         data = json.loads(request.body)
         expert_id = data.get('expert_id')
         
         if not expert_id:
-            return JsonResponse({'error': 'Expert ID is required'}, status=400)
+            response = JsonResponse({'error': 'Expert ID is required'}, status=400)
+        else:
+            # Create the OAuth URL
+            connect_url = f"https://connect.stripe.com/oauth/authorize?response_type=code&client_id={os.getenv('STRIPE_CONNECT_CLIENT_ID')}&scope=read_write&state={expert_id}"
+            response = JsonResponse({'connect_url': connect_url})
         
-        # Create the OAuth URL
-        connect_url = f"https://connect.stripe.com/oauth/authorize?response_type=code&client_id={os.getenv('STRIPE_CONNECT_CLIENT_ID')}&scope=read_write&state={expert_id}"
-        
-        return JsonResponse({'connect_url': connect_url})
+        # Add CORS headers
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
     
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        response = JsonResponse({'error': str(e)}, status=500)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
 
 @csrf_exempt
 def stripe_connect_callback(request):
@@ -108,38 +122,55 @@ def stripe_connect_callback(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(["POST", "OPTIONS"])
 def disconnect_stripe_account(request):
     """Disconnect a Stripe Connect account"""
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight OK'})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+    
     try:
         data = json.loads(request.body)
         expert_id = data.get('expert_id')
         
         if not expert_id:
-            return JsonResponse({'error': 'Expert ID is required'}, status=400)
+            response = JsonResponse({'error': 'Expert ID is required'}, status=400)
+        else:
+            expert = ExpertProfile.objects.get(id=expert_id)
+            
+            if expert.stripe_account_id:
+                # Deauthorize the account
+                stripe.OAuth.deauthorize(
+                    client_id=os.getenv('STRIPE_CONNECT_CLIENT_ID'),
+                    stripe_user_id=expert.stripe_account_id
+                )
+            
+            # Clear Stripe Connect fields
+            expert.stripe_account_id = None
+            expert.stripe_connected = False
+            expert.stripe_details_submitted = False
+            expert.stripe_payouts_enabled = False
+            expert.save()
+            
+            response = JsonResponse({'success': True})
         
-        expert = ExpertProfile.objects.get(id=expert_id)
-        
-        if expert.stripe_account_id:
-            # Deauthorize the account
-            stripe.OAuth.deauthorize(
-                client_id=os.getenv('STRIPE_CONNECT_CLIENT_ID'),
-                stripe_user_id=expert.stripe_account_id
-            )
-        
-        # Clear Stripe Connect fields
-        expert.stripe_account_id = None
-        expert.stripe_connected = False
-        expert.stripe_details_submitted = False
-        expert.stripe_payouts_enabled = False
-        expert.save()
-        
-        return JsonResponse({'success': True})
+        # Add CORS headers
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
     
     except ExpertProfile.DoesNotExist:
-        return JsonResponse({'error': 'Expert not found'}, status=404)
+        response = JsonResponse({'error': 'Expert not found'}, status=404)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        response = JsonResponse({'error': str(e)}, status=500)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
 
 @csrf_exempt
 @require_http_methods(["GET"])
