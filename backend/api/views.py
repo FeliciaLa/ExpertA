@@ -36,6 +36,7 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
+from rest_framework.decorators import api_view
 
 logger = logging.getLogger(__name__)
 
@@ -2932,3 +2933,156 @@ class ConsultationSessionView(APIView):
             return Response({
                 'error': 'Failed to manage consultation session'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST', 'OPTIONS'])
+def disconnect_stripe_account(request):
+    """Disconnect expert's Stripe account"""
+    if request.method == 'OPTIONS':
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        # Get the expert profile
+        expert_profile = ExpertProfile.objects.get(user=request.user)
+        
+        # Clear Stripe connection
+        expert_profile.stripe_account_id = ''
+        expert_profile.stripe_connected = False
+        expert_profile.stripe_details_submitted = False
+        expert_profile.stripe_payouts_enabled = False
+        expert_profile.save()
+        
+        return Response({'success': True})
+        
+    except ExpertProfile.DoesNotExist:
+        return Response({'error': 'Expert profile not found'}, status=404)
+    except Exception as e:
+        print(f"Error disconnecting Stripe account: {str(e)}")
+        return Response({'error': 'Failed to disconnect account'}, status=500)
+
+
+@api_view(['GET'])
+def get_stripe_connect_status(request, expert_id):
+    """Get Stripe Connect status for an expert"""
+    try:
+        expert_profile = ExpertProfile.objects.get(user_id=expert_id)
+        return Response({
+            'connected': expert_profile.stripe_connected,
+            'details_submitted': expert_profile.stripe_details_submitted,
+            'payouts_enabled': expert_profile.stripe_payouts_enabled
+        })
+    except ExpertProfile.DoesNotExist:
+        return Response({'error': 'Expert not found'}, status=404)
+
+
+# User Payment Processing Views
+@api_view(['POST', 'OPTIONS'])
+def create_payment_intent(request):
+    """Create a Stripe Payment Intent for user consultation payment"""
+    if request.method == 'OPTIONS':
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        expert_id = request.data.get('expert_id')
+        if not expert_id:
+            return Response({'error': 'Expert ID is required'}, status=400)
+        
+        # Get expert and pricing info
+        try:
+            expert_profile = ExpertProfile.objects.get(user_id=expert_id)
+            if not expert_profile.monetization_enabled:
+                return Response({'error': 'This expert does not accept payments'}, status=400)
+                
+            expert_price = float(expert_profile.monetization_price or 5.0)
+        except ExpertProfile.DoesNotExist:
+            return Response({'error': 'Expert not found'}, status=404)
+        
+        # Check if expert has Stripe Connect set up
+        if not expert_profile.stripe_connected:
+            return Response({'error': 'Expert has not set up payment processing'}, status=400)
+        
+        # Calculate amounts (in pence for Stripe)
+        platform_fee_rate = 0.2  # 20% platform fee
+        total_amount = expert_price * 1.2  # Expert price + 20% platform fee
+        expert_amount = expert_price
+        platform_amount = total_amount - expert_amount
+        
+        # Create Payment Intent with Stripe Connect
+        intent = stripe.PaymentIntent.create(
+            amount=int(total_amount * 100),  # Convert to pence
+            currency='gbp',
+            application_fee_amount=int(platform_amount * 100),  # Platform fee in pence
+            transfer_data={
+                'destination': expert_profile.stripe_account_id,
+            },
+            metadata={
+                'expert_id': expert_id,
+                'user_id': str(request.user.id),
+                'expert_amount': str(expert_amount),
+                'platform_amount': str(platform_amount),
+                'session_type': 'consultation'
+            }
+        )
+        
+        return Response({
+            'client_secret': intent.client_secret,
+            'payment_intent_id': intent.id,
+            'amount': total_amount,
+            'expert_amount': expert_amount,
+            'platform_amount': platform_amount
+        })
+        
+    except Exception as e:
+        print(f"Error creating payment intent: {str(e)}")
+        return Response({'error': 'Failed to create payment intent'}, status=500)
+
+
+@api_view(['POST', 'OPTIONS'])
+def confirm_payment(request):
+    """Confirm payment and create consultation session"""
+    if request.method == 'OPTIONS':
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        payment_intent_id = request.data.get('payment_intent_id')
+        expert_id = request.data.get('expert_id')
+        
+        if not payment_intent_id or not expert_id:
+            return Response({'error': 'Payment intent ID and expert ID are required'}, status=400)
+        
+        # Retrieve the payment intent from Stripe
+        intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+        
+        if intent.status != 'succeeded':
+            return Response({'error': 'Payment not completed'}, status=400)
+        
+        # Create consultation session record
+        from .models import ConsultationSession
+        session = ConsultationSession.objects.create(
+            user=request.user,
+            expert_id=expert_id,
+            payment_intent_id=payment_intent_id,
+            amount_paid=float(intent.amount) / 100,  # Convert from pence
+            status=ConsultationSession.Status.ACTIVE
+        )
+        
+        return Response({
+            'success': True,
+            'session_id': str(session.id),
+            'message': 'Payment confirmed and session created'
+        })
+        
+    except Exception as e:
+        print(f"Error confirming payment: {str(e)}")
+        return Response({'error': 'Failed to confirm payment'}, status=500)

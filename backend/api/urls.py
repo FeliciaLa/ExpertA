@@ -31,7 +31,9 @@ from .views import (
     create_stripe_connect_url,
     stripe_connect_callback,
     disconnect_stripe_account,
-    get_stripe_account_status
+    get_stripe_account_status,
+    create_payment_intent,
+    confirm_payment
 )
 from .training_views import OnboardingView, TrainingChatView, OnboardingAnswersView, KnowledgeProcessingView, TrainingStatsView
 from .document_views import DocumentListView, DocumentUploadView, DocumentDeleteView
@@ -221,6 +223,10 @@ urlpatterns = [
     path('stripe/connect/callback/', stripe_connect_callback, name='stripe-connect-callback'),
     path('stripe/connect/disconnect/', disconnect_stripe_account, name='disconnect-stripe-account'),
     path('stripe/connect/status/<str:expert_id>/', get_stripe_account_status, name='stripe-account-status'),
+    
+    # User Payment endpoints
+    path('payment/create-intent/', create_payment_intent, name='create-payment-intent'),
+    path('payment/confirm/', confirm_payment, name='confirm-payment'),
     
     # CORS test endpoint
     path('cors-test/', cors_test, name='cors-test'),

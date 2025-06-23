@@ -18,7 +18,7 @@ import { Payment } from '@mui/icons-material';
 import { chatService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
-import PaymentDialog from './PaymentDialog';
+import PaymentSection from './PaymentSection';
 import PaymentSuccessDialog from './PaymentSuccessDialog';
 
 interface Message {
@@ -141,45 +141,23 @@ export const Chat: React.FC<ChatProps> = ({
     }
   };
 
-  // Handle payment (mock implementation)
-  const handlePayment = async () => {
-    try {
-      setLoading(true);
-      console.log('Processing payment for 15-min session with', expertName, 'for £', validExpertPrice * 1.2);
-      
-      // TODO: Replace with actual Stripe payment flow
-      // For now, simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Simulate random payment success/failure for testing
-      const paymentSuccess = Math.random() > 0.1; // 90% success rate
-      
-      if (!paymentSuccess) {
-        throw new Error('Payment failed. Please try again.');
-      }
-      
-      // Update session to paid status
-      setSessionStats(prev => ({
-        ...prev,
-        hasActivePaidSession: true,
-        freeMessagesRemaining: 0
-      }));
-      
-      setShowPaymentDialog(false);
-      setShowPaymentSuccess(true);
-      
-      // Add a system message about the paid session
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice. Your session is active now.`
-      }]);
-      
-    } catch (error: any) {
-      console.error('Payment error:', error);
-      setError(error.message || 'Payment failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  // Handle payment success
+  const handlePaymentSuccess = () => {
+    // Update session to paid status
+    setSessionStats(prev => ({
+      ...prev,
+      hasActivePaidSession: true,
+      freeMessagesRemaining: 0
+    }));
+    
+    setShowPaymentDialog(false);
+    setShowPaymentSuccess(true);
+    
+    // Add a system message about the paid session
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice. Your session is active now.`
+    }]);
   };
 
   // Handle user sign in
@@ -394,15 +372,14 @@ export const Chat: React.FC<ChatProps> = ({
         onRegister={handleUserRegister}
       />
 
-      <PaymentDialog
-        isOpen={showPaymentDialog}
-        onClose={() => setShowPaymentDialog(false)}
-        onPayment={handlePayment}
-        expertName={firstName}
-        expertPrice={validExpertPrice}
-        loading={loading}
-        error={error}
-      />
+      {showPaymentDialog && (
+        <PaymentSection
+          expertId={expertId}
+          expertName={firstName}
+          price={validExpertPrice * 1.2}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
       
       <PaymentSuccessDialog
         isOpen={showPaymentSuccess}
