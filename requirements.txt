@@ -25,4 +25,7 @@ django-storages==1.14.2
 
 # AI services
 pinecone-client==5.0.1
-openai==1.54.4 
+openai==1.54.4
+
+# Payment processing
+stripe==7.8.0 
