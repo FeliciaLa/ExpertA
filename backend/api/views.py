@@ -29,10 +29,165 @@ from rest_framework import generics
 from .jwt_views import CustomTokenObtainPairSerializer
 from .utils import send_verification_email, is_token_expired
 from django.core.validators import ValidationError
+import os
+import stripe
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
 
 logger = logging.getLogger(__name__)
 
 Expert = get_user_model()
+
+# Configure Stripe
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_stripe_connect_url(request):
+    """Create a Stripe Connect OAuth URL for expert onboarding"""
+    try:
+        data = json.loads(request.body)
+        expert_id = data.get('expert_id')
+        
+        if not expert_id:
+            return JsonResponse({'error': 'Expert ID is required'}, status=400)
+        
+        # Create the OAuth URL
+        connect_url = f"https://connect.stripe.com/oauth/authorize?response_type=code&client_id={os.getenv('STRIPE_CONNECT_CLIENT_ID')}&scope=read_write&state={expert_id}"
+        
+        return JsonResponse({'connect_url': connect_url})
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def stripe_connect_callback(request):
+    """Handle Stripe Connect OAuth callback"""
+    try:
+        code = request.GET.get('code')
+        state = request.GET.get('state')  # This is our expert_id
+        error = request.GET.get('error')
+        
+        if error:
+            return JsonResponse({'error': f'Stripe Connect error: {error}'}, status=400)
+        
+        if not code or not state:
+            return JsonResponse({'error': 'Missing authorization code or state'}, status=400)
+        
+        # Exchange the authorization code for an access token
+        token_response = stripe.OAuth.token(
+            grant_type='authorization_code',
+            code=code,
+        )
+        
+        stripe_account_id = token_response['stripe_user_id']
+        
+        # Update the expert profile with Stripe Connect information
+        try:
+            expert = ExpertProfile.objects.get(id=state)
+            expert.stripe_account_id = stripe_account_id
+            expert.stripe_connected = True
+            
+            # Check if the account has completed onboarding
+            account = stripe.Account.retrieve(stripe_account_id)
+            expert.stripe_details_submitted = account.details_submitted
+            expert.stripe_payouts_enabled = account.payouts_enabled
+            
+            expert.save()
+            
+            # Redirect to the expert profile page with success
+            return redirect(f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/expert-profile?stripe_connected=true")
+            
+        except ExpertProfile.DoesNotExist:
+            return JsonResponse({'error': 'Expert not found'}, status=404)
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def disconnect_stripe_account(request):
+    """Disconnect a Stripe Connect account"""
+    try:
+        data = json.loads(request.body)
+        expert_id = data.get('expert_id')
+        
+        if not expert_id:
+            return JsonResponse({'error': 'Expert ID is required'}, status=400)
+        
+        expert = ExpertProfile.objects.get(id=expert_id)
+        
+        if expert.stripe_account_id:
+            # Deauthorize the account
+            stripe.OAuth.deauthorize(
+                client_id=os.getenv('STRIPE_CONNECT_CLIENT_ID'),
+                stripe_user_id=expert.stripe_account_id
+            )
+        
+        # Clear Stripe Connect fields
+        expert.stripe_account_id = None
+        expert.stripe_connected = False
+        expert.stripe_details_submitted = False
+        expert.stripe_payouts_enabled = False
+        expert.save()
+        
+        return JsonResponse({'success': True})
+    
+    except ExpertProfile.DoesNotExist:
+        return JsonResponse({'error': 'Expert not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_stripe_account_status(request, expert_id):
+    """Get the current Stripe Connect account status for an expert"""
+    try:
+        expert = ExpertProfile.objects.get(id=expert_id)
+        
+        status = {
+            'stripe_connected': expert.stripe_connected,
+            'stripe_details_submitted': expert.stripe_details_submitted,
+            'stripe_payouts_enabled': expert.stripe_payouts_enabled,
+            'stripe_account_id': expert.stripe_account_id
+        }
+        
+        # If connected, get fresh status from Stripe
+        if expert.stripe_account_id:
+            try:
+                account = stripe.Account.retrieve(expert.stripe_account_id)
+                status['stripe_details_submitted'] = account.details_submitted
+                status['stripe_payouts_enabled'] = account.payouts_enabled
+                
+                # Update our database with fresh info
+                expert.stripe_details_submitted = account.details_submitted
+                expert.stripe_payouts_enabled = account.payouts_enabled
+                expert.save()
+                
+            except stripe.error.StripeError:
+                # Account might have been deleted or deauthorized
+                expert.stripe_connected = False
+                expert.stripe_account_id = None
+                expert.stripe_details_submitted = False
+                expert.stripe_payouts_enabled = False
+                expert.save()
+                
+                status = {
+                    'stripe_connected': False,
+                    'stripe_details_submitted': False,
+                    'stripe_payouts_enabled': False,
+                    'stripe_account_id': None
+                }
+        
+        return JsonResponse(status)
+    
+    except ExpertProfile.DoesNotExist:
+        return JsonResponse({'error': 'Expert not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 # Create your views here.
 

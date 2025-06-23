@@ -406,6 +406,74 @@ const ExpertProfile: React.FC = () => {
     }
   };
 
+  const handleConnectStripe = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const expertId = user.id;
+
+      const response = await fetch(`${API_URL}/stripe/connect/url/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ expert_id: expertId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create Stripe Connect URL');
+      }
+
+      const data = await response.json();
+      // Redirect to Stripe Connect OAuth flow
+      window.location.href = data.connect_url;
+    } catch (error) {
+      console.error('Error connecting to Stripe:', error);
+      setError('Failed to connect to Stripe. Please try again.');
+    }
+  };
+
+  const handleDisconnectStripe = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const expertId = user.id;
+
+      const response = await fetch(`${API_URL}/stripe/connect/disconnect/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ expert_id: expertId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to disconnect Stripe account');
+      }
+
+      // Update local state
+      setProfileData(prev => ({
+        ...prev,
+        stripe_connected: false
+      }));
+
+      setSuccess('Successfully disconnected from Stripe');
+    } catch (error) {
+      console.error('Error disconnecting from Stripe:', error);
+      setError('Failed to disconnect from Stripe. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" p={4}>
@@ -918,6 +986,7 @@ const ExpertProfile: React.FC = () => {
                             variant="outlined"
                             size="small"
                             disabled={!isEditing}
+                            onClick={handleDisconnectStripe}
                           >
                             Disconnect
                           </Button>
@@ -932,10 +1001,7 @@ const ExpertProfile: React.FC = () => {
                             minWidth: 160
                           }}
                           disabled={!isEditing}
-                          onClick={() => {
-                            // TODO: Implement Stripe Connect OAuth flow
-                            console.log('Starting Stripe Connect flow...');
-                          }}
+                          onClick={handleConnectStripe}
                         >
                           Connect with Stripe
                         </Button>
