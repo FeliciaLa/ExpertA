@@ -21,6 +21,17 @@ class ExpertProfile(models.Model):
     certifications = models.TextField(blank=True)
     methodologies = models.TextField(blank=True)
     tools_technologies = models.TextField(blank=True)
+    
+    # Monetization fields
+    monetization_enabled = models.BooleanField(default=False)
+    monetization_price = models.DecimalField(max_digits=6, decimal_places=2, default=5.00)
+    
+    # Stripe Connect fields
+    stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_connected = models.BooleanField(default=False)
+    stripe_details_submitted = models.BooleanField(default=False)
+    stripe_payouts_enabled = models.BooleanField(default=False)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

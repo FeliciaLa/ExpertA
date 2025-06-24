@@ -50,6 +50,8 @@ export interface ExpertProfileData {
   certifications: string;
   methodologies: string;
   tools_technologies: string;
+  monetization_enabled: boolean;
+  monetization_price: number;
 }
 
 export interface ExpertData {

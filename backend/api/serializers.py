@@ -12,7 +12,9 @@ class ExpertProfileDetailSerializer(serializers.ModelSerializer):
             'background',
             'certifications',
             'methodologies',
-            'tools_technologies'
+            'tools_technologies',
+            'monetization_enabled',
+            'monetization_price'
         ]
 
 class ExpertProfileSerializer(serializers.ModelSerializer):
@@ -55,7 +57,9 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
                 'background': profile.background,
                 'certifications': profile.certifications,
                 'methodologies': profile.methodologies,
-                'tools_technologies': profile.tools_technologies
+                'tools_technologies': profile.tools_technologies,
+                'monetization_enabled': profile.monetization_enabled,
+                'monetization_price': float(profile.monetization_price)
             }
         except ExpertProfile.DoesNotExist:
             # Create empty profile if it doesn't exist
@@ -68,7 +72,9 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
                 background='',
                 certifications='',
                 methodologies='',
-                tools_technologies=''
+                tools_technologies='',
+                monetization_enabled=False,
+                monetization_price=5.00
             )
             return {
                 'industry': '',
@@ -78,7 +84,9 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
                 'background': '',
                 'certifications': '',
                 'methodologies': '',
-                'tools_technologies': ''
+                'tools_technologies': '',
+                'monetization_enabled': False,
+                'monetization_price': 5.00
             }
         except Exception as e:
             print(f"Error getting profile for {obj.email}: {e}")
@@ -90,7 +98,9 @@ class ExpertProfileSerializer(serializers.ModelSerializer):
                 'background': '',
                 'certifications': '',
                 'methodologies': '',
-                'tools_technologies': ''
+                'tools_technologies': '',
+                'monetization_enabled': False,
+                'monetization_price': 5.00
             }
 
 class ExpertSerializer(serializers.ModelSerializer):

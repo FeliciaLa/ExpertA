@@ -29,10 +29,197 @@ from rest_framework import generics
 from .jwt_views import CustomTokenObtainPairSerializer
 from .utils import send_verification_email, is_token_expired
 from django.core.validators import ValidationError
+import os
+import stripe
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
+from rest_framework.decorators import api_view
 
 logger = logging.getLogger(__name__)
 
 Expert = get_user_model()
+
+# Configure Stripe
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+@csrf_exempt
+@require_http_methods(["POST", "OPTIONS"])
+def create_stripe_connect_url(request):
+    """Create a Stripe Connect OAuth URL for expert onboarding"""
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight OK'})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+    
+    try:
+        data = json.loads(request.body)
+        expert_id = data.get('expert_id')
+        
+        if not expert_id:
+            response = JsonResponse({'error': 'Expert ID is required'}, status=400)
+        else:
+            # Create the OAuth URL
+            connect_url = f"https://connect.stripe.com/oauth/authorize?response_type=code&client_id={os.getenv('STRIPE_CONNECT_CLIENT_ID')}&scope=read_write&state={expert_id}"
+            response = JsonResponse({'connect_url': connect_url})
+        
+        # Add CORS headers
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+    
+    except Exception as e:
+        response = JsonResponse({'error': str(e)}, status=500)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
+
+@csrf_exempt
+def stripe_connect_callback(request):
+    """Handle Stripe Connect OAuth callback"""
+    try:
+        code = request.GET.get('code')
+        state = request.GET.get('state')  # This is our expert_id
+        error = request.GET.get('error')
+        
+        if error:
+            return JsonResponse({'error': f'Stripe Connect error: {error}'}, status=400)
+        
+        if not code or not state:
+            return JsonResponse({'error': 'Missing authorization code or state'}, status=400)
+        
+        # Exchange the authorization code for an access token
+        token_response = stripe.OAuth.token(
+            grant_type='authorization_code',
+            code=code,
+        )
+        
+        stripe_account_id = token_response['stripe_user_id']
+        
+        # Update the expert profile with Stripe Connect information
+        try:
+            expert = ExpertProfile.objects.get(id=state)
+            expert.stripe_account_id = stripe_account_id
+            expert.stripe_connected = True
+            
+            # Check if the account has completed onboarding
+            account = stripe.Account.retrieve(stripe_account_id)
+            expert.stripe_details_submitted = account.details_submitted
+            expert.stripe_payouts_enabled = account.payouts_enabled
+            
+            expert.save()
+            
+            # Redirect to the expert profile page with success
+            return redirect(f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/expert-profile?stripe_connected=true")
+            
+        except ExpertProfile.DoesNotExist:
+            return JsonResponse({'error': 'Expert not found'}, status=404)
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST", "OPTIONS"])
+def disconnect_stripe_account(request):
+    """Disconnect a Stripe Connect account"""
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'message': 'CORS preflight OK'})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+    
+    try:
+        data = json.loads(request.body)
+        expert_id = data.get('expert_id')
+        
+        if not expert_id:
+            response = JsonResponse({'error': 'Expert ID is required'}, status=400)
+        else:
+            expert = ExpertProfile.objects.get(id=expert_id)
+            
+            if expert.stripe_account_id:
+                # Deauthorize the account
+                stripe.OAuth.deauthorize(
+                    client_id=os.getenv('STRIPE_CONNECT_CLIENT_ID'),
+                    stripe_user_id=expert.stripe_account_id
+                )
+            
+            # Clear Stripe Connect fields
+            expert.stripe_account_id = None
+            expert.stripe_connected = False
+            expert.stripe_details_submitted = False
+            expert.stripe_payouts_enabled = False
+            expert.save()
+            
+            response = JsonResponse({'success': True})
+        
+        # Add CORS headers
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+    
+    except ExpertProfile.DoesNotExist:
+        response = JsonResponse({'error': 'Expert not found'}, status=404)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
+    except Exception as e:
+        response = JsonResponse({'error': str(e)}, status=500)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_stripe_account_status(request, expert_id):
+    """Get the current Stripe Connect account status for an expert"""
+    try:
+        expert = ExpertProfile.objects.get(id=expert_id)
+        
+        status = {
+            'stripe_connected': expert.stripe_connected,
+            'stripe_details_submitted': expert.stripe_details_submitted,
+            'stripe_payouts_enabled': expert.stripe_payouts_enabled,
+            'stripe_account_id': expert.stripe_account_id
+        }
+        
+        # If connected, get fresh status from Stripe
+        if expert.stripe_account_id:
+            try:
+                account = stripe.Account.retrieve(expert.stripe_account_id)
+                status['stripe_details_submitted'] = account.details_submitted
+                status['stripe_payouts_enabled'] = account.payouts_enabled
+                
+                # Update our database with fresh info
+                expert.stripe_details_submitted = account.details_submitted
+                expert.stripe_payouts_enabled = account.payouts_enabled
+                expert.save()
+                
+            except stripe.error.StripeError:
+                # Account might have been deleted or deauthorized
+                expert.stripe_connected = False
+                expert.stripe_account_id = None
+                expert.stripe_details_submitted = False
+                expert.stripe_payouts_enabled = False
+                expert.save()
+                
+                status = {
+                    'stripe_connected': False,
+                    'stripe_details_submitted': False,
+                    'stripe_payouts_enabled': False,
+                    'stripe_account_id': None
+                }
+        
+        return JsonResponse(status)
+    
+    except ExpertProfile.DoesNotExist:
+        return JsonResponse({'error': 'Expert not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 # Create your views here.
 
@@ -892,7 +1079,9 @@ class ExpertProfileView(APIView):
                 background='',
                 certifications='',
                 methodologies='',
-                tools_technologies=''
+                tools_technologies='',
+                monetization_enabled=False,
+                monetization_price=5.00
             )
             print(f"✓ Created new profile: {profile}")
         
@@ -1010,48 +1199,109 @@ class ExpertOnboardingCompleteView(APIView):
             print(f"Expert: {expert.email}")
             print(f"Profile data received: {profile_data}")
             
-            # Validate required fields
-            required_fields = ['industry', 'years_of_experience', 'key_skills', 'background']
-            for field in required_fields:
-                if field not in profile_data:
-                    print(f"Missing required field: {field}")
-                    return Response({
-                        'error': f'Missing required field: {field}'
-                    }, status=status.HTTP_400_BAD_REQUEST)
+            # Validate and prepare required fields with defaults
+            industry = profile_data.get('industry', '').strip()
+            if not industry:
+                industry = 'General'
+            
+            background = profile_data.get('background', '').strip()
+            if not background:
+                # Use title or a generic default since expertise field doesn't exist in model
+                title = profile_data.get('title', 'professional')
+                background = f"Professional with experience in {title.lower()} and {industry.lower()}."
+            
+            key_skills = profile_data.get('key_skills', '').strip()
+            if not key_skills:
+                key_skills = 'Problem solving, Communication, Analysis'
+            
+            years_of_experience = profile_data.get('years_of_experience', 1)
+            if isinstance(years_of_experience, str):
+                try:
+                    years_of_experience = int(years_of_experience)
+                except ValueError:
+                    years_of_experience = 1
+            
+            # Ensure minimum experience
+            if years_of_experience < 1:
+                years_of_experience = 1
+            
+            # Validate and prepare monetization_enabled (convert string to boolean if needed)
+            monetization_enabled = profile_data.get('monetization_enabled', False)
+            if isinstance(monetization_enabled, str):
+                monetization_enabled = monetization_enabled.lower() in ['true', '1', 'yes', 'on']
+            elif monetization_enabled is None:
+                monetization_enabled = False
+            
+            # Validate and prepare monetization_price
+            monetization_price = profile_data.get('monetization_price', 5.00)
+            try:
+                monetization_price = float(monetization_price)
+                if monetization_price < 0:
+                    monetization_price = 5.00
+            except (ValueError, TypeError):
+                monetization_price = 5.00
+            
+            print(f"Prepared values: industry={industry}, years_of_experience={years_of_experience}, key_skills={key_skills}, monetization_enabled={monetization_enabled}, monetization_price={monetization_price}")
             
             # Create or update the expert profile
-            profile, created = ExpertProfile.objects.update_or_create(
-                expert=expert,
-                defaults={
-                    'industry': profile_data.get('industry', ''),
-                    'years_of_experience': profile_data.get('years_of_experience', 0),
-                    'key_skills': profile_data.get('key_skills', ''),
-                    'typical_problems': profile_data.get('typical_problems', ''),
-                    'background': profile_data.get('background', ''),
-                    'certifications': profile_data.get('certifications', ''),
-                    'methodologies': profile_data.get('methodologies', ''),
-                    'tools_technologies': profile_data.get('tools_technologies', '')
-                }
-            )
+            try:
+                profile, created = ExpertProfile.objects.update_or_create(
+                    expert=expert,
+                    defaults={
+                        'industry': industry,
+                        'years_of_experience': years_of_experience,
+                        'key_skills': key_skills,
+                        'typical_problems': profile_data.get('typical_problems', ''),
+                        'background': background,
+                        'certifications': profile_data.get('certifications', ''),
+                        'methodologies': profile_data.get('methodologies', ''),
+                        'tools_technologies': profile_data.get('tools_technologies', ''),
+                        'monetization_enabled': monetization_enabled,
+                        'monetization_price': monetization_price
+                    }
+                )
+                print(f"Profile created/updated successfully: created={created}")
+            except Exception as profile_error:
+                print(f"Error creating/updating profile: {str(profile_error)}")
+                raise profile_error
+            
+            # Update the expert's main fields (these exist in User model)
+            try:
+                expert.name = profile_data.get('name', expert.name or '')
+                expert.title = profile_data.get('title', expert.title or '')
+                expert.bio = profile_data.get('bio', expert.bio or '')
+                # expert.specialties = profile_data.get('expertise', expert.specialties or '')  # Map expertise to specialties
+                print(f"Expert fields updated: name={expert.name}, title={expert.title}, bio length={len(expert.bio or '')}")
+            except Exception as expert_fields_error:
+                print(f"Error updating expert fields: {str(expert_fields_error)}")
+                raise expert_fields_error
             
             # Mark onboarding as complete
-            expert.onboarding_completed = True
-            expert.onboarding_completed_at = timezone.now()
-            expert.save()
-            print(f"Expert onboarding marked as complete: {expert.onboarding_completed}")
+            try:
+                expert.onboarding_completed = True
+                expert.onboarding_completed_at = timezone.now()
+                expert.save()
+                print(f"Expert onboarding marked as complete: {expert.onboarding_completed}")
+            except Exception as save_error:
+                print(f"Error saving expert: {str(save_error)}")
+                raise save_error
             
             # Initialize knowledge base
-            knowledge_base, kb_created = ExpertKnowledgeBase.objects.get_or_create(
-                expert=expert,
-                defaults={
-                    'knowledge_areas': {
-                        profile_data.get('industry', 'General'): 100,
-                        'Professional Experience': profile_data.get('years_of_experience', 0),
-                    },
-                    'training_summary': f"Expert in {profile_data.get('industry', 'their field')} with {profile_data.get('years_of_experience', 0)} years of experience. Skills: {profile_data.get('key_skills', '')}"
-                }
-            )
-            print(f"Knowledge base created: {kb_created}")
+            try:
+                knowledge_base, kb_created = ExpertKnowledgeBase.objects.get_or_create(
+                    expert=expert,
+                    defaults={
+                        'knowledge_areas': {
+                            industry: years_of_experience,
+                            'Professional Experience': years_of_experience,
+                        },
+                        'training_summary': f"Expert in {industry} with {years_of_experience} years of experience. Skills: {key_skills}. Specialties: {expert.specialties or 'General consulting'}."
+                    }
+                )
+                print(f"Knowledge base created: {kb_created}")
+            except Exception as kb_error:
+                print(f"Error creating knowledge base: {str(kb_error)}")
+                raise kb_error
             print(f"=== ONBOARDING COMPLETION DEBUG END ===")
             
             return Response({
@@ -1066,7 +1316,7 @@ class ExpertOnboardingCompleteView(APIView):
             import traceback
             print(f"Traceback: {traceback.format_exc()}")
             return Response({
-                'error': 'Failed to complete onboarding'
+                'error': f'Failed to complete onboarding: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ExpertListView(APIView):
@@ -2239,9 +2489,13 @@ class ExpertProfileUpdateView(APIView):
         
         # Extract valid fields from request data
         valid_data = {}
-        for field in ['bio', 'specialties', 'title', 'name']:
+        for field in ['bio', 'specialties', 'title', 'name', 'expertise']:
             if field in request.data:
-                valid_data[field] = request.data[field]
+                if field == 'expertise':
+                    # Map expertise to specialties
+                    valid_data['specialties'] = request.data[field]
+                else:
+                    valid_data[field] = request.data[field]
         
         # Handle first_name and last_name by combining them into name (for backward compatibility)
         first_name = request.data.get('first_name', '').strip()
@@ -2285,13 +2539,16 @@ class ExpertProfileUpdateView(APIView):
                     background='',
                     certifications='',
                     methodologies='',
-                    tools_technologies=''
+                    tools_technologies='',
+                    monetization_enabled=False,
+                    monetization_price=5.00
                 )
             
             # Update profile fields
             profile_fields = [
                 'industry', 'years_of_experience', 'key_skills', 'typical_problems',
-                'background', 'certifications', 'methodologies', 'tools_technologies'
+                'background', 'certifications', 'methodologies', 'tools_technologies',
+                'monetization_enabled', 'monetization_price'
             ]
             
             for field in profile_fields:
@@ -2676,3 +2933,156 @@ class ConsultationSessionView(APIView):
             return Response({
                 'error': 'Failed to manage consultation session'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST', 'OPTIONS'])
+def disconnect_stripe_account(request):
+    """Disconnect expert's Stripe account"""
+    if request.method == 'OPTIONS':
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        # Get the expert profile
+        expert_profile = ExpertProfile.objects.get(user=request.user)
+        
+        # Clear Stripe connection
+        expert_profile.stripe_account_id = ''
+        expert_profile.stripe_connected = False
+        expert_profile.stripe_details_submitted = False
+        expert_profile.stripe_payouts_enabled = False
+        expert_profile.save()
+        
+        return Response({'success': True})
+        
+    except ExpertProfile.DoesNotExist:
+        return Response({'error': 'Expert profile not found'}, status=404)
+    except Exception as e:
+        print(f"Error disconnecting Stripe account: {str(e)}")
+        return Response({'error': 'Failed to disconnect account'}, status=500)
+
+
+@api_view(['GET'])
+def get_stripe_connect_status(request, expert_id):
+    """Get Stripe Connect status for an expert"""
+    try:
+        expert_profile = ExpertProfile.objects.get(expert_id=expert_id)
+        return Response({
+            'connected': expert_profile.stripe_connected,
+            'details_submitted': expert_profile.stripe_details_submitted,
+            'payouts_enabled': expert_profile.stripe_payouts_enabled
+        })
+    except ExpertProfile.DoesNotExist:
+        return Response({'error': 'Expert not found'}, status=404)
+
+
+# User Payment Processing Views
+@api_view(['POST', 'OPTIONS'])
+def create_payment_intent(request):
+    """Create a Stripe Payment Intent for user consultation payment"""
+    if request.method == 'OPTIONS':
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        expert_id = request.data.get('expert_id')
+        if not expert_id:
+            return Response({'error': 'Expert ID is required'}, status=400)
+        
+        # Get expert and pricing info
+        try:
+            expert_profile = ExpertProfile.objects.get(expert_id=expert_id)
+            if not expert_profile.monetization_enabled:
+                return Response({'error': 'This expert does not accept payments'}, status=400)
+                
+            expert_price = float(expert_profile.monetization_price or 5.0)
+        except ExpertProfile.DoesNotExist:
+            return Response({'error': 'Expert not found'}, status=404)
+        
+        # Check if expert has Stripe Connect set up
+        if not expert_profile.stripe_connected:
+            return Response({'error': 'Expert has not set up payment processing'}, status=400)
+        
+        # Calculate amounts (in pence for Stripe)
+        platform_fee_rate = 0.2  # 20% platform fee
+        total_amount = expert_price * 1.2  # Expert price + 20% platform fee
+        expert_amount = expert_price
+        platform_amount = total_amount - expert_amount
+        
+        # Create Payment Intent with Stripe Connect
+        intent = stripe.PaymentIntent.create(
+            amount=int(total_amount * 100),  # Convert to pence
+            currency='gbp',
+            application_fee_amount=int(platform_amount * 100),  # Platform fee in pence
+            transfer_data={
+                'destination': expert_profile.stripe_account_id,
+            },
+            metadata={
+                'expert_id': expert_id,
+                'user_id': str(request.user.id),
+                'expert_amount': str(expert_amount),
+                'platform_amount': str(platform_amount),
+                'session_type': 'consultation'
+            }
+        )
+        
+        return Response({
+            'client_secret': intent.client_secret,
+            'payment_intent_id': intent.id,
+            'amount': total_amount,
+            'expert_amount': expert_amount,
+            'platform_amount': platform_amount
+        })
+        
+    except Exception as e:
+        print(f"Error creating payment intent: {str(e)}")
+        return Response({'error': 'Failed to create payment intent'}, status=500)
+
+
+@api_view(['POST', 'OPTIONS'])
+def confirm_payment(request):
+    """Confirm payment and create consultation session"""
+    if request.method == 'OPTIONS':
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        payment_intent_id = request.data.get('payment_intent_id')
+        expert_id = request.data.get('expert_id')
+        
+        if not payment_intent_id or not expert_id:
+            return Response({'error': 'Payment intent ID and expert ID are required'}, status=400)
+        
+        # Retrieve the payment intent from Stripe
+        intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+        
+        if intent.status != 'succeeded':
+            return Response({'error': 'Payment not completed'}, status=400)
+        
+        # Create consultation session record
+        from .models import ConsultationSession
+        session = ConsultationSession.objects.create(
+            user=request.user,
+            expert_id=expert_id,
+            payment_intent_id=payment_intent_id,
+            amount_paid=float(intent.amount) / 100,  # Convert from pence
+            status=ConsultationSession.Status.ACTIVE
+        )
+        
+        return Response({
+            'success': True,
+            'session_id': str(session.id),
+            'message': 'Payment confirmed and session created'
+        })
+        
+    except Exception as e:
+        print(f"Error confirming payment: {str(e)}")
+        return Response({'error': 'Failed to confirm payment'}, status=500)

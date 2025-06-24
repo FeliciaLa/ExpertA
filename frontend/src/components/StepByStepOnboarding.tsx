@@ -10,9 +10,10 @@ import {
   CircularProgress,
   Chip,
   Grid,
-  LinearProgress
+  LinearProgress,
+  IconButton
 } from '@mui/material';
-import { ArrowBack, ArrowForward, CheckCircle } from '@mui/icons-material';
+import { ArrowBack, ArrowForward, CheckCircle, InfoOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { expertApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -56,6 +57,8 @@ interface StepData {
   tools_technologies: string;
   certifications: string;
   bio: string;
+  monetization_enabled: boolean;
+  monetization_price: number;
   completion: string;
 }
 
@@ -85,11 +88,11 @@ const stepSections = [
     title: 'Experience Info',
     description: 'Tell us about your expertise and experience',
     steps: [
-      {
-        label: 'Describe Your Expertise',
-        description: 'What do you specialize in? What\'s your core area of expertise?',
-        field: 'expertise'
-      },
+      // {
+      //   label: 'Describe Your Expertise',
+      //   description: 'What do you specialize in? What\'s your core area of expertise?',
+      //   field: 'expertise'
+      // },
       {
         label: 'Experience Level',
         description: 'How many years of experience do you have?',
@@ -134,14 +137,36 @@ const stepSections = [
     ]
   },
   {
-    title: 'Finish Setup',
-    description: 'Complete your profile',
+    title: 'Professional Profile',
+    description: 'Complete your professional profile',
     steps: [
       {
         label: 'Professional Bio',
-        description: 'Finally, write your professional bio which will be visible to clients',
+        description: 'Write your professional bio which will be visible to clients',
         field: 'bio'
+      }
+    ]
+  },
+  {
+    title: 'Monetization',
+    description: 'Set up how you want to charge for your expertise',
+    steps: [
+      {
+        label: 'Monetization Option',
+        description: 'Do you want to monetize your AI expert consultations?',
+        field: 'monetization_enabled'
       },
+      {
+        label: 'Set Your Price',
+        description: '',
+        field: 'monetization_price'
+      }
+    ]
+  },
+  {
+    title: 'Finish Setup',
+    description: 'Complete your setup',
+    steps: [
       {
         label: 'Profile Complete!',
         description: 'Congratulations! Your expert profile is ready',
@@ -170,6 +195,8 @@ const StepByStepOnboarding: React.FC = () => {
     tools_technologies: '',
     certifications: '',
     bio: '',
+    monetization_enabled: false,
+    monetization_price: 5,
     completion: ''
   });
   
@@ -181,6 +208,8 @@ const StepByStepOnboarding: React.FC = () => {
   const [completing, setCompleting] = useState(false);
   
   const { expert, refreshExpert } = useAuth();
+
+
 
   // Helper functions for section management
   const getCurrentSection = () => {
@@ -208,26 +237,70 @@ const StepByStepOnboarding: React.FC = () => {
   useEffect(() => {
     const currentField = steps[activeStep]?.field;
     if (currentField && stepData) {
-      setCurrentValue(stepData[currentField as keyof StepData]?.toString() || '');
+      if (currentField === 'monetization_price') {
+        // For monetization price, show the current stepData value
+        setCurrentValue(stepData.monetization_price?.toString() || '5');
+      } else {
+        setCurrentValue(stepData[currentField as keyof StepData]?.toString() || '');
+      }
     }
   }, [activeStep, stepData]);
+
+  // Auto-save for text fields when value changes (with debounce)
+  useEffect(() => {
+    const currentField = steps[activeStep]?.field;
+    if (!currentField || currentField === 'completion' || 
+        currentField === 'key_skills' || currentField === 'industry' || 
+        currentField === 'monetization_enabled') {
+      return; // Skip auto-save for these fields
+    }
+
+    const timeoutId = setTimeout(() => {
+      if (currentValue.trim()) {
+        saveCurrentFieldQuietly();
+      }
+    }, 2000); // Save after 2 seconds of no typing
+
+    return () => clearTimeout(timeoutId);
+  }, [currentValue, activeStep]);
 
   const loadExistingData = async () => {
     try {
       const profile = await expertApi.getProfile();
+      
+      // Helper function to safely parse array fields that might be JSON strings or comma-separated strings
+      const parseArrayField = (field: string | undefined | null): string[] => {
+        if (!field || field.trim() === '') return [];
+        
+        // First, try to parse as JSON (handles cases like '["Tech", "Marketing"]')
+        try {
+          const parsed = JSON.parse(field);
+          if (Array.isArray(parsed)) {
+            return parsed.filter((item: any) => typeof item === 'string' && item.trim().length > 0);
+          }
+        } catch (e) {
+          // Not valid JSON, continue with comma-separated parsing
+        }
+        
+        // Fallback to comma-separated parsing (handles cases like 'Tech, Marketing')
+        return field.split(/,\s*/).filter((item: string) => item.trim().length > 0);
+      };
+      
       const existingData = {
         name: profile.name || '',
         title: profile.title || '',
-        expertise: profile.profile?.expertise || '',
-        industry: profile.profile?.industry ? profile.profile.industry.split(', ') : [],
+        expertise: profile.specialties || '',
+        industry: parseArrayField(profile.profile?.industry),
         years_of_experience: profile.profile?.years_of_experience || 1,
         background: profile.profile?.background || '',
-        key_skills: profile.profile?.key_skills ? profile.profile.key_skills.split(', ') : [],
+        key_skills: parseArrayField(profile.profile?.key_skills),
         typical_problems: profile.profile?.typical_problems || '',
         methodologies: profile.profile?.methodologies || '',
         tools_technologies: profile.profile?.tools_technologies || '',
         certifications: profile.profile?.certifications || '',
         bio: profile.bio || '',
+        monetization_enabled: profile.profile?.monetization_enabled || false,
+        monetization_price: profile.profile?.monetization_price || 5,
         completion: ''
       };
       setStepData(existingData);
@@ -276,18 +349,25 @@ const StepByStepOnboarding: React.FC = () => {
     }
     
     if (currentField === 'key_skills') {
-      if (stepData.key_skills.length === 0) {
+      if ((stepData.key_skills || []).length === 0) {
         setError('Please add at least one skill');
         return false;
       }
     } else if (currentField === 'industry') {
-      if (stepData.industry.length === 0) {
+      if ((stepData.industry || []).length === 0) {
         setError('Please add at least one industry');
         return false;
       }
     } else if (currentField === 'years_of_experience') {
       if (!currentValue || parseInt(currentValue) < 1) {
         setError('Please select your experience level');
+        return false;
+      }
+    } else if (currentField === 'monetization_enabled') {
+      // No validation needed - boolean field
+    } else if (currentField === 'monetization_price') {
+      if (stepData.monetization_enabled && (!currentValue || parseFloat(currentValue) < 1)) {
+        setError('Please set a price of at least £1');
         return false;
       }
     } else if (!currentValue.trim()) {
@@ -312,15 +392,34 @@ const StepByStepOnboarding: React.FC = () => {
       
       let updateData: any = {};
       
-      if (['name', 'title', 'bio'].includes(currentField)) {
-        // Basic fields - update user model
+      if (['name', 'title', 'bio', 'expertise'].includes(currentField)) {
+        // Basic fields - update user model (expertise maps to specialties in backend)
         updateData[currentField] = currentValue;
       } else {
         // Profile fields - update expert profile
+        let fieldValue;
+        if (currentField === 'key_skills') {
+          fieldValue = Array.isArray(stepData.key_skills) ? stepData.key_skills.join(', ') : stepData.key_skills;
+        } else if (currentField === 'industry') {
+          // Ensure we always save as comma-separated string, never JSON
+          fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
+        } else if (currentField === 'monetization_enabled') {
+          fieldValue = stepData.monetization_enabled;
+        } else if (currentField === 'monetization_price') {
+          // For monetization price, use the current input value if valid, otherwise use stepData value
+          if (stepData.monetization_enabled) {
+            const priceValue = parseFloat(currentValue);
+            fieldValue = !isNaN(priceValue) && priceValue > 0 ? priceValue : stepData.monetization_price;
+          } else {
+            fieldValue = stepData.monetization_price; // Keep existing value even if disabled
+          }
+        } else {
+          fieldValue = currentValue;
+        }
+        
+        // Only send the specific field being updated to avoid array/object conflicts
         updateData.profile = {
-          ...stepData,
-          [currentField]: currentField === 'key_skills' ? stepData.key_skills : 
-                         currentField === 'industry' ? stepData.industry : currentValue
+          [currentField]: fieldValue
         };
       }
 
@@ -333,21 +432,75 @@ const StepByStepOnboarding: React.FC = () => {
     }
   };
 
+  const saveCurrentFieldQuietly = async () => {
+    const currentField = steps[activeStep].field;
+    
+    // Skip saving for completion step
+    if (currentField === 'completion') {
+      return;
+    }
+    
+    try {
+      let updateData: any = {};
+      
+      if (['name', 'title', 'bio', 'expertise'].includes(currentField)) {
+        // Basic fields - update user model (expertise maps to specialties in backend)
+        updateData[currentField] = currentValue;
+      } else {
+        // Profile fields - update expert profile
+        let fieldValue;
+        if (currentField === 'key_skills') {
+          fieldValue = Array.isArray(stepData.key_skills) ? stepData.key_skills.join(', ') : stepData.key_skills;
+        } else if (currentField === 'industry') {
+          // Ensure we always save as comma-separated string, never JSON
+          fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
+        } else if (currentField === 'monetization_enabled') {
+          fieldValue = stepData.monetization_enabled;
+        } else if (currentField === 'monetization_price') {
+          // For monetization price, use the current input value if valid, otherwise use stepData value
+          if (stepData.monetization_enabled) {
+            const priceValue = parseFloat(currentValue);
+            fieldValue = !isNaN(priceValue) && priceValue > 0 ? priceValue : stepData.monetization_price;
+          } else {
+            fieldValue = stepData.monetization_price; // Keep existing value even if disabled
+          }
+        } else {
+          fieldValue = currentValue;
+        }
+        
+        // Only send the specific field being updated to avoid array/object conflicts
+        updateData.profile = {
+          [currentField]: fieldValue
+        };
+      }
+
+      await expertApi.updateProfile(updateData);
+    } catch (error) {
+      // Fail silently for auto-save
+      console.error('Auto-save failed:', error);
+    }
+  };
+
   const completeOnboarding = async () => {
     try {
       setCompleting(true);
       
       // Prepare final onboarding data
       const onboardingData = {
-        expertise: stepData.expertise,
-        industry: stepData.industry.join(', '),
+        name: stepData.name,
+        title: stepData.title,
+        bio: stepData.bio,
+        // expertise: stepData.expertise,
+        industry: (stepData.industry || []).join(', '),
         years_of_experience: stepData.years_of_experience,
         background: stepData.background,
-        key_skills: stepData.key_skills.join(', '),
+        key_skills: (stepData.key_skills || []).join(', '),
         typical_problems: stepData.typical_problems || `As a ${stepData.title}, I help clients solve complex challenges in my field.`,
         certifications: stepData.certifications,
         methodologies: stepData.methodologies,
-        tools_technologies: stepData.tools_technologies
+        tools_technologies: stepData.tools_technologies,
+        monetization_enabled: Boolean(stepData.monetization_enabled), // Ensure it's a boolean
+        monetization_price: stepData.monetization_price
       };
 
       await expertApi.completeOnboarding(onboardingData);
@@ -366,10 +519,10 @@ const StepByStepOnboarding: React.FC = () => {
   };
 
   const addSkill = () => {
-    if (newSkill.trim() && !stepData.key_skills.includes(newSkill.trim())) {
+    if (newSkill.trim() && !(stepData.key_skills || []).includes(newSkill.trim())) {
       setStepData(prev => ({
         ...prev,
-        key_skills: [...prev.key_skills, newSkill.trim()]
+        key_skills: [...(prev.key_skills || []), newSkill.trim()]
       }));
       setNewSkill('');
     }
@@ -378,15 +531,15 @@ const StepByStepOnboarding: React.FC = () => {
   const removeSkill = (skillToRemove: string) => {
     setStepData(prev => ({
       ...prev,
-      key_skills: prev.key_skills.filter(skill => skill !== skillToRemove)
+      key_skills: (prev.key_skills || []).filter(skill => skill !== skillToRemove)
     }));
   };
 
   const addIndustry = () => {
-    if (newIndustry.trim() && !stepData.industry.includes(newIndustry.trim())) {
+    if (newIndustry.trim() && !(stepData.industry || []).includes(newIndustry.trim())) {
       setStepData(prev => ({
         ...prev,
-        industry: [...prev.industry, newIndustry.trim()]
+        industry: [...(prev.industry || []), newIndustry.trim()]
       }));
       setNewIndustry('');
     }
@@ -395,7 +548,7 @@ const StepByStepOnboarding: React.FC = () => {
   const removeIndustry = (industryToRemove: string) => {
     setStepData(prev => ({
       ...prev,
-      industry: prev.industry.filter(industry => industry !== industryToRemove)
+      industry: (prev.industry || []).filter(industry => industry !== industryToRemove)
     }));
   };
 
@@ -471,7 +624,7 @@ const StepByStepOnboarding: React.FC = () => {
             </Typography>
             <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
               You've successfully set up your expert profile with all your skills, experience, and expertise. 
-              Now it's time to train your AI assistant to help users with questions in your area of expertise.
+              Now it's time to train your AI assistant.
             </Typography>
             <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
               Click "Complete Setup" to start training your AI assistant
@@ -507,7 +660,7 @@ const StepByStepOnboarding: React.FC = () => {
             </Grid>
             
             <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {stepData.industry.map((industry, index) => (
+              {(stepData.industry || []).map((industry, index) => (
                 <Chip
                   key={index}
                   label={industry}
@@ -518,7 +671,7 @@ const StepByStepOnboarding: React.FC = () => {
               ))}
             </Box>
             
-            {stepData.industry.length === 0 && (
+            {(stepData.industry || []).length === 0 && (
               <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                 Add at least one industry to continue
               </Typography>
@@ -577,7 +730,7 @@ const StepByStepOnboarding: React.FC = () => {
             </Grid>
             
             <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {stepData.key_skills.map((skill, index) => (
+              {(stepData.key_skills || []).map((skill, index) => (
                 <Chip
                   key={index}
                   label={skill}
@@ -588,7 +741,7 @@ const StepByStepOnboarding: React.FC = () => {
               ))}
             </Box>
             
-            {stepData.key_skills.length === 0 && (
+            {(stepData.key_skills || []).length === 0 && (
               <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                 Add at least one skill to continue
               </Typography>
@@ -671,6 +824,91 @@ const StepByStepOnboarding: React.FC = () => {
           />
         );
         
+      case 'monetization_enabled':
+        return (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Do you want to monetize your AI expert consultations?
+            </Typography>
+            <Box sx={{ mt: 3 }}>
+              <Button
+                variant={stepData.monetization_enabled ? "outlined" : "contained"}
+                onClick={() => {
+                  setStepData(prev => ({ ...prev, monetization_enabled: false }));
+                  setCurrentValue('false');
+                }}
+                sx={{ mr: 2, mb: 2, minWidth: 120 }}
+              >
+                No - Keep it FREE
+              </Button>
+              <Button
+                variant={stepData.monetization_enabled ? "contained" : "outlined"}
+                onClick={() => {
+                  setStepData(prev => ({ ...prev, monetization_enabled: true }));
+                  setCurrentValue('true');
+                }}
+                sx={{ mb: 2, minWidth: 120 }}
+              >
+                Yes - Charge for consultations
+              </Button>
+            </Box>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+              {stepData.monetization_enabled ? 
+                "Great! You'll be able to charge for focused 15-minute consultations." :
+                "Your AI expert will be completely free for anyone to use. You can change this later."
+              }
+            </Typography>
+          </Box>
+        );
+        
+      case 'monetization_price':
+        if (!stepData.monetization_enabled) {
+          // Skip this step if monetization is disabled
+          return (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Typography variant="h6" color="textSecondary">
+                Your AI expert will be free to use
+              </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                You can enable monetization later from your profile settings.
+              </Typography>
+            </Box>
+          );
+        }
+        
+        return (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              How much would you like to earn for each 15-minute consultation?*
+            </Typography>
+            <TextField
+              fullWidth
+              type="number"
+              label="£"
+              value={currentValue}
+              onChange={(e) => setCurrentValue(e.target.value)}
+              placeholder="15"
+              variant="outlined"
+              inputProps={{ min: 1, max: 100, step: 1 }}
+              sx={{ mt: 2, maxWidth: 200 }}
+            />
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" color="textSecondary">
+                <strong>You earn:</strong> £{currentValue || '0'} per consultation
+              </Typography>
+              <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+                <strong>Clients will pay:</strong> £{(parseFloat(currentValue || '0') * 1.2).toFixed(2)} total
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="primary" sx={{ mt: 2, fontStyle: 'italic' }}>
+              💡 Set a price you feel reflects your time and knowledge — you can adjust it whenever you like.
+            </Typography>
+            <Typography variant="caption" color="textSecondary" sx={{ mt: 3, display: 'block', borderTop: 1, borderColor: 'divider', pt: 2 }}>
+              *Clients pay 20% extra to cover platform services like hosting, secure payments, and maintenance. You receive 100% of your chosen rate.
+            </Typography>
+          </Box>
+        );
+        
       default:
         return null;
     }
@@ -730,20 +968,26 @@ const StepByStepOnboarding: React.FC = () => {
         </Box>
 
         {/* Section Header */}
-        <Box sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
-          <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
-            {currentSectionInfo.section.title}
-          </Typography>
-        </Box>
+        {steps[activeStep].field !== 'completion' && (
+          <Box sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+            <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
+              {currentSectionInfo.section.title}
+            </Typography>
+          </Box>
+        )}
 
         {/* Current Step */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" color="primary" gutterBottom>
-            {steps[activeStep].label}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            {steps[activeStep].description}
-          </Typography>
+          {steps[activeStep].field !== 'completion' && (
+            <>
+              <Typography variant="h6" color="primary" gutterBottom>
+                {steps[activeStep].label}
+              </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                {steps[activeStep].description}
+              </Typography>
+            </>
+          )}
           
           {renderStepContent()}
         </Box>

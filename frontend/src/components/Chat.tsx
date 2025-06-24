@@ -6,10 +6,20 @@ import {
   Paper,
   Typography,
   CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip,
+  Divider
 } from '@mui/material';
+import { Payment } from '@mui/icons-material';
 import { chatService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
+import PaymentSection from './PaymentSection';
+import PaymentSuccessDialog from './PaymentSuccessDialog';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,14 +29,34 @@ interface Message {
 interface ChatProps {
   expertId: string;
   expertName?: string;
+  expertPrice?: number;
+  monetizationEnabled?: boolean;
 }
 
-export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) => {
+export const Chat: React.FC<ChatProps> = ({ 
+  expertId, 
+  expertName = 'Expert', 
+  expertPrice = 5,
+  monetizationEnabled = false 
+}) => {
+  // Ensure expertPrice is a valid number (handle both number and string inputs)
+  const validExpertPrice = (() => {
+    const price = Number(expertPrice);
+    return !isNaN(price) && price > 0 ? price : 5;
+  })();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [sessionStats, setSessionStats] = useState({
+    messageCount: 0,
+    hasActivePaidSession: false,
+    freeMessagesRemaining: 3
+  });
+  
   const { isUser, isExpert, isAuthenticated, user, expert, signIn, register } = useAuth();
   
   // Extract first name
@@ -34,20 +64,26 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
   
   // Debug info
   useEffect(() => {
-    console.log('Chat component auth state:', { 
+    console.log('Chat component loaded:', { 
       isAuthenticated, 
       isUser, 
       isExpert, 
-      user: user ? `${user.email} (${user.role})` : 'none',
-      expert: expert ? `${expert.email} (${expert.id})` : 'none',
       expertId,
-      currentPath: window.location.pathname
+      monetizationEnabled,
+      validExpertPrice
     });
-  }, [isAuthenticated, isUser, isExpert, user, expert, expertId]);
+      }, [isAuthenticated, isUser, isExpert, expertId, monetizationEnabled, validExpertPrice]);
+
+  // Check if user should be blocked from sending more messages
+  const shouldBlockMessage = () => {
+    if (!monetizationEnabled) return false; // Free expert, unlimited chat
+    if (sessionStats.hasActivePaidSession) return false; // User has paid for this session
+    return sessionStats.freeMessagesRemaining <= 0; // Used up free messages
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (loading) return;
     
     console.log('Submit pressed - auth state:', { isAuthenticated, isExpert, isUser });
 
@@ -58,7 +94,15 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
       return;
     }
 
-    // Remove the check for own AI - allow chatting with any AI
+    // Check if user should be blocked (for paid experts only)
+    if (shouldBlockMessage()) {
+      console.log('User needs to pay for more messages');
+      setShowPaymentDialog(true);
+      return;
+    }
+    
+    // Only proceed with message sending if there's actual input
+    if (!input.trim()) return;
     
     const userMessage = input.trim();
     setInput('');
@@ -74,12 +118,18 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
         ...prev,
         { role: 'assistant', content: response.answer },
       ]);
+      
+      // Update session stats
+      setSessionStats(prev => ({
+        ...prev,
+        messageCount: prev.messageCount + 1,
+        freeMessagesRemaining: monetizationEnabled ? Math.max(0, prev.freeMessagesRemaining - 1) : prev.freeMessagesRemaining
+      }));
+      
     } catch (err: any) {
       console.error('Chat error:', err);
-      // Show the specific error message from the backend if available
       const errorMessage = err.response?.data?.error || err.response?.data?.detail || 'I\'m having trouble formulating a response right now. Please try again later.';
       setError(errorMessage);
-      
       
       // Add the error message as a system message in the chat
       setMessages((prev) => [
@@ -91,15 +141,32 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
     }
   };
 
+  // Handle payment success
+  const handlePaymentSuccess = () => {
+    // Update session to paid status
+    setSessionStats(prev => ({
+      ...prev,
+      hasActivePaidSession: true,
+      freeMessagesRemaining: 0
+    }));
+    
+    setShowPaymentDialog(false);
+    setShowPaymentSuccess(true);
+    
+    // Add a system message about the paid session
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice. Your session is active now.`
+    }]);
+  };
+
   // Handle user sign in
   const handleUserSignIn = async (email: string, password: string) => {
     try {
-      const result = await signIn(email, password, false); // false indicates user login, not expert
+      const result = await signIn(email, password, false);
       setIsAuthDialogOpen(false);
-      // No need to set input again, it's still there
       return result;
     } catch (error) {
-      // Error is handled by the dialog
       throw error;
     }
   };
@@ -107,42 +174,20 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
   // Handle user registration
   const handleUserRegister = async (name: string, email: string, password: string) => {
     try {
-      const result = await register(name, email, password, false); // false indicates user registration, not expert
+      const result = await register(name, email, password, false);
       setIsAuthDialogOpen(false);
-      // No need to set input again, it's still there
       return result;
     } catch (error) {
-      // Error is handled by the dialog
       throw error;
     }
   };
 
+
+
   // Create login prompt or chat based on authentication status
   const renderChatOrPrompt = () => {
-    // Log authentication state for debugging - include more information
-    console.log('Chat component auth debug - DETAILED:', { 
-      isAuthenticated, 
-      isUser, 
-      isExpert, 
-      user: user ? {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        is_expert: user.is_expert,
-        is_user: user.is_user
-      } : 'none',
-      expert: expert ? {
-        id: expert.id,
-        email: expert.email
-      } : 'none',
-      expertId,
-      tokens: localStorage.getItem('tokens') ? 'present' : 'none',
-      localStorageUser: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : 'none'
-    });
-
-    // MAIN CHECK: if user is not authenticated, show login prompt
+    // If user is not authenticated, show login prompt
     if (!isAuthenticated) {
-      console.log('Authentication check failed - showing login prompt');
       return (
         <Box 
           sx={{ 
@@ -164,37 +209,40 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
           >
             Sign In / Register
           </Button>
-          
-          {/* Debug button for direct login */}
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={async () => {
-              try {
-                console.log('Attempting direct login with test account');
-                const result = await signIn('f@lu1.com', 'password', true);
-                console.log('Direct login result:', result);
-              } catch (error) {
-                console.error('Direct login error:', error);
-              }
-            }}
-            sx={{ mt: 2 }}
-          >
-            Debug: Login as Expert
-          </Button>
         </Box>
       );
     }
 
-    console.log('Authentication check passed - user is authenticated');
-
-    // Remove the check for own AI - allow chatting with any AI interface
-
-    console.log('Showing chat interface - all checks passed');
-
-    // Otherwise, show the chat interface
+    // Show the chat interface
     return (
       <>
+        {/* Session status banner */}
+        {monetizationEnabled && (
+          <Box sx={{ p: 2, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider' }}>
+            {sessionStats.hasActivePaidSession ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Chip label="15-Min Session Active" color="success" size="small" />
+                <Typography variant="body2" color="text.secondary">
+                  Unlimited questions until session expires
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip 
+                    label={`${sessionStats.freeMessagesRemaining} free questions left`} 
+                    color={sessionStats.freeMessagesRemaining > 0 ? "primary" : "warning"}
+                    size="small" 
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    Then £{(validExpertPrice * 1.2).toFixed(2)} for 15-min session
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+
         <Box
           sx={{
             flex: 1,
@@ -257,22 +305,32 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Type your message..."
+            placeholder={
+              shouldBlockMessage() 
+                ? "Click Upgrade to continue chatting..."
+                : "Type your message..."
+            }
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onClick={() => {
+              if (shouldBlockMessage()) {
+                setShowPaymentDialog(true);
+              }
+            }}
             disabled={loading}
             size="medium"
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
-                backgroundColor: '#f8f9fa',
+                backgroundColor: shouldBlockMessage() ? '#f5f5f5' : '#f8f9fa',
+                cursor: shouldBlockMessage() ? 'pointer' : 'text',
               }
             }}
           />
           <Button
             type="submit"
             variant="contained"
-            disabled={loading || !input.trim()}
+            disabled={loading || (!shouldBlockMessage() && !input.trim())}
             sx={{
               px: 4,
               borderRadius: 2,
@@ -283,7 +341,7 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
               }
             }}
           >
-            Send
+            {shouldBlockMessage() ? 'Upgrade' : 'Send'}
           </Button>
         </Box>
       </>
@@ -312,6 +370,23 @@ export const Chat: React.FC<ChatProps> = ({ expertId, expertName = 'Expert' }) =
         onClose={() => setIsAuthDialogOpen(false)}
         onSignIn={handleUserSignIn}
         onRegister={handleUserRegister}
+      />
+
+      {showPaymentDialog && (
+        <PaymentSection
+          expertId={expertId}
+          expertName={firstName}
+          price={validExpertPrice * 1.2}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+      
+      <PaymentSuccessDialog
+        isOpen={showPaymentSuccess}
+        onClose={() => setShowPaymentSuccess(false)}
+        expertName={firstName}
+        sessionDuration={15}
+        amountPaid={validExpertPrice * 1.2}
       />
     </Box>
   );
