@@ -382,12 +382,17 @@ class ExpertChatbot:
             
             # Process matches and build context from BOTH sources
             relevant_knowledge = []
-            for match in query_response.matches:
+            print(f"DEBUG: Found {len(query_response.matches)} total matches for query")
+            for i, match in enumerate(query_response.matches):
+                print(f"DEBUG Match {i}: score={match.score:.3f}, source={match.metadata.get('source', 'chat')}, id={match.id}")
+                print(f"DEBUG Match {i} text preview: {match.metadata.get('text', '')[:100]}...")
+                
                 if match.score >= 0.1:  # Reasonable threshold for relevance
                     knowledge_text = match.metadata.get('text', '').strip()
                     
                     # Apply quality filters
                     if len(knowledge_text) < 20 or len(knowledge_text.split()) < 4:
+                        print(f"DEBUG Match {i}: REJECTED - too short ({len(knowledge_text)} chars, {len(knowledge_text.split())} words)")
                         continue
                         
                     # Determine source and set metadata accordingly
@@ -413,8 +418,10 @@ class ExpertChatbot:
                         continue
                         
                     if confidence_score < 0.3:  # Very low confidence
+                        print(f"DEBUG Match {i}: REJECTED - low confidence ({confidence_score:.3f})")
                         continue
                     
+                    print(f"DEBUG Match {i}: ACCEPTED - {source} source, confidence={confidence_score:.3f}")
                     relevant_knowledge.append({
                         'text': knowledge_text,
                         'topic': topic,
@@ -423,6 +430,11 @@ class ExpertChatbot:
                         'confidence_score': confidence_score,
                         'key_concepts': key_concepts
                     })
+            
+            print(f"DEBUG: Final relevant_knowledge count: {len(relevant_knowledge)}")
+            for i, knowledge in enumerate(relevant_knowledge):
+                print(f"DEBUG Knowledge {i}: source={knowledge['topic']}, confidence={knowledge['confidence_score']:.3f}")
+                print(f"DEBUG Knowledge {i} text: {knowledge['text'][:150]}...")
             
             if not relevant_knowledge:
                 # Return early with a helpful message about what topics the expert does know about
