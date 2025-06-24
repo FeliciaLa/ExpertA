@@ -390,9 +390,23 @@ class ExpertChatbot:
                 if match.score >= 0.1:  # Reasonable threshold for relevance
                     knowledge_text = match.metadata.get('text', '').strip()
                     
-                    # Apply quality filters
-                    if len(knowledge_text) < 20 or len(knowledge_text.split()) < 4:
-                        print(f"NEURAL DEBUG Match {i}: REJECTED - too short")
+                    # Apply quality filters - be more strict for document content to prevent fragments
+                    source = match.metadata.get('source', 'expert_training')
+                    if source == 'document':
+                        # Stricter filters for documents to prevent short fragments
+                        min_chars = 50
+                        min_words = 8
+                    elif source != 'document' and match.score > 0.8:
+                        # High-confidence expert training - lenient filters
+                        min_chars = 15
+                        min_words = 3
+                    else:
+                        # Normal filters for low-confidence training data
+                        min_chars = 25
+                        min_words = 5
+                        
+                    if len(knowledge_text) < min_chars or len(knowledge_text.split()) < min_words:
+                        print(f"NEURAL DEBUG Match {i}: REJECTED - too short ({len(knowledge_text)} chars, {len(knowledge_text.split())} words, threshold: {min_chars})")
                         continue
                         
                     # Determine source and set metadata accordingly
@@ -450,20 +464,25 @@ class ExpertChatbot:
             # Build prompt for response generation
             prompt = self._build_response_prompt(expert_profile, knowledge_base, relevant_knowledge, user_message)
             
-            # Generate response
+            # Generate response with multiple anti-hallucination measures
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-4o-mini",  # Faster than gpt-4, better instruction following than 3.5-turbo
+                    model="gpt-4o-mini",  # Better instruction following
                     messages=[
                         {"role": "system", "content": prompt},
                         {"role": "user", "content": user_message}
                     ],
-                    temperature=0.7,
-                    max_tokens=150  # Shorter responses for chat-like conversation
+                    temperature=0.3,  # Lower temperature for more adherence to instructions
+                    max_tokens=100,   # Even shorter to prevent elaboration
+                    top_p=0.9,        # Focus on most likely tokens
+                    frequency_penalty=0.2  # Discourage repetitive elaboration
                 )
                 
-                final_response = response.choices[0].message.content
-                return final_response
+                raw_response = response.choices[0].message.content
+                
+                # Validate response doesn't contain hallucinations
+                validated_response = self._validate_response(raw_response, relevant_knowledge, user_message)
+                return validated_response
             except Exception as e:
                 return "I'm having trouble formulating my response right now. Could you please try again later?"
             
@@ -473,51 +492,128 @@ class ExpertChatbot:
     def _build_response_prompt(self, expert_profile, knowledge_base, relevant_knowledge, user_message) -> str:
         """Build a detailed prompt for response generation"""
         
-        prompt = f"""You are {self.expert.name}, an expert in {expert_profile.industry}. Respond in FIRST PERSON as if you ARE the expert, not as an assistant speaking on behalf of the expert.
+        prompt = f"""You are {self.expert.name}, an expert in {expert_profile.industry}. Respond in FIRST PERSON as if you ARE the expert.
 
-CRITICAL INSTRUCTIONS:
-1. Speak naturally and directly - don't use phrases like "I can share that" or "I'd be happy to tell you"
-2. You must ONLY use the knowledge explicitly provided below. DO NOT add information that wasn't provided.
-3. You can paraphrase and speak naturally about the provided knowledge, but don't add extra facts, details, or interpretations beyond what's stated.
-4. Give natural answers based on your training. NEVER mention what you don't know unless directly asked.
-5. Never make up or add information that isn't explicitly stated in the provided knowledge sections below.
-6. Be helpful and conversational. Focus on what you DO know, not what you don't know.
-7. Your responses should sound natural and conversational, like a real expert would speak.
-8. Keep responses concise and conversational - avoid being overly verbose or lecture-like.
-9. IGNORE any general knowledge you may have about this topic - ONLY use what's provided below.
+🚨 CRITICAL ANTI-HALLUCINATION PROTOCOL 🚨
 
-Below is the ONLY knowledge you are allowed to use (from my specific training and experience):"""
+ABSOLUTE FORBIDDEN ACTIONS:
+1. NEVER use any general knowledge about ANY topic
+2. NEVER explain concepts unless the exact explanation is provided below
+3. NEVER define terms unless the exact definition is provided below
+4. NEVER mention applications, examples, or use cases unless explicitly stated below
+5. NEVER provide background information unless explicitly provided below
+6. NEVER expand on incomplete information - acknowledge limitations instead
+7. NEVER "fill in gaps" with reasonable assumptions
+8. NEVER use phrases like "typically", "usually", "often", "generally"
+
+MANDATORY RESPONSE RULES:
+- If information is incomplete: "I only have partial information on that"
+- If no relevant knowledge: "I don't have specific experience with that"
+- If knowledge is fragmentary: "Based on my limited experience with this..."
+- ONLY state facts that are WORD-FOR-WORD in the knowledge below
+- Keep responses SHORT (1-3 sentences maximum)
+- Be conversational but stick strictly to provided facts
+
+VIOLATION DETECTION: Any response containing information not explicitly in the knowledge below will be rejected.
+
+=== YOUR COMPLETE KNOWLEDGE BASE ==="""
         
-        # Add relevant knowledge - prioritize by confidence score (chat training gets boosted)
+        # Add relevant knowledge with clear source boundaries
         if relevant_knowledge:
             sorted_knowledge = sorted(relevant_knowledge, key=lambda x: x['confidence_score'], reverse=True)
-            for knowledge in sorted_knowledge:
+            for i, knowledge in enumerate(sorted_knowledge):
                 source_label = "MY DIRECT EXPERIENCE" if not knowledge['topic'].startswith('Document:') else "REFERENCE MATERIAL"
-                prompt += f"\n\n{source_label}:\n{knowledge['text']}"
+                prompt += f"\n\n--- SOURCE {i+1}: {source_label} ---\n{knowledge['text']}\n--- END SOURCE {i+1} ---"
         
         # Add training summary if available
         if knowledge_base and knowledge_base.training_summary:
-            prompt += f"\n\nMY BACKGROUND:\n{knowledge_base.training_summary}"
-        
-        # REMOVED: Do not include knowledge_areas descriptions as they contain general information
-        # This was causing the AI to generate responses based on broad topic descriptions
-        # rather than specific trained knowledge
+            prompt += f"\n\n--- MY BACKGROUND ---\n{knowledge_base.training_summary}\n--- END BACKGROUND ---"
         
         prompt += f"""
 
-REMEMBER:
-- Respond as {self.expert.name} in the first person
-- Use ONLY the facts from the knowledge provided above - don't add extra information
-- Speak naturally about what you know - don't reference "training" or "from my training"
-- Give confident answers without ANY disclaimers about what you don't know
-- NEVER mention training, what you were taught, or what you can't do unless DIRECTLY asked
-- Be conversational and helpful, speaking as a natural expert would
-- Keep responses concise and natural, like a normal conversation
-- ABSOLUTELY NEVER use general knowledge, external information, or anything not explicitly stated above
-- Don't add facts or details that weren't provided
-- Focus on what you DO know, not what you don't know
-- The knowledge sections above are your COMPLETE knowledge base - nothing else exists
+=== END OF KNOWLEDGE BASE ===
 
-The user's question is: {user_message}"""
+⚠️ WARNING: You have NO other knowledge beyond what's listed above. If the user asks about anything not covered in the sources above, respond with: "I don't have specific experience or training on that topic."
+
+FINAL INSTRUCTIONS:
+- Respond as {self.expert.name} naturally and conversationally
+- Use ONLY information from the sources above
+- Keep responses concise (1-3 sentences)
+- Never add details, examples, or explanations not explicitly provided
+- If knowledge is limited, acknowledge it honestly
+
+User question: {user_message}"""
         
         return prompt 
+    
+    def _validate_response(self, response: str, knowledge_sources: list, user_message: str) -> str:
+        """Validate response doesn't contain hallucinations"""
+        
+        # Check for common hallucination indicators
+        hallucination_phrases = [
+            "typically", "usually", "often", "generally", "commonly", "most",
+            "for example", "such as", "including", "like", "among others",
+            "it is important to", "it should be noted", "it's worth mentioning",
+            "in general", "overall", "furthermore", "moreover", "additionally",
+            "this means", "this allows", "this enables", "this helps",
+            "consists of", "made up of", "composed of", "involves",
+            "process of", "method of", "technique of", "approach to"
+        ]
+        
+        response_lower = response.lower()
+        for phrase in hallucination_phrases:
+            if phrase in response_lower:
+                print(f"HALLUCINATION DETECTED: Found phrase '{phrase}' in response")
+                return f"I only have limited information about that topic. Let me know if you'd like me to share what I do know specifically."
+        
+        # Check if response contains information not in knowledge sources
+        if knowledge_sources:
+            all_source_text = " ".join([k['text'] for k in knowledge_sources]).lower()
+            
+            # Split response into sentences for checking
+            import re
+            sentences = re.split(r'[.!?]+', response)
+            
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if len(sentence) > 10:  # Skip very short sentences
+                    # Check if any substantial words from this sentence appear in sources
+                    words = re.findall(r'\b\w{4,}\b', sentence.lower())  # Words 4+ chars
+                    if len(words) > 2:  # Only check substantial sentences
+                        found_words = sum(1 for word in words if word in all_source_text)
+                        if found_words / len(words) < 0.3:  # Less than 30% word overlap
+                            print(f"HALLUCINATION DETECTED: Sentence appears to add new information: {sentence}")
+                            return f"I only have partial information about that. Would you like me to share what I do know specifically?"
+        
+        # Additional validation: Use a second model to verify the response
+        try:
+            if len(response) > 50:  # Only validate substantial responses
+                validation_prompt = f"""
+                Check if this response contains ONLY information that can be found in the provided sources.
+                
+                SOURCES:
+                {chr(10).join([k['text'] for k in knowledge_sources]) if knowledge_sources else "No sources provided"}
+                
+                RESPONSE TO CHECK:
+                {response}
+                
+                Reply with ONLY "VALID" if the response uses only information from the sources, or "INVALID" if it adds information not in the sources.
+                """
+                
+                validation_response = self.client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": validation_prompt}],
+                    temperature=0.1,
+                    max_tokens=10
+                )
+                
+                validation_result = validation_response.choices[0].message.content.strip().upper()
+                if "INVALID" in validation_result:
+                    print(f"SECOND MODEL VALIDATION FAILED: Response marked as invalid")
+                    return f"I want to make sure I give you accurate information. Let me know if you'd like me to share the specific details I do have about this topic."
+        except Exception as e:
+            print(f"Validation check failed: {e}")
+            pass  # Continue with original response if validation fails
+        
+        # If response passes all validation, return it
+        return response 
