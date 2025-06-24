@@ -346,8 +346,9 @@ class ExpertChatbot:
             
             # Query Pinecone for relevant knowledge
             try:
-                # Use expert_id filter to get ALL content for this expert (both chat training and documents)
-                filter_query = {"expert_id": str(self.expert.id)}
+                # Get all knowledge entry IDs for this expert (back to original working approach)
+                entry_ids = [str(entry.id) for entry in KnowledgeEntry.objects.filter(knowledge_base=knowledge_base)]
+                filter_query = {"id": {"$in": entry_ids}} if entry_ids else {}
                 
                 # First try with higher threshold
                 query_response = self.index.query(
