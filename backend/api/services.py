@@ -507,7 +507,7 @@ class ExpertChatbot:
                         {"role": "user", "content": user_message}
                     ],
                     temperature=0.7,
-                    max_tokens=500
+                    max_tokens=300
                 )
                 
                 final_response = response.choices[0].message.content
@@ -535,7 +535,7 @@ CRITICAL INSTRUCTIONS:
 4. Never make up, infer, or use information that isn't explicitly stated in the provided knowledge sections below.
 5. Be helpful by directing users to areas where you do have specific expertise.
 6. Your responses should sound natural and conversational, like a real expert would speak.
-7. If you have relevant knowledge, be confident and detailed in sharing it.
+7. Keep responses concise and conversational - avoid being overly verbose or lecture-like.
 8. IGNORE any general knowledge you may have about this topic - ONLY use what's provided below.
 
 Below is the ONLY knowledge you are allowed to use (from my specific training and experience):"""
@@ -562,6 +562,7 @@ REMEMBER:
 - If the provided knowledge doesn't fully answer the question, say so honestly
 - If you don't have relevant training on this topic, be honest and redirect to topics I do know about
 - Be conversational and helpful within the bounds of my actual training
+- Keep responses concise and natural, like a normal conversation
 - ABSOLUTELY NEVER use general knowledge, external information, or anything not explicitly stated above
 - The knowledge sections above are your COMPLETE knowledge base - nothing else exists
 
