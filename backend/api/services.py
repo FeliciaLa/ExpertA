@@ -406,17 +406,11 @@ class ExpertChatbot:
                 query_response = self.index.query(
                     vector=query_embedding,
                     filter=filter_query,
-                    top_k=10,  # Get more matches
+                    top_k=5,  # Fewer matches for speed
                     include_metadata=True
                 )
                 
-                print(f"\n=== Query Results ===")
                 print(f"Total matches found: {len(query_response.matches)}")
-                for i, match in enumerate(query_response.matches):
-                    print(f"\nMatch {i+1}:")
-                    print(f"Score: {match.score}")
-                    print(f"ID: {match.id}")
-                    print(f"Metadata: {match.metadata}")
                 
                 # If no good matches, try with lower threshold
                 if not query_response.matches or all(match.score < 0.2 for match in query_response.matches):
@@ -424,7 +418,7 @@ class ExpertChatbot:
                     query_response = self.index.query(
                         vector=query_embedding,
                         filter=filter_query,
-                        top_k=15,  # Get even more matches
+                        top_k=8,  # Fewer matches for speed
                         include_metadata=True
                     )
             except Exception as e:
@@ -444,12 +438,7 @@ class ExpertChatbot:
                     confidence_score = match.metadata.get('confidence_score', 0.5)
                     key_concepts = match.metadata.get('key_concepts', [])
                     
-                    print(f"MATCH FOUND - Topic: {topic}")
-                    print(f"Context Depth: {context_depth}")
-                    print(f"Confidence: {confidence_score}")
-                    print(f"Key Concepts: {key_concepts}")
-                    print(f"Text preview: {knowledge_text[:200]}...")
-                    print(f"FULL TEXT: {knowledge_text}")
+                    print(f"MATCH FOUND - Topic: {topic}, Score: {match.score}")
                     
                     # STRICT QUALITY CHECK: Reject low-quality knowledge
                     if len(knowledge_text) < 20:  # Less than 20 characters
@@ -501,7 +490,7 @@ class ExpertChatbot:
             print("\nGenerating response with GPT-4...")
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-3.5-turbo",  # Much faster than gpt-4
                     messages=[
                         {"role": "system", "content": prompt},
                         {"role": "user", "content": user_message}
