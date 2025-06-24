@@ -203,7 +203,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
 
 if USE_S3:
-    # AWS S3 settings for profile images only
+    # AWS S3 settings
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
@@ -213,25 +213,39 @@ if USE_S3:
     AWS_S3_OBJECT_PARAMETERS = {
         'CacheControl': 'max-age=86400',
     }
-    AWS_LOCATION = 'media'
     
-    # Profile images go to S3, but documents stay local
-    # Only profile images use S3, documents use local storage
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+    # Use S3 for all file storage
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "access_key": AWS_ACCESS_KEY_ID,
+                "secret_key": AWS_SECRET_ACCESS_KEY,
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "region_name": AWS_S3_REGION_NAME,
+                "custom_domain": AWS_S3_CUSTOM_DOMAIN,
+                "default_acl": AWS_DEFAULT_ACL,
+                "object_parameters": AWS_S3_OBJECT_PARAMETERS,
+                "location": "media",  # All files go in media/ folder
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 else:
     # Local media files (for development)
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Always use local storage for all uploads - this was working before
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
 
 # Set MEDIA_ROOT for local storage
 if not USE_S3:

@@ -193,9 +193,8 @@ class Document(models.Model):
         """Delete the associated file when deleting the model instance"""
         if self.file:
             try:
-                # For local storage, just delete the file
-                if os.path.isfile(self.file.path):
-                    os.remove(self.file.path)
+                # Use the storage backend's delete method - works for both local and S3
+                self.file.delete(save=False)
             except Exception as e:
                 print(f"Error deleting file {self.file.name}: {str(e)}")
                 # Continue with model deletion even if file deletion fails
