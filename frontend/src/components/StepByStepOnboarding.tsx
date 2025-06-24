@@ -89,11 +89,11 @@ const stepSections = [
     title: 'Experience Info',
     description: 'Tell us about your expertise and experience',
     steps: [
-      // {
-      //   label: 'Describe Your Expertise',
-      //   description: 'What do you specialize in? What\'s your core area of expertise?',
-      //   field: 'expertise'
-      // },
+      {
+        label: 'Describe Your Expertise',
+        description: 'What do you specialize in? What\'s your core area of expertise?',
+        field: 'expertise'
+      },
       {
         label: 'Experience Level',
         description: 'How many years of experience do you have?',
