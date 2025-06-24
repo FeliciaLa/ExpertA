@@ -344,39 +344,64 @@ class ExpertChatbot:
             except Exception as e:
                 return "I'm sorry, I'm having trouble processing your question right now. Could you try again later?"
             
-            # Query Pinecone for relevant knowledge
+            # Query Pinecone for relevant knowledge from BOTH chat training AND documents
             try:
-                # Get all knowledge entry IDs for this expert (back to original working approach)
+                # Get knowledge entry IDs for chat training data
                 entry_ids = [str(entry.id) for entry in KnowledgeEntry.objects.filter(knowledge_base=knowledge_base)]
-                filter_query = {"id": {"$in": entry_ids}} if entry_ids else {}
                 
-                # First try with higher threshold
+                # Create filter to include both chat training AND document chunks for this expert
+                if entry_ids:
+                    filter_query = {
+                        "$or": [
+                            {"id": {"$in": entry_ids}},  # Chat training data
+                            {"expert_id": str(self.expert.id), "source": "document"}  # Document chunks
+                        ]
+                    }
+                else:
+                    # If no training data, only search documents
+                    filter_query = {"expert_id": str(self.expert.id), "source": "document"}
+                
+                # Query with semantic similarity - let relevance determine what's useful
                 query_response = self.index.query(
                     vector=query_embedding,
                     filter=filter_query,
-                    top_k=3,  # Reduced for speed
+                    top_k=8,  # Get more candidates to choose from both sources
                     include_metadata=True
                 )
                 
-                # If no good matches, try with lower threshold
-                if not query_response.matches or all(match.score < 0.2 for match in query_response.matches):
+                # If no good matches, try with broader search
+                if not query_response.matches or all(match.score < 0.15 for match in query_response.matches):
                     query_response = self.index.query(
                         vector=query_embedding,
                         filter=filter_query,
-                        top_k=5,  # Still keep it small
+                        top_k=12,  # Even more candidates
                         include_metadata=True
                     )
             except Exception as e:
                 return "I'm having trouble accessing my knowledge base right now. Could you please try again later?"
             
-            # Process matches and build context
+            # Process matches and build context from BOTH sources
             relevant_knowledge = []
             for match in query_response.matches:
-                if match.score >= 0.05:  # Very low threshold to be more inclusive
+                if match.score >= 0.1:  # Reasonable threshold for relevance
                     knowledge_text = match.metadata.get('text', '').strip()
-                    topic = match.metadata.get('topic', 'General')
-                    context_depth = match.metadata.get('context_depth', 1)
-                    confidence_score = match.metadata.get('confidence_score', 0.5)
+                    
+                    # Apply quality filters
+                    if len(knowledge_text) < 20 or len(knowledge_text.split()) < 4:
+                        continue
+                        
+                    # Determine source and set metadata accordingly
+                    source = match.metadata.get('source', 'chat')
+                    if source == 'document':
+                        # Use document filename if available, otherwise document_id
+                        doc_name = match.metadata.get('filename', match.metadata.get('document_id', 'Document'))
+                        topic = f"Document: {doc_name}"
+                        context_depth = 2  # Documents tend to have good context
+                        confidence_score = min(match.score * 1.1, 1.0)  # Small boost for document relevance
+                    else:
+                        topic = match.metadata.get('topic', 'Training Chat')
+                        context_depth = match.metadata.get('context_depth', 1)
+                        confidence_score = match.metadata.get('confidence_score', match.score)
                     key_concepts = match.metadata.get('key_concepts', [])
                     
                     # STRICT QUALITY CHECK: Reject low-quality knowledge
