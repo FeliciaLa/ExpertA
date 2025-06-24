@@ -397,11 +397,12 @@ class ExpertChatbot:
                         doc_name = match.metadata.get('filename', match.metadata.get('document_id', 'Document'))
                         topic = f"Document: {doc_name}"
                         context_depth = 2  # Documents tend to have good context
-                        confidence_score = min(match.score * 1.1, 1.0)  # Small boost for document relevance
+                        confidence_score = match.score  # No boost for documents - they're just reference
                     else:
+                        # Chat training is the expert's actual opinions and experiences - prioritize it!
                         topic = match.metadata.get('topic', 'Training Chat')
                         context_depth = match.metadata.get('context_depth', 1)
-                        confidence_score = match.metadata.get('confidence_score', match.score)
+                        confidence_score = min(match.score * 1.25, 1.0)  # Boost expert's actual training
                     key_concepts = match.metadata.get('key_concepts', [])
                     
                     # STRICT QUALITY CHECK: Reject low-quality knowledge
@@ -475,10 +476,12 @@ CRITICAL INSTRUCTIONS:
 
 Below is the ONLY knowledge you are allowed to use (from my specific training and experience):"""
         
-        # Add relevant knowledge
+        # Add relevant knowledge - prioritize by confidence score (chat training gets boosted)
         if relevant_knowledge:
-            for knowledge in sorted(relevant_knowledge, key=lambda x: x['score'], reverse=True):
-                prompt += f"\n\nMY TRAINING/EXPERIENCE:\n{knowledge['text']}"
+            sorted_knowledge = sorted(relevant_knowledge, key=lambda x: x['confidence_score'], reverse=True)
+            for knowledge in sorted_knowledge:
+                source_label = "MY DIRECT EXPERIENCE" if not knowledge['topic'].startswith('Document:') else "REFERENCE MATERIAL"
+                prompt += f"\n\n{source_label}:\n{knowledge['text']}"
         
         # Add training summary if available
         if knowledge_base and knowledge_base.training_summary:
