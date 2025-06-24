@@ -54,7 +54,6 @@ interface StepData {
   background: string;
   key_skills: string[];
   typical_problems: string;
-  methodologies: string;
   tools_technologies: string;
   certifications: string;
   bio: string;
@@ -116,13 +115,8 @@ const stepSections = [
         field: 'key_skills'
       },
       {
-        label: 'Methodologies',
-        description: 'What methodologies or frameworks do you use?',
-        field: 'methodologies'
-      },
-      {
-        label: 'Tools & Technologies',
-        description: 'What tools and technologies do you work with?',
+        label: 'Techniques & Tools',
+        description: 'What techniques, tools and technologies do you work with?',
         field: 'tools_technologies'
       },
       {
@@ -197,7 +191,6 @@ const StepByStepOnboarding: React.FC = () => {
     background: '',
     key_skills: [],
     typical_problems: '',
-    methodologies: '',
     tools_technologies: '',
     certifications: '',
     bio: '',
@@ -301,7 +294,6 @@ const StepByStepOnboarding: React.FC = () => {
         background: profile.profile?.background || '',
         key_skills: parseArrayField(profile.profile?.key_skills),
         typical_problems: profile.profile?.typical_problems || '',
-        methodologies: profile.profile?.methodologies || '',
         tools_technologies: profile.profile?.tools_technologies || '',
         certifications: profile.profile?.certifications || '',
         bio: profile.bio || '',
@@ -503,7 +495,6 @@ const StepByStepOnboarding: React.FC = () => {
         key_skills: (stepData.key_skills || []).join(', '),
         typical_problems: stepData.typical_problems || `As a ${stepData.title}, I help clients solve complex challenges in my field.`,
         certifications: stepData.certifications,
-        methodologies: stepData.methodologies,
         tools_technologies: stepData.tools_technologies,
         monetization_enabled: Boolean(stepData.monetization_enabled), // Ensure it's a boolean
         monetization_price: stepData.monetization_price
@@ -785,31 +776,16 @@ const StepByStepOnboarding: React.FC = () => {
           />
         );
         
-      case 'methodologies':
-        return (
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label="Methodologies & Frameworks"
-            value={currentValue}
-            onChange={(e) => setCurrentValue(e.target.value)}
-            placeholder="What methodologies, frameworks, or approaches do you use in your work?"
-            variant="outlined"
-            sx={{ mt: 2 }}
-          />
-        );
-        
       case 'tools_technologies':
         return (
           <TextField
             fullWidth
             multiline
             rows={3}
-            label="Tools & Technologies"
+            label="Techniques & Tools"
             value={currentValue}
             onChange={(e) => setCurrentValue(e.target.value)}
-            placeholder="What tools, software, or technologies do you use regularly?"
+            placeholder="What techniques, tools, software, or technologies do you use regularly?"
             variant="outlined"
             sx={{ mt: 2 }}
           />

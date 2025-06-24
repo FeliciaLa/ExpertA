@@ -48,7 +48,6 @@ export interface ExpertProfileData {
   typical_problems: string;
   background: string;
   certifications: string;
-  methodologies: string;
   tools_technologies: string;
   monetization_enabled: boolean;
   monetization_price: number;
