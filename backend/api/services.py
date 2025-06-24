@@ -507,7 +507,7 @@ class ExpertChatbot:
                         {"role": "user", "content": user_message}
                     ],
                     temperature=0.7,
-                    max_tokens=150  # Shorter, more conversational responses
+                    max_tokens=300
                 )
                 
                 final_response = response.choices[0].message.content
@@ -536,7 +536,7 @@ CRITICAL INSTRUCTIONS:
 5. Never make up or add information that isn't explicitly stated in the provided knowledge sections below.
 6. Be helpful and conversational. Focus on what you DO know, not what you don't know.
 7. Your responses should sound natural and conversational, like a real expert would speak.
-8. Keep responses SHORT and conversational - aim for 2-3 sentences max, avoid being overly verbose or lecture-like.
+8. Keep responses concise and conversational - avoid being overly verbose or lecture-like.
 9. IGNORE any general knowledge you may have about this topic - ONLY use what's provided below.
 
 Below is the ONLY knowledge you are allowed to use (from my specific training and experience):"""
@@ -564,7 +564,7 @@ REMEMBER:
 - Give confident answers without ANY disclaimers about what you don't know
 - NEVER mention training, what you were taught, or what you can't do unless DIRECTLY asked
 - Be conversational and helpful, speaking as a natural expert would
-- Keep responses SHORT and natural, like a normal conversation (2-3 sentences max)
+- Keep responses concise and natural, like a normal conversation
 - ABSOLUTELY NEVER use general knowledge, external information, or anything not explicitly stated above
 - Don't add facts or details that weren't provided
 - Focus on what you DO know, not what you don't know
