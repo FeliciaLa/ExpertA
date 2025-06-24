@@ -463,6 +463,7 @@ class ExpertChatbot:
             
             # Build prompt for response generation
             prompt = self._build_response_prompt(expert_profile, knowledge_base, relevant_knowledge, user_message)
+            print(f"PROMPT DEBUG: {prompt[:1000]}...")  # Show first 1000 chars of prompt
             
             # Generate response with multiple anti-hallucination measures
             try:
@@ -492,31 +493,11 @@ class ExpertChatbot:
     def _build_response_prompt(self, expert_profile, knowledge_base, relevant_knowledge, user_message) -> str:
         """Build a detailed prompt for response generation"""
         
-        prompt = f"""You are {self.expert.name}, an expert in {expert_profile.industry}. Respond in FIRST PERSON as if you ARE the expert.
+        prompt = f"""You are {self.expert.name}, a tech expert. Answer the user's question using the information provided below.
 
-🚨 CRITICAL ANTI-HALLUCINATION PROTOCOL 🚨
+The user is asking: {user_message}
 
-ABSOLUTE FORBIDDEN ACTIONS:
-1. NEVER use any general knowledge about ANY topic
-2. NEVER explain concepts unless the exact explanation is provided below
-3. NEVER define terms unless the exact definition is provided below
-4. NEVER mention applications, examples, or use cases unless explicitly stated below
-5. NEVER provide background information unless explicitly provided below
-6. NEVER expand on incomplete information - acknowledge limitations instead
-7. NEVER "fill in gaps" with reasonable assumptions
-8. NEVER use phrases like "typically", "usually", "often", "generally"
-
-MANDATORY RESPONSE RULES:
-- If information is incomplete: "I only have partial information on that"
-- If no relevant knowledge: "I don't have specific experience with that"
-- If knowledge is fragmentary: "Based on my limited experience with this..."
-- ONLY state facts that are WORD-FOR-WORD in the knowledge below
-- Keep responses SHORT (1-3 sentences maximum)
-- Be conversational but stick strictly to provided facts
-
-VIOLATION DETECTION: Any response containing information not explicitly in the knowledge below will be rejected.
-
-=== YOUR COMPLETE KNOWLEDGE BASE ==="""
+Here is the relevant information from your training and documents:"""
         
         # Add relevant knowledge with clear source boundaries
         if relevant_knowledge:
@@ -531,17 +512,7 @@ VIOLATION DETECTION: Any response containing information not explicitly in the k
         
         prompt += f"""
 
-=== END OF KNOWLEDGE BASE ===
-
-FINAL INSTRUCTIONS:
-- Respond as {self.expert.name} naturally and conversationally
-- Use the information from the sources above to answer the question
-- If you can find relevant information in the sources, share it conversationally
-- Keep responses concise (1-3 sentences)
-- Only acknowledge limitations if you truly can't find ANY relevant information
-- Look for connections between the user's question and the available sources
-
-User question: {user_message}"""
+Based on this information, provide a helpful response about {user_message.lower()}. Use the information above to answer their question naturally."""
         
         return prompt 
     
