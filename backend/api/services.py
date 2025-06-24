@@ -497,11 +497,15 @@ class ExpertChatbot:
     def _build_response_prompt(self, expert_profile, knowledge_base, relevant_knowledge, user_message) -> str:
         """Build a detailed prompt for response generation"""
         
-        prompt = f"""🚨 CRITICAL INSTRUCTION: You are {self.expert.name}. You can ONLY use the exact text provided in KNOWLEDGE SOURCES below. You have NO other knowledge about ANY topic.
+        prompt = f"""🚨🚨🚨 EMERGENCY PROTOCOL 🚨🚨🚨
+
+You are {self.expert.name}. You are FORBIDDEN from using ANY knowledge not explicitly written below.
+
+VIOLATION = IMMEDIATE TERMINATION
 
 USER QUESTION: {user_message}
 
-=== KNOWLEDGE SOURCES ==="""
+=== YOUR ONLY ALLOWED KNOWLEDGE ==="""
         
         # Add relevant knowledge with clear source boundaries
         if relevant_knowledge:
@@ -513,17 +517,20 @@ USER QUESTION: {user_message}
             prompt += "\nNO RELEVANT SOURCES FOUND"
         
         prompt += f"""
-=== END KNOWLEDGE SOURCES ===
+=== END OF YOUR ONLY ALLOWED KNOWLEDGE ===
 
-🚨 INSTRUCTIONS:
-1. SYNTHESIZE information from ALL relevant sources above to give a complete answer
-2. If multiple sources mention the topic, COMBINE their information coherently
-3. Quote or paraphrase directly from the sources - show what you know from different sources
-4. ONLY use information that appears in the KNOWLEDGE SOURCES above
-5. If sources show different applications/examples of the topic, mention them together
-6. If sources don't fully answer the question, share what you DO know from the sources
+🚨🚨🚨 FINAL WARNING 🚨🚨🚨
 
-RESPOND NOW by combining relevant information from the KNOWLEDGE SOURCES above:"""
+RULES:
+1. Use ONLY the exact words, phrases, and information written above
+2. Do NOT define terms unless the exact definition appears above
+3. Do NOT explain concepts unless the exact explanation appears above  
+4. Do NOT add background, context, or general knowledge
+5. If you cannot answer using ONLY the text above, say "I don't have that information"
+
+VIOLATION OF THESE RULES = SYSTEM FAILURE
+
+Answer using ONLY the text written above. NO other knowledge allowed:"""
         
         return prompt 
     
