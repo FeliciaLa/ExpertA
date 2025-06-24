@@ -287,21 +287,11 @@ class ExpertChatbot:
     """Service to generate responses based on expert's knowledge"""
     
     def __init__(self, expert):
-        print("\n=== Initializing ExpertChatbot ===")
-        print(f"Expert ID: {expert.id}")
-        print(f"Expert email: {expert.email}")
-        
         self.expert = expert
-        print("Setting up OpenAI client...")
         self.client = self._create_openai_client()
-        print("OpenAI client initialized")
-        
-        print("Initializing Pinecone...")
         self.index = init_pinecone()
-        print(f"Pinecone initialization result: {'Success' if self.index else 'Failed'}")
         
         if not self.index:
-            print("Failed to initialize Pinecone")
             raise Exception("Failed to initialize vector database. Please check your Pinecone API key and settings.")
     
     def _create_openai_client(self):
@@ -330,97 +320,58 @@ class ExpertChatbot:
     def get_response(self, user_message: str) -> str:
         """Generate a response using the expert's knowledge base"""
         try:
-            print("\n=== Starting response generation ===")
-            print(f"User message: {user_message}")
-            
-            # Get the expert's profile and knowledge base
+            # Get the expert's profile and knowledge base (optimized with select_related)
             try:
                 expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
-                knowledge_base = ExpertKnowledgeBase.objects.filter(expert=self.expert).first()
-                
-                print("\n=== Expert Profile ===")
-                print(f"Expert ID: {self.expert.id}")
-                print(f"Expert email: {self.expert.email}")
-                print(f"Industry: {getattr(expert_profile, 'industry', 'Not set') if expert_profile else 'No profile'}")
-                print(f"Skills: {getattr(expert_profile, 'key_skills', 'Not set') if expert_profile else 'No profile'}")
-                
-                print("\n=== Knowledge Base ===")
-                print(f"Knowledge areas: {getattr(knowledge_base, 'knowledge_areas', {}) if knowledge_base else 'No knowledge base'}")
-                print(f"Training summary: {getattr(knowledge_base, 'training_summary', 'Not set') if knowledge_base else 'No knowledge base'}")
-                
-                # Print all knowledge entries
-                if knowledge_base:
-                    entries = knowledge_base.entries.all()
-                    print("\n=== Knowledge Entries ===")
-                    for entry in entries:
-                        print(f"\nEntry ID: {entry.id}")
-                        print(f"Topic: {entry.topic}")
-                        print(f"Content preview: {entry.content[:100]}...")
-                        print(f"Confidence: {entry.confidence_score}")
-                        print(f"Context depth: {entry.context_depth}")
+                knowledge_base = ExpertKnowledgeBase.objects.select_related('expert').filter(expert=self.expert).first()
                 
             except Exception as e:
-                print(f"Error accessing expert data: {str(e)}")
                 return "I'm currently experiencing some technical difficulties accessing my knowledge. Please try again later."
             
             # Check profile completeness
             if not expert_profile or not getattr(expert_profile, 'industry', None) or not getattr(expert_profile, 'key_skills', None):
-                print("\nProfile incomplete - missing industry or skills")
                 return "I apologize, but my profile setup is incomplete. Please contact the administrator to complete my expert profile setup."
             
             if not knowledge_base or not getattr(knowledge_base, 'knowledge_areas', None):
-                print("\nNo knowledge areas found in knowledge base")
                 return "I haven't been fully trained yet. Please contact the administrator to complete my training process."
             
             # Generate embeddings for the user's message
-            print("\nGenerating query embedding...")
             try:
                 query_embedding = self.client.embeddings.create(
                     model="text-embedding-ada-002",
                     input=user_message
                 ).data[0].embedding[:1024]
             except Exception as e:
-                print(f"Error generating embedding: {str(e)}")
                 return "I'm sorry, I'm having trouble processing your question right now. Could you try again later?"
             
             # Query Pinecone for relevant knowledge
-            print("\n=== Querying Pinecone ===")
             try:
                 # Get all knowledge entry IDs for this expert
                 entry_ids = [str(entry.id) for entry in KnowledgeEntry.objects.filter(knowledge_base=knowledge_base)]
                 filter_query = {"id": {"$in": entry_ids}} if entry_ids else {}
-                print(f"Entry IDs to search: {entry_ids}")
-                print(f"Filter query: {filter_query}")
                 
                 # First try with higher threshold
                 query_response = self.index.query(
                     vector=query_embedding,
                     filter=filter_query,
-                    top_k=5,  # Fewer matches for speed
+                    top_k=3,  # Reduced for speed
                     include_metadata=True
                 )
                 
-                print(f"Total matches found: {len(query_response.matches)}")
-                
                 # If no good matches, try with lower threshold
                 if not query_response.matches or all(match.score < 0.2 for match in query_response.matches):
-                    print("\nNo good matches found, trying with more results...")
                     query_response = self.index.query(
                         vector=query_embedding,
                         filter=filter_query,
-                        top_k=8,  # Fewer matches for speed
+                        top_k=5,  # Still keep it small
                         include_metadata=True
                     )
             except Exception as e:
-                print(f"Error querying Pinecone: {str(e)}")
                 return "I'm having trouble accessing my knowledge base right now. Could you please try again later?"
-            
-            print(f"\nFound {len(query_response.matches)} matches")
             
             # Process matches and build context
             relevant_knowledge = []
             for match in query_response.matches:
-                print(f"\nMatch score: {match.score}")
                 if match.score >= 0.05:  # Very low threshold to be more inclusive
                     knowledge_text = match.metadata.get('text', '').strip()
                     topic = match.metadata.get('topic', 'General')
@@ -428,22 +379,16 @@ class ExpertChatbot:
                     confidence_score = match.metadata.get('confidence_score', 0.5)
                     key_concepts = match.metadata.get('key_concepts', [])
                     
-                    print(f"MATCH FOUND - Topic: {topic}, Score: {match.score}")
-                    
                     # STRICT QUALITY CHECK: Reject low-quality knowledge
                     if len(knowledge_text) < 20:  # Less than 20 characters
-                        print(f"REJECTED: Knowledge too short ({len(knowledge_text)} chars)")
                         continue
                     
                     if len(knowledge_text.split()) < 4:  # Less than 4 words
-                        print(f"REJECTED: Knowledge too few words ({len(knowledge_text.split())} words)")
                         continue
                         
                     if confidence_score < 0.3:  # Very low confidence
-                        print(f"REJECTED: Confidence too low ({confidence_score})")
                         continue
                     
-                    print(f"ACCEPTED: Quality knowledge added")
                     relevant_knowledge.append({
                         'text': knowledge_text,
                         'topic': topic,
@@ -454,14 +399,6 @@ class ExpertChatbot:
                     })
             
             if not relevant_knowledge:
-                print("\nNo relevant knowledge found")
-                print(f"DEBUG: Query was: {user_message}")
-                print(f"DEBUG: Expert ID: {self.expert.id}")
-                print(f"DEBUG: Knowledge base exists: {knowledge_base is not None}")
-                if knowledge_base:
-                    print(f"DEBUG: Knowledge entries count: {knowledge_base.entries.count()}")
-                    print(f"DEBUG: Entry IDs searched: {[str(entry.id) for entry in KnowledgeEntry.objects.filter(knowledge_base=knowledge_base)]}")
-                
                 # Return early with a helpful message about what topics the expert does know about
                 available_topics = []
                 if knowledge_base and knowledge_base.knowledge_areas:
@@ -473,11 +410,9 @@ class ExpertChatbot:
                     return "I haven't been trained on that specific topic yet. Please contact the administrator to expand my training, or try asking about other topics."
             
             # Build prompt for response generation
-            print("\nBuilding response prompt...")
             prompt = self._build_response_prompt(expert_profile, knowledge_base, relevant_knowledge, user_message)
             
             # Generate response
-            print("\nGenerating response with GPT-4...")
             try:
                 response = self.client.chat.completions.create(
                     model="gpt-4o-mini",  # Faster than gpt-4, better instruction following than 3.5-turbo
@@ -490,16 +425,11 @@ class ExpertChatbot:
                 )
                 
                 final_response = response.choices[0].message.content
-                print(f"\nFinal response: {final_response[:100]}...")
                 return final_response
             except Exception as e:
-                print(f"Error generating GPT response: {str(e)}")
                 return "I'm having trouble formulating my response right now. Could you please try again later?"
             
         except Exception as e:
-            print(f"\nERROR in response generation: {str(e)}")
-            import traceback
-            print(f"Traceback: {traceback.format_exc()}")
             return "I'm having technical difficulties answering your question. Please try again or rephrase your question."
     
     def _build_response_prompt(self, expert_profile, knowledge_base, relevant_knowledge, user_message) -> str:
