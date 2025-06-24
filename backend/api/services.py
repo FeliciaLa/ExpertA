@@ -187,28 +187,18 @@ class KnowledgeProcessor:
             # Get all knowledge entries
             entries = knowledge_base.entries.all()
             
-            # Group entries by topic
-            topics = {}
-            for entry in entries:
-                if entry.topic not in topics:
-                    topics[entry.topic] = []
-                topics[entry.topic].append(entry.content)
-            
-            # Generate summary for each topic
+            # Simply track which topics exist without generating descriptions
+            # This prevents GPT from hallucinating interpretative content
             knowledge_areas = {}
-            for topic, contents in topics.items():
-                response = self.client.chat.completions.create(
-                    model="gpt-4",
-                    messages=[
-                        {"role": "system", "content": "Summarize the expert's knowledge in this area."},
-                        {"role": "user", "content": f"Topic: {topic}\n\nContent:\n" + "\n".join(contents)}
-                    ]
-                )
-                knowledge_areas[topic] = response.choices[0].message.content
+            for entry in entries:
+                if entry.topic not in knowledge_areas:
+                    # Just store the topic name without any generated description
+                    knowledge_areas[entry.topic] = f"Trained on: {entry.topic}"
             
-            # Update knowledge base
+            # Update knowledge base with simple topic list (no descriptions)
             knowledge_base.knowledge_areas = knowledge_areas
             knowledge_base.save()
+            print(f"Updated knowledge areas (topic list only): {list(knowledge_areas.keys())}")
             
         except Exception as e:
             print(f"Error updating knowledge base: {str(e)}")
@@ -539,10 +529,9 @@ Below is the ONLY knowledge you are allowed to use (from my specific training an
         if knowledge_base and knowledge_base.training_summary:
             prompt += f"\n\nMY BACKGROUND:\n{knowledge_base.training_summary}"
         
-        # Add info about what topics the expert has been trained on
-        if knowledge_base and knowledge_base.knowledge_areas:
-            topics = list(knowledge_base.knowledge_areas.keys())
-            prompt += f"\n\nTOPICS I'VE BEEN SPECIFICALLY TRAINED ON: {', '.join(topics)}"
+        # REMOVED: Do not include knowledge_areas descriptions as they contain general information
+        # This was causing the AI to generate responses based on broad topic descriptions
+        # rather than specific trained knowledge
         
         prompt += f"""
 
