@@ -490,7 +490,7 @@ class ExpertChatbot:
             print("\nGenerating response with GPT-4...")
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-4",  # Better instruction following than 3.5-turbo
+                    model="gpt-4o-mini",  # Faster than gpt-4, better instruction following than 3.5-turbo
                     messages=[
                         {"role": "system", "content": prompt},
                         {"role": "user", "content": user_message}
