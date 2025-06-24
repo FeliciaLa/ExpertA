@@ -515,14 +515,15 @@ USER QUESTION: {user_message}
         prompt += f"""
 === END KNOWLEDGE SOURCES ===
 
-🚨 MANDATORY RULES:
-1. ONLY quote or paraphrase from the exact text in KNOWLEDGE SOURCES above
-2. If no relevant information exists in the sources, say "I don't have information about that"
-3. NEVER add explanations, definitions, examples, or background not in the sources
-4. NEVER use general knowledge about any topic - even basic concepts
-5. NEVER define terms unless the exact definition appears in the sources
+🚨 INSTRUCTIONS:
+1. SYNTHESIZE information from ALL relevant sources above to give a complete answer
+2. If multiple sources mention the topic, COMBINE their information coherently
+3. Quote or paraphrase directly from the sources - show what you know from different sources
+4. ONLY use information that appears in the KNOWLEDGE SOURCES above
+5. If sources show different applications/examples of the topic, mention them together
+6. If sources don't fully answer the question, share what you DO know from the sources
 
-RESPOND NOW using ONLY the KNOWLEDGE SOURCES above:"""
+RESPOND NOW by combining relevant information from the KNOWLEDGE SOURCES above:"""
         
         return prompt 
     
