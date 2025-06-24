@@ -522,13 +522,13 @@ USER QUESTION: {user_message}
 🎯 INSTRUCTIONS:
 1. COMBINE information from multiple sources above to give a comprehensive answer
 2. Quote or paraphrase directly from the sources - show different applications/examples together
-3. If you find information about neural networks applications, mention them together
-4. Use phrases like "From what I know..." or "Based on my training..." to stay grounded
+3. If you find multiple applications/examples, mention them together naturally
+4. Respond conversationally - no need for robotic starter phrases
 5. ONLY use information that appears in the sources above
-6. DO NOT define neural networks unless a definition appears above
+6. DO NOT define terms unless definitions appear above
 7. DO NOT add general explanations not found in the sources
 
-Combine relevant information from the sources above:"""
+Answer naturally using only the sources above:"""
         
         return prompt 
     
