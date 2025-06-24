@@ -17,6 +17,7 @@ import { ArrowBack, ArrowForward, CheckCircle, InfoOutlined } from '@mui/icons-m
 import { useNavigate } from 'react-router-dom';
 import { expertApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { features } from '../utils/environment';
 
 const INDUSTRIES = [
   'Technology & Software',
@@ -176,8 +177,13 @@ const stepSections = [
   }
 ];
 
+// Filter out monetization section if payments are disabled
+const filteredStepSections = features.payments 
+  ? stepSections 
+  : stepSections.filter(section => section.title !== 'Monetization');
+
 // Flatten steps for compatibility with existing code
-const steps = stepSections.flatMap(section => section.steps);
+const steps = filteredStepSections.flatMap(section => section.steps);
 
 const StepByStepOnboarding: React.FC = () => {
   const navigate = useNavigate();

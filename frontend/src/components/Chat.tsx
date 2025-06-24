@@ -20,6 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
 import PaymentSection from './PaymentSection';
 import PaymentSuccessDialog from './PaymentSuccessDialog';
+import { features } from '../utils/environment';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -76,6 +77,7 @@ export const Chat: React.FC<ChatProps> = ({
 
   // Check if user should be blocked from sending more messages
   const shouldBlockMessage = () => {
+    if (!features.payments) return false; // Payments disabled, unlimited chat
     if (!monetizationEnabled) return false; // Free expert, unlimited chat
     if (sessionStats.hasActivePaidSession) return false; // User has paid for this session
     return sessionStats.freeMessagesRemaining <= 0; // Used up free messages
@@ -217,7 +219,7 @@ export const Chat: React.FC<ChatProps> = ({
     return (
       <>
         {/* Session status banner */}
-        {monetizationEnabled && (
+        {features.payments && monetizationEnabled && (
           <Box sx={{ p: 2, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider' }}>
             {sessionStats.hasActivePaidSession ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -372,7 +374,7 @@ export const Chat: React.FC<ChatProps> = ({
         onRegister={handleUserRegister}
       />
 
-      {showPaymentDialog && (
+      {features.payments && showPaymentDialog && (
         <PaymentSection
           expertId={expertId}
           expertName={firstName}
@@ -381,13 +383,15 @@ export const Chat: React.FC<ChatProps> = ({
         />
       )}
       
-      <PaymentSuccessDialog
-        isOpen={showPaymentSuccess}
-        onClose={() => setShowPaymentSuccess(false)}
-        expertName={firstName}
-        sessionDuration={15}
-        amountPaid={validExpertPrice * 1.2}
-      />
+      {features.payments && (
+        <PaymentSuccessDialog
+          isOpen={showPaymentSuccess}
+          onClose={() => setShowPaymentSuccess(false)}
+          expertName={firstName}
+          sessionDuration={15}
+          amountPaid={validExpertPrice * 1.2}
+        />
+      )}
     </Box>
   );
 }; 

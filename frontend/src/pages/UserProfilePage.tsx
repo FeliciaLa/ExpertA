@@ -28,6 +28,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { userApi, authApi } from '../services/api';
 import { API_URL } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { features } from '../utils/environment';
 
 const UserProfilePage: React.FC = () => {
   const { user, setUser, isUser, isExpert } = useAuth();
@@ -839,15 +840,16 @@ const UserProfilePage: React.FC = () => {
         </Box>
 
         {/* Payment Methods Section */}
-        <Box sx={{ mt: 6 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Payment Methods
-            </Typography>
-            <Button variant="outlined" size="small">
-              Add Payment Method
-            </Button>
-          </Box>
+        {features.payments && (
+          <Box sx={{ mt: 6 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h5" gutterBottom>
+                Payment Methods
+              </Typography>
+              <Button variant="outlined" size="small">
+                Add Payment Method
+              </Button>
+            </Box>
           
           {(() => {
             // Mock saved payment methods - replace with actual API call later
@@ -952,9 +954,11 @@ const UserProfilePage: React.FC = () => {
             );
           })()}
         </Box>
+        )}
 
         {/* Billing Information Section */}
-        <Box sx={{ mt: 6 }}>
+        {features.payments && (
+          <Box sx={{ mt: 6 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h5" gutterBottom>
               Billing Information
@@ -994,7 +998,8 @@ const UserProfilePage: React.FC = () => {
               </Grid>
             </Grid>
           </Paper>
-        </Box>
+          </Box>
+        )}
 
         {/* Account Settings Dialog */}
         <Dialog
