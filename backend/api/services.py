@@ -480,9 +480,13 @@ class ExpertChatbot:
                 
                 raw_response = response.choices[0].message.content
                 
+                # Temporarily bypass validation to debug
+                print(f"RAW RESPONSE DEBUG: {raw_response}")
+                return raw_response
+                
                 # Validate response doesn't contain hallucinations
-                validated_response = self._validate_response(raw_response, relevant_knowledge, user_message)
-                return validated_response
+                # validated_response = self._validate_response(raw_response, relevant_knowledge, user_message)
+                # return validated_response
             except Exception as e:
                 return "I'm having trouble formulating my response right now. Could you please try again later?"
             
