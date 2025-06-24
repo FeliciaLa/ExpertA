@@ -197,7 +197,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Enable WhiteNoise compression and caching
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE removed - using STORAGES setting instead
 
 # AWS S3 Configuration
 USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
