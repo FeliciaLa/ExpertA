@@ -158,20 +158,20 @@ class DocumentUploadView(APIView):
         content = ""
         
         try:
-            # Extract text based on file type
+            # Extract text based on file type - using local file paths
             if document.mime_type == 'text/plain':
-                # Process text files - read from the file object directly
-                content = document.file.read().decode('utf-8', errors='ignore')
-                document.file.seek(0)  # Reset file pointer
+                # Process text files
+                with open(document.file.path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
             
             elif document.mime_type == 'application/pdf' or document.filename.lower().endswith('.pdf'):
                 # Process PDF files
-                content = self._extract_text_from_pdf_file(document.file)
+                content = self._extract_text_from_pdf(document.file.path)
             
             elif document.mime_type in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
                                      'application/msword'] or document.filename.lower().endswith(('.docx', '.doc')):
                 # Process Word documents
-                content = self._extract_text_from_word_file(document.file)
+                content = self._extract_text_from_word(document.file.path)
             
             else:
                 # For other file types, just note that we can't process them
