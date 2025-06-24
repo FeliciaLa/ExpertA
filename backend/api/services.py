@@ -497,26 +497,32 @@ class ExpertChatbot:
     def _build_response_prompt(self, expert_profile, knowledge_base, relevant_knowledge, user_message) -> str:
         """Build a detailed prompt for response generation"""
         
-        prompt = f"""You are {self.expert.name}, a tech expert. Answer the user's question using the information provided below.
+        prompt = f"""🚨 CRITICAL INSTRUCTION: You are {self.expert.name}. You can ONLY use the exact text provided in KNOWLEDGE SOURCES below. You have NO other knowledge about ANY topic.
 
-The user is asking: {user_message}
+USER QUESTION: {user_message}
 
-Here is the relevant information from your training and documents:"""
+=== KNOWLEDGE SOURCES ==="""
         
         # Add relevant knowledge with clear source boundaries
         if relevant_knowledge:
             sorted_knowledge = sorted(relevant_knowledge, key=lambda x: x['confidence_score'], reverse=True)
             for i, knowledge in enumerate(sorted_knowledge):
-                source_label = "MY DIRECT EXPERIENCE" if not knowledge['topic'].startswith('Document:') else "REFERENCE MATERIAL"
-                prompt += f"\n\n--- SOURCE {i+1}: {source_label} ---\n{knowledge['text']}\n--- END SOURCE {i+1} ---"
-        
-        # Add training summary if available
-        if knowledge_base and knowledge_base.training_summary:
-            prompt += f"\n\n--- MY BACKGROUND ---\n{knowledge_base.training_summary}\n--- END BACKGROUND ---"
+                source_label = "MY TRAINING" if not knowledge['topic'].startswith('Document:') else "REFERENCE DOCUMENT"
+                prompt += f"\n\nSOURCE {i+1} ({source_label}):\n\"{knowledge['text']}\""
+        else:
+            prompt += "\nNO RELEVANT SOURCES FOUND"
         
         prompt += f"""
+=== END KNOWLEDGE SOURCES ===
 
-Based on this information, provide a helpful response about {user_message.lower()}. Use the information above to answer their question naturally."""
+🚨 MANDATORY RULES:
+1. ONLY quote or paraphrase from the exact text in KNOWLEDGE SOURCES above
+2. If no relevant information exists in the sources, say "I don't have information about that"
+3. NEVER add explanations, definitions, examples, or background not in the sources
+4. NEVER use general knowledge about any topic - even basic concepts
+5. NEVER define terms unless the exact definition appears in the sources
+
+RESPOND NOW using ONLY the KNOWLEDGE SOURCES above:"""
         
         return prompt 
     
