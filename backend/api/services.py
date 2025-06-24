@@ -474,7 +474,6 @@ class ExpertChatbot:
                         {"role": "user", "content": user_message}
                     ],
                     temperature=0.3,  # Lower temperature for more adherence to instructions
-                    max_tokens=200,   # Allow complete responses while preventing elaboration
                     top_p=0.9,        # Focus on most likely tokens
                     frequency_penalty=0.2  # Discourage repetitive elaboration
                 )
