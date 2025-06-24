@@ -474,9 +474,9 @@ class ExpertChatbot:
                         {"role": "user", "content": user_message}
                     ],
                     temperature=0.3,  # Lower temperature for more adherence to instructions
+                    max_tokens=150,   # Balanced length - complete but concise
                     top_p=0.9,        # Focus on most likely tokens
-                    frequency_penalty=0.2,  # Discourage repetitive elaboration
-                    stop=["\n\nHowever,", "\n\nAdditionally,", "\n\nFurthermore,", "\n\nMoreover,", "\n\nIn conclusion,"]  # Natural stopping points
+                    frequency_penalty=0.2  # Discourage repetitive elaboration
                 )
                 
                 raw_response = response.choices[0].message.content
@@ -520,15 +520,13 @@ USER QUESTION: {user_message}
 === END OF YOUR ONLY ALLOWED KNOWLEDGE ===
 
 🎯 INSTRUCTIONS:
-1. COMBINE information from multiple sources above to give a complete, focused answer
+1. COMBINE information from multiple sources above to give a comprehensive answer
 2. Quote or paraphrase directly from the sources - show different applications/examples together
 3. If you find multiple applications/examples, mention them together naturally
 4. Respond conversationally - no need for robotic starter phrases
 5. ONLY use information that appears in the sources above
 6. DO NOT define terms unless definitions appear above
 7. DO NOT add general explanations not found in the sources
-8. Keep your answer complete but focused - stop when you've adequately covered the question
-9. Aim for 2-3 sentences that thoroughly address the question
 
 Answer naturally using only the sources above:"""
         
