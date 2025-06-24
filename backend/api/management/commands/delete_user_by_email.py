@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth import get_user_model
-from api.models import Expert, User
+from api.models import User
 
 
 class Command(BaseCommand):
@@ -27,40 +27,25 @@ class Command(BaseCommand):
             )
             return
 
-        # Check if it's a User
+        # Check if user exists
         try:
             user = User.objects.get(email=email)
-            user_type = "User"
-            user_obj = user
         except User.DoesNotExist:
-            user_obj = None
-
-        # Check if it's an Expert
-        try:
-            expert = Expert.objects.get(email=email)
-            expert_type = "Expert"
-            expert_obj = expert
-        except Expert.DoesNotExist:
-            expert_obj = None
-
-        # If neither found
-        if not user_obj and not expert_obj:
             self.stdout.write(
-                self.style.ERROR(f'No user or expert found with email: {email}')
+                self.style.ERROR(f'No user found with email: {email}')
             )
             return
 
-        # Delete the user/expert
-        if user_obj:
-            self.stdout.write(f'Found User: {user_obj.name} ({user_obj.email})')
-            user_obj.delete()
-            self.stdout.write(
-                self.style.SUCCESS(f'Successfully deleted User: {email}')
-            )
+        # Show user info before deletion
+        self.stdout.write(f'Found User: {user.email}')
+        if hasattr(user, 'name'):
+            self.stdout.write(f'Name: {user.name}')
+        self.stdout.write(f'Role: {getattr(user, "role", "Unknown")}')
+        self.stdout.write(f'Is Expert: {getattr(user, "is_expert", False)}')
+        self.stdout.write(f'Date joined: {user.date_joined}')
 
-        if expert_obj:
-            self.stdout.write(f'Found Expert: {expert_obj.name} ({expert_obj.email})')
-            expert_obj.delete()
-            self.stdout.write(
-                self.style.SUCCESS(f'Successfully deleted Expert: {email}')
-            ) 
+        # Delete the user
+        user.delete()
+        self.stdout.write(
+            self.style.SUCCESS(f'Successfully deleted user: {email}')
+        ) 
