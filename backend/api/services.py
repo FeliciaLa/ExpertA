@@ -390,20 +390,20 @@ class ExpertChatbot:
                 if match.score >= 0.1:  # Reasonable threshold for relevance
                     knowledge_text = match.metadata.get('text', '').strip()
                     
-                    # Apply quality filters - be more strict for document content to prevent fragments
+                    # Apply quality filters - balanced approach for legitimate content
                     source = match.metadata.get('source', 'expert_training')
                     if source == 'document':
-                        # Stricter filters for documents to prevent short fragments
-                        min_chars = 50
-                        min_words = 8
+                        # More reasonable filters for documents to allow legitimate content
+                        min_chars = 30
+                        min_words = 6
                     elif source != 'document' and match.score > 0.8:
                         # High-confidence expert training - lenient filters
                         min_chars = 15
                         min_words = 3
                     else:
                         # Normal filters for low-confidence training data
-                        min_chars = 25
-                        min_words = 5
+                        min_chars = 20
+                        min_words = 4
                         
                     if len(knowledge_text) < min_chars or len(knowledge_text.split()) < min_words:
                         print(f"NEURAL DEBUG Match {i}: REJECTED - too short ({len(knowledge_text)} chars, {len(knowledge_text.split())} words, threshold: {min_chars})")
@@ -581,7 +581,7 @@ User question: {user_message}"""
                     words = re.findall(r'\b\w{4,}\b', sentence.lower())  # Words 4+ chars
                     if len(words) > 2:  # Only check substantial sentences
                         found_words = sum(1 for word in words if word in all_source_text)
-                        if found_words / len(words) < 0.3:  # Less than 30% word overlap
+                        if found_words / len(words) < 0.2:  # Less than 20% word overlap (more lenient)
                             print(f"HALLUCINATION DETECTED: Sentence appears to add new information: {sentence}")
                             return f"I only have partial information about that. Would you like me to share what I do know specifically?"
         
