@@ -9,6 +9,7 @@ import os
 import PyPDF2
 import docx
 import io
+from django.utils import timezone
 
 from .models import Document, User
 from .services import KnowledgeProcessor
@@ -159,18 +160,18 @@ class DocumentUploadView(APIView):
         try:
             # Extract text based on file type
             if document.mime_type == 'text/plain':
-                # Process text files
-                with open(document.file.path, 'r', encoding='utf-8', errors='ignore') as f:
-                    content = f.read()
+                # Process text files - read from the file object directly
+                content = document.file.read().decode('utf-8', errors='ignore')
+                document.file.seek(0)  # Reset file pointer
             
             elif document.mime_type == 'application/pdf' or document.filename.lower().endswith('.pdf'):
                 # Process PDF files
-                content = self._extract_text_from_pdf(document.file.path)
+                content = self._extract_text_from_pdf_file(document.file)
             
             elif document.mime_type in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
                                      'application/msword'] or document.filename.lower().endswith(('.docx', '.doc')):
                 # Process Word documents
-                content = self._extract_text_from_word(document.file.path)
+                content = self._extract_text_from_word_file(document.file)
             
             else:
                 # For other file types, just note that we can't process them
@@ -178,11 +179,26 @@ class DocumentUploadView(APIView):
             
             # If we have content, process it asynchronously
             if content.strip():
-                # Queue document processing to run asynchronously
-                from django_q.tasks import async_task
-                from .tasks import process_document_async
-                task_id = async_task(process_document_async, document.id, content)
-                print(f"Document {document.id} saved and queued for knowledge processing: {document.filename} (task: {task_id})")
+                # Try to queue document processing to run asynchronously
+                try:
+                    from django_q.tasks import async_task
+                    from .tasks import process_document_async
+                    task_id = async_task(process_document_async, document.id, content)
+                    print(f"Document {document.id} saved and queued for knowledge processing: {document.filename} (task: {task_id})")
+                except Exception as async_error:
+                    # If async processing fails, process synchronously
+                    print(f"Async processing failed for document {document.id}, processing synchronously: {str(async_error)}")
+                    try:
+                        from .services import KnowledgeProcessor
+                        processor = KnowledgeProcessor(document.expert)
+                        processor.process_document(document.id, content)
+                        document.knowledge_processed = True
+                        document.knowledge_processed_at = timezone.now()
+                        document.save()
+                        print(f"Document {document.id} processed synchronously: {document.filename}")
+                    except Exception as sync_error:
+                        print(f"Both async and sync processing failed for document {document.id}: {str(sync_error)}")
+                        # Continue anyway, the document is still uploaded
             else:
                 raise Exception("No text content could be extracted from the document")
                 
@@ -190,8 +206,37 @@ class DocumentUploadView(APIView):
             print(f"Error processing document {document.id}: {str(e)}")
             raise
     
+    def _extract_text_from_pdf_file(self, file_obj):
+        """Extract text from a PDF file object"""
+        text = ""
+        try:
+            file_obj.seek(0)  # Ensure we're at the beginning
+            pdf_reader = PyPDF2.PdfReader(file_obj)
+            for page_num in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_num]
+                text += page.extract_text() + "\n"
+            file_obj.seek(0)  # Reset file pointer
+            return text
+        except Exception as e:
+            print(f"Error extracting text from PDF: {str(e)}")
+            raise Exception(f"Failed to extract text from PDF: {str(e)}")
+    
+    def _extract_text_from_word_file(self, file_obj):
+        """Extract text from a Word document file object"""
+        try:
+            file_obj.seek(0)  # Ensure we're at the beginning
+            doc = docx.Document(file_obj)
+            full_text = []
+            for para in doc.paragraphs:
+                full_text.append(para.text)
+            file_obj.seek(0)  # Reset file pointer
+            return '\n'.join(full_text)
+        except Exception as e:
+            print(f"Error extracting text from Word document: {str(e)}")
+            raise Exception(f"Failed to extract text from Word document: {str(e)}")
+    
     def _extract_text_from_pdf(self, file_path):
-        """Extract text from a PDF file"""
+        """Extract text from a PDF file (deprecated - kept for compatibility)"""
         text = ""
         try:
             with open(file_path, 'rb') as file:
@@ -205,7 +250,7 @@ class DocumentUploadView(APIView):
             raise Exception(f"Failed to extract text from PDF: {str(e)}")
     
     def _extract_text_from_word(self, file_path):
-        """Extract text from a Word document"""
+        """Extract text from a Word document (deprecated - kept for compatibility)"""
         try:
             doc = docx.Document(file_path)
             full_text = []

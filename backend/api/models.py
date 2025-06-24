@@ -192,8 +192,13 @@ class Document(models.Model):
     def delete(self, *args, **kwargs):
         """Delete the associated file when deleting the model instance"""
         if self.file:
-            if os.path.isfile(self.file.path):
-                os.remove(self.file.path)
+            # Use the storage backend's delete method instead of os.remove
+            # This works with both local storage and S3
+            try:
+                self.file.delete(save=False)
+            except Exception as e:
+                print(f"Error deleting file {self.file.name}: {str(e)}")
+                # Continue with model deletion even if file deletion fails
         super().delete(*args, **kwargs)
 
 class UserManager(BaseUserManager):
