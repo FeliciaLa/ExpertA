@@ -444,11 +444,12 @@ class ExpertChatbot:
                     confidence_score = match.metadata.get('confidence_score', 0.5)
                     key_concepts = match.metadata.get('key_concepts', [])
                     
-                    print(f"Topic: {topic}")
+                    print(f"MATCH FOUND - Topic: {topic}")
                     print(f"Context Depth: {context_depth}")
                     print(f"Confidence: {confidence_score}")
                     print(f"Key Concepts: {key_concepts}")
-                    print(f"Text preview: {knowledge_text[:100]}...")
+                    print(f"Text preview: {knowledge_text[:200]}...")
+                    print(f"FULL TEXT: {knowledge_text}")
                     
                     relevant_knowledge.append({
                         'text': knowledge_text,
@@ -461,6 +462,13 @@ class ExpertChatbot:
             
             if not relevant_knowledge:
                 print("\nNo relevant knowledge found")
+                print(f"DEBUG: Query was: {user_message}")
+                print(f"DEBUG: Expert ID: {self.expert.id}")
+                print(f"DEBUG: Knowledge base exists: {knowledge_base is not None}")
+                if knowledge_base:
+                    print(f"DEBUG: Knowledge entries count: {knowledge_base.entries.count()}")
+                    print(f"DEBUG: Entry IDs searched: {[str(entry.id) for entry in KnowledgeEntry.objects.filter(knowledge_base=knowledge_base)]}")
+                
                 # Return early with a helpful message about what topics the expert does know about
                 available_topics = []
                 if knowledge_base and knowledge_base.knowledge_areas:
