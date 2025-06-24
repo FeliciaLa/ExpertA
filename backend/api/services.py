@@ -519,18 +519,16 @@ USER QUESTION: {user_message}
         prompt += f"""
 === END OF YOUR ONLY ALLOWED KNOWLEDGE ===
 
-🚨🚨🚨 FINAL WARNING 🚨🚨🚨
+🎯 INSTRUCTIONS:
+1. COMBINE information from multiple sources above to give a comprehensive answer
+2. Quote or paraphrase directly from the sources - show different applications/examples together
+3. If you find information about neural networks applications, mention them together
+4. Use phrases like "From what I know..." or "Based on my training..." to stay grounded
+5. ONLY use information that appears in the sources above
+6. DO NOT define neural networks unless a definition appears above
+7. DO NOT add general explanations not found in the sources
 
-RULES:
-1. Use ONLY the exact words, phrases, and information written above
-2. Do NOT define terms unless the exact definition appears above
-3. Do NOT explain concepts unless the exact explanation appears above  
-4. Do NOT add background, context, or general knowledge
-5. If you cannot answer using ONLY the text above, say "I don't have that information"
-
-VIOLATION OF THESE RULES = SYSTEM FAILURE
-
-Answer using ONLY the text written above. NO other knowledge allowed:"""
+Combine relevant information from the sources above:"""
         
         return prompt 
     
