@@ -496,7 +496,7 @@ class ExpertChatbot:
                         {"role": "user", "content": user_message}
                     ],
                     temperature=0.7,
-                    max_tokens=300
+                    max_tokens=150  # Shorter responses for chat-like conversation
                 )
                 
                 final_response = response.choices[0].message.content
