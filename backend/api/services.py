@@ -480,13 +480,9 @@ class ExpertChatbot:
                 
                 raw_response = response.choices[0].message.content
                 
-                # Temporarily bypass validation to debug
-                print(f"RAW RESPONSE DEBUG: {raw_response}")
-                return raw_response
-                
                 # Validate response doesn't contain hallucinations
-                # validated_response = self._validate_response(raw_response, relevant_knowledge, user_message)
-                # return validated_response
+                validated_response = self._validate_response(raw_response, relevant_knowledge, user_message)
+                return validated_response
             except Exception as e:
                 return "I'm having trouble formulating my response right now. Could you please try again later?"
             
@@ -537,14 +533,13 @@ VIOLATION DETECTION: Any response containing information not explicitly in the k
 
 === END OF KNOWLEDGE BASE ===
 
-⚠️ WARNING: You have NO other knowledge beyond what's listed above. If the user asks about anything not covered in the sources above, respond with: "I don't have specific experience or training on that topic."
-
 FINAL INSTRUCTIONS:
 - Respond as {self.expert.name} naturally and conversationally
-- Use ONLY information from the sources above
+- Use the information from the sources above to answer the question
+- If you can find relevant information in the sources, share it conversationally
 - Keep responses concise (1-3 sentences)
-- Never add details, examples, or explanations not explicitly provided
-- If knowledge is limited, acknowledge it honestly
+- Only acknowledge limitations if you truly can't find ANY relevant information
+- Look for connections between the user's question and the available sources
 
 User question: {user_message}"""
         
