@@ -438,7 +438,7 @@ class ExpertChatbot:
             for match in query_response.matches:
                 print(f"\nMatch score: {match.score}")
                 if match.score >= 0.05:  # Very low threshold to be more inclusive
-                    knowledge_text = match.metadata.get('text', '')
+                    knowledge_text = match.metadata.get('text', '').strip()
                     topic = match.metadata.get('topic', 'General')
                     context_depth = match.metadata.get('context_depth', 1)
                     confidence_score = match.metadata.get('confidence_score', 0.5)
@@ -451,6 +451,20 @@ class ExpertChatbot:
                     print(f"Text preview: {knowledge_text[:200]}...")
                     print(f"FULL TEXT: {knowledge_text}")
                     
+                    # STRICT QUALITY CHECK: Reject low-quality knowledge
+                    if len(knowledge_text) < 20:  # Less than 20 characters
+                        print(f"REJECTED: Knowledge too short ({len(knowledge_text)} chars)")
+                        continue
+                    
+                    if len(knowledge_text.split()) < 4:  # Less than 4 words
+                        print(f"REJECTED: Knowledge too few words ({len(knowledge_text.split())} words)")
+                        continue
+                        
+                    if confidence_score < 0.3:  # Very low confidence
+                        print(f"REJECTED: Confidence too low ({confidence_score})")
+                        continue
+                    
+                    print(f"ACCEPTED: Quality knowledge added")
                     relevant_knowledge.append({
                         'text': knowledge_text,
                         'topic': topic,
