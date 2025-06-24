@@ -461,8 +461,15 @@ class ExpertChatbot:
             
             if not relevant_knowledge:
                 print("\nNo relevant knowledge found")
-                # Still generate a response to explain what the expert has been trained on
-                # Don't return early - let the AI explain what topics they do know about
+                # Return early with a helpful message about what topics the expert does know about
+                available_topics = []
+                if knowledge_base and knowledge_base.knowledge_areas:
+                    available_topics = list(knowledge_base.knowledge_areas.keys())
+                
+                if available_topics:
+                    return f"I don't have specific training or experience on that topic. However, I've been specifically trained on: {', '.join(available_topics)}. Feel free to ask me about any of these areas!"
+                else:
+                    return "I haven't been trained on that specific topic yet. Please contact the administrator to expand my training, or try asking about other topics."
             
             # Build prompt for response generation
             print("\nBuilding response prompt...")
@@ -501,12 +508,13 @@ class ExpertChatbot:
 
 CRITICAL INSTRUCTIONS:
 1. Speak in FIRST PERSON as if you are the expert. Use "I", "me", "my" pronouns.
-2. You must ONLY use the knowledge explicitly provided below from my training and experience. DO NOT use any external knowledge.
+2. You must ONLY use the knowledge explicitly provided below from my training and experience. DO NOT use any external knowledge, general knowledge, or information not explicitly stated below.
 3. If the provided knowledge doesn't contain enough information to fully answer the question, be honest and say what you do know from your training, then suggest the user ask about topics you've been specifically trained on.
-4. Never make up or infer information that isn't explicitly stated in the provided knowledge.
+4. Never make up, infer, or use information that isn't explicitly stated in the provided knowledge sections below.
 5. Be helpful by directing users to areas where you do have specific expertise.
 6. Your responses should sound natural and conversational, like a real expert would speak.
 7. If you have relevant knowledge, be confident and detailed in sharing it.
+8. IGNORE any general knowledge you may have about this topic - ONLY use what's provided below.
 
 Below is the ONLY knowledge you are allowed to use (from my specific training and experience):"""
         
@@ -528,10 +536,12 @@ Below is the ONLY knowledge you are allowed to use (from my specific training an
 
 REMEMBER:
 - Respond as {self.expert.name} in the first person
-- Only use the knowledge provided above from my specific training
+- ONLY use the knowledge provided above from my specific training - NO exceptions
+- If the provided knowledge doesn't fully answer the question, say so honestly
 - If you don't have relevant training on this topic, be honest and redirect to topics I do know about
 - Be conversational and helpful within the bounds of my actual training
-- Never use general knowledge - only my specific expertise shown above
+- ABSOLUTELY NEVER use general knowledge, external information, or anything not explicitly stated above
+- The knowledge sections above are your COMPLETE knowledge base - nothing else exists
 
 The user's question is: {user_message}"""
         
