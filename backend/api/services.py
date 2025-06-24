@@ -566,24 +566,25 @@ User question: {user_message}"""
                 print(f"HALLUCINATION DETECTED: Found phrase '{phrase}' in response")
                 return f"I only have limited information about that topic. Let me know if you'd like me to share what I do know specifically."
         
-        # Check if response contains information not in knowledge sources
-        if knowledge_sources:
-            all_source_text = " ".join([k['text'] for k in knowledge_sources]).lower()
-            
-            # Split response into sentences for checking
-            import re
-            sentences = re.split(r'[.!?]+', response)
-            
-            for sentence in sentences:
-                sentence = sentence.strip()
-                if len(sentence) > 10:  # Skip very short sentences
-                    # Check if any substantial words from this sentence appear in sources
-                    words = re.findall(r'\b\w{4,}\b', sentence.lower())  # Words 4+ chars
-                    if len(words) > 2:  # Only check substantial sentences
-                        found_words = sum(1 for word in words if word in all_source_text)
-                        if found_words / len(words) < 0.2:  # Less than 20% word overlap (more lenient)
-                            print(f"HALLUCINATION DETECTED: Sentence appears to add new information: {sentence}")
-                            return f"I only have partial information about that. Would you like me to share what I do know specifically?"
+        # Check if response contains information not in knowledge sources (disabled for now - too restrictive)
+        # This validation was preventing legitimate responses that use document content
+        # if knowledge_sources:
+        #     all_source_text = " ".join([k['text'] for k in knowledge_sources]).lower()
+        #     
+        #     # Split response into sentences for checking
+        #     import re
+        #     sentences = re.split(r'[.!?]+', response)
+        #     
+        #     for sentence in sentences:
+        #         sentence = sentence.strip()
+        #         if len(sentence) > 10:  # Skip very short sentences
+        #             # Check if any substantial words from this sentence appear in sources
+        #             words = re.findall(r'\b\w{4,}\b', sentence.lower())  # Words 4+ chars
+        #             if len(words) > 2:  # Only check substantial sentences
+        #                 found_words = sum(1 for word in words if word in all_source_text)
+        #                 if found_words / len(words) < 0.2:  # Less than 20% word overlap (more lenient)
+        #                     print(f"HALLUCINATION DETECTED: Sentence appears to add new information: {sentence}")
+        #                     return f"I only have partial information about that. Would you like me to share what I do know specifically?"
         
         # Additional validation: Use a second model to verify the response
         try:
