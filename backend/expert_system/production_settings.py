@@ -7,7 +7,7 @@ import os
 
 # Security settings
 DEBUG = False
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'yourdomain.com').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'duplixai.co.uk').split(',')
 
 # HTTPS/SSL settings
 SECURE_SSL_REDIRECT = True
@@ -79,13 +79,15 @@ LOGGING = {
 
 # CORS settings - update with your frontend domain
 CORS_ALLOWED_ORIGINS = [
-    'https://yourdomain.com',
+    'https://duplixai.co.uk',
+    'https://www.duplixai.co.uk',
 ]
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
-    'https://yourdomain.com',
+    'https://duplixai.co.uk',
+    'https://www.duplixai.co.uk',
 ]
 
 # Frontend URL for links in emails etc.
-FRONTEND_URL = 'https://yourdomain.com' 
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://duplixai.co.uk') 
