@@ -35,6 +35,7 @@ import AnalyticsIcon from '@mui/icons-material/Analytics';
 import { useAuth } from '../contexts/AuthContext';
 import { expertApi, API_URL } from '../services/api';
 import { AccountSettingsModal } from './AccountSettingsModal';
+import { features } from '../utils/environment';
 
 // Industry options
 const INDUSTRIES = [
@@ -568,8 +569,12 @@ const ExpertProfile: React.FC = () => {
         <Tabs value={activeTab} onChange={handleTabChange} aria-label="profile tabs">
           <Tab icon={<PersonIcon />} label="Basic Info" {...a11yProps(0)} />
           <Tab icon={<LocalOfferIcon />} label="Knowledge Tag" {...a11yProps(1)} />
-          <Tab icon={<MonetizationOnIcon />} label="Monetisation" {...a11yProps(2)} />
-          <Tab icon={<AnalyticsIcon />} label="Analytics" {...a11yProps(3)} />
+          {features.payments && (
+            <Tab icon={<MonetizationOnIcon />} label="Monetisation" {...a11yProps(2)} />
+          )}
+          {features.payments && (
+            <Tab icon={<AnalyticsIcon />} label="Analytics" {...a11yProps(3)} />
+          )}
         </Tabs>
       </Box>
 
@@ -884,9 +889,10 @@ const ExpertProfile: React.FC = () => {
         </Grid>
       </TabPanel>
 
-      <TabPanel value={activeTab} index={2}>
-        {/* Monetisation Tab Content */}
-        <Grid container spacing={3}>
+      {features.payments && (
+        <TabPanel value={activeTab} index={2}>
+          {/* Monetisation Tab Content */}
+          <Grid container spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h6" gutterBottom>
               Monetization Settings
@@ -1061,9 +1067,11 @@ const ExpertProfile: React.FC = () => {
             </Grid>
           )}
         </Grid>
-      </TabPanel>
+        </TabPanel>
+      )}
 
-      <TabPanel value={activeTab} index={3}>
+      {features.payments && (
+        <TabPanel value={activeTab} index={3}>
         {/* Analytics Tab Content */}
         <Grid container spacing={3}>
           <Grid item xs={12}>
@@ -1184,7 +1192,8 @@ const ExpertProfile: React.FC = () => {
             </Alert>
           </Grid>
         </Grid>
-      </TabPanel>
+        </TabPanel>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog
