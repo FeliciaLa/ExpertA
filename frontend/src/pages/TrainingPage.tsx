@@ -87,8 +87,8 @@ const TrainingPage: React.FC = () => {
       <AlertTitle sx={{ fontWeight: 600 }}>Welcome to AI Training!</AlertTitle>
       <Typography variant="body2" sx={{ mt: 1 }}>
         Now that your profile is set up, it's time to train your AI assistant with your expertise. 
-        Start by uploading documents (PDFs, Word docs, etc.) that showcase your knowledge, 
-        or use the Q&A Training to teach your AI through conversation. 
+        Start with Q&A Training to teach your AI through conversation, 
+        or upload documents (PDFs, Word docs, etc.) that showcase your knowledge. 
         The more you train it, the better it becomes at representing your expertise to potential clients.
       </Typography>
     </>
@@ -157,8 +157,8 @@ const TrainingPage: React.FC = () => {
         <DialogContent>
           <Typography variant="body1">
             Now that your profile is set up, it's time to train your AI assistant with your expertise. 
-            Start by uploading documents (PDFs, Word docs, etc.) that showcase your knowledge, 
-            or use the Q&A Training to teach your AI through conversation. 
+            Start with Q&A Training to teach your AI through conversation, 
+            or upload documents (PDFs, Word docs, etc.) that showcase your knowledge. 
             The more you train it, the better it becomes at representing your expertise to potential clients.
           </Typography>
         </DialogContent>
@@ -180,25 +180,25 @@ const TrainingPage: React.FC = () => {
           variant="fullWidth"
         >
           <Tab 
-            icon={<UploadFileIcon />} 
-            label="Document Upload" 
+            icon={<ChatIcon />} 
+            label="Q&A Training" 
             id="training-tab-0" 
             aria-controls="training-tabpanel-0" 
           />
           <Tab 
-            icon={<ChatIcon />} 
-            label="Q&A Training" 
+            icon={<UploadFileIcon />} 
+            label="Document Upload" 
             id="training-tab-1" 
             aria-controls="training-tabpanel-1" 
           />
         </Tabs>
 
         <TabPanel value={tabIndex} index={0}>
-          <DocumentUpload />
+          {tabIndex === 0 && <TrainingChat />}
         </TabPanel>
 
         <TabPanel value={tabIndex} index={1}>
-          {tabIndex === 1 && <TrainingChat />}
+          <DocumentUpload />
         </TabPanel>
       </Paper>
     </Box>
