@@ -299,7 +299,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
           <form onSubmit={handleRegister}>
             <Box display="flex" flexDirection="column" gap={3}>
               {!expertRegisterOnly && (
-                <FormControl component="fieldset">
+                <FormControl component="fieldset" sx={{ mb: 1 }}>
                   <FormLabel component="legend" sx={{ mb: 1 }}>
                     I want to register as:
                   </FormLabel>
