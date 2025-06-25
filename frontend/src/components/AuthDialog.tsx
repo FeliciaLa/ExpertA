@@ -68,7 +68,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [userRole, setUserRole] = useState<'user' | 'expert'>('user');
+  const [userRole, setUserRole] = useState<'user' | 'expert'>('expert');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -89,8 +89,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
           // Clear the value after using it
           localStorage.removeItem('authInitialTab');
         }
-        // Default to user role for general registration
-        setUserRole('user');
+        // Default to expert role for general registration
+        setUserRole('expert');
       }
     } else {
       // Reset form when dialog closes
@@ -103,7 +103,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     setEmail('');
     setPassword('');
     setConfirmPassword('');
-    setUserRole('user');
+    setUserRole('expert');
     setError('');
     setIsSubmitting(false);
     setSuccessMessage(null);
@@ -309,22 +309,22 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
                     onChange={(e) => setUserRole(e.target.value as 'user' | 'expert')}
                   >
                     <FormControlLabel 
-                      value="user" 
-                      control={<Radio disabled={isSubmitting} />} 
-                      label="User"
-                      disabled={isSubmitting}
-                    />
-                    <FormControlLabel 
                       value="expert" 
                       control={<Radio disabled={isSubmitting} />} 
                       label="Expert"
                       disabled={isSubmitting}
                     />
+                    <FormControlLabel 
+                      value="user" 
+                      control={<Radio disabled={isSubmitting} />} 
+                      label="User"
+                      disabled={isSubmitting}
+                    />
                   </RadioGroup>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    {userRole === 'user' 
-                      ? 'Browse and chat with experts to get help with your questions'
-                      : 'Share your expertise and help others by answering their questions'
+                    {userRole === 'expert' 
+                      ? 'Share your expertise and help others by answering their questions'
+                      : 'Browse and chat with experts to get help with your questions'
                     }
                   </Typography>
                 </FormControl>
