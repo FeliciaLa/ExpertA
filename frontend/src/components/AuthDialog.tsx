@@ -323,8 +323,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
                   </RadioGroup>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
                     {userRole === 'expert' 
-                      ? 'Share your expertise and help others by answering their questions'
-                      : 'Browse and chat with experts to get help with your questions'
+                      ? 'Train your AI expert and share your expertise with others'
+                      : 'Browse and chat with expert AI assistants to get help with your questions'
                     }
                   </Typography>
                 </FormControl>
