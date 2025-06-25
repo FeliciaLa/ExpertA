@@ -8,7 +8,8 @@ import {
   Divider,
   Button,
   Container,
-  TextField
+  TextField,
+  Tooltip
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Chat } from './Chat';
@@ -370,9 +371,43 @@ export const ExpertDetailPage: React.FC = () => {
         <Grid item xs={12} md={7}>
           <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Always show the title, regardless of authentication state */}
-            <Typography variant="h5" sx={{ mb: 3, color: '#1976d2', fontWeight: 500 }}>
-              Chat with {expert.name.split(' ')[0]}'s AI
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+              <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 500 }}>
+                Chat with {expert.name.split(' ')[0]}'s AI
+              </Typography>
+              <Tooltip 
+                title="This chatbot is AI-powered and still in development. Responses may be inaccurate or incomplete."
+                placement="right"
+                arrow
+                slotProps={{
+                  tooltip: {
+                    sx: {
+                      backgroundColor: 'rgba(0, 0, 0, 0.87)',
+                      color: 'white',
+                      fontSize: '0.875rem',
+                      maxWidth: 300,
+                      padding: '8px 16px',
+                      borderRadius: '4px',
+                    }
+                  }
+                }}
+              >
+                <Typography 
+                  component="span" 
+                  sx={{ 
+                    fontSize: '1.2rem',
+                    color: 'text.secondary',
+                    cursor: 'help',
+                    lineHeight: 1,
+                    '&:hover': {
+                      color: 'primary.main',
+                    }
+                  }}
+                >
+                  ℹ️
+                </Typography>
+              </Tooltip>
+            </Box>
             {renderChatSection()}
           </Paper>
         </Grid>
