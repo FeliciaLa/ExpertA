@@ -13,7 +13,7 @@ const TermsOfService: React.FC = () => {
           Effective Date: June 6, 2024
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-          Last Updated: June 17, 2025
+          Last Updated: June 25, 2025
         </Typography>
 
         <Box sx={{ '& > *': { mb: 3 } }}>
@@ -132,13 +132,31 @@ const TermsOfService: React.FC = () => {
 
           <Box>
             <Typography variant="h5" component="h2" gutterBottom color="primary">
-              11. Contact Information
+              11. Disclaimer and AI Limitations
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Duplix AI is currently in active development and provided as a beta product. While we strive for stability and quality, users and experts may experience delays, technical issues, or occasional inaccuracies in chatbot outputs.
+            </Typography>
+            <Typography variant="body1" paragraph>
+              AI-generated responses are based on the content provided by experts and external training data, but they may contain errors, hallucinations, or misinterpretations. These responses do not represent professional advice, and users should not rely on them for decision-making without independent verification.
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Experts understand that the chatbots may not always reflect their voice or views accurately and may produce unintended or simplified responses. Users understand that they are interacting with AI personas—not live human experts—and accept the limitations that come with automated systems.
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Use of the platform is at your own risk. We disclaim any liability for damages, decisions, or losses resulting from reliance on chatbot output or system availability.
+            </Typography>
+          </Box>
+
+          <Box>
+            <Typography variant="h5" component="h2" gutterBottom color="primary">
+              12. Contact Information
             </Typography>
             <Typography variant="body1" paragraph>
               If you have questions about these Terms, please contact us at:
             </Typography>
             <Typography variant="body1" paragraph>
-              Email: admin@duplixai.co.uk
+              Email: <a href="mailto:admin@duplixai.co.uk">admin@duplixai.co.uk</a>
             </Typography>
           </Box>
         </Box>
