@@ -11,7 +11,9 @@ import {
   Chip,
   Grid,
   LinearProgress,
-  IconButton
+  IconButton,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import { ArrowBack, ArrowForward, CheckCircle, InfoOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -205,6 +207,7 @@ const StepByStepOnboarding: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   
   const { expert, refreshExpert } = useAuth();
 
@@ -340,8 +343,12 @@ const StepByStepOnboarding: React.FC = () => {
   const validateCurrentField = () => {
     const currentField = steps[activeStep].field;
     
-    // Completion step doesn't need validation
+    // Completion step requires disclaimer acceptance
     if (currentField === 'completion') {
+      if (!disclaimerAccepted) {
+        setError('Please accept the disclaimer to continue');
+        return false;
+      }
       setError(null);
       return true;
     }
@@ -623,6 +630,26 @@ const StepByStepOnboarding: React.FC = () => {
               You've successfully set up your expert profile with all your skills, experience, and expertise. 
               Now it's time to train your AI assistant.
             </Typography>
+            
+            {/* AI Disclaimer Checkbox */}
+            <Box sx={{ mb: 4, textAlign: 'left', maxWidth: 600, mx: 'auto' }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={disclaimerAccepted}
+                    onChange={(e) => setDisclaimerAccepted(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label={
+                  <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
+                    I understand that this chatbot is still in development, and results may not always reflect my intended tone, accuracy, or views. I acknowledge that some outputs may be incomplete, inaccurate, or unexpected, and I will not upload confidential or sensitive materials.
+                  </Typography>
+                }
+                sx={{ alignItems: 'flex-start', ml: 0 }}
+              />
+            </Box>
+            
             <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
               Click "Complete Setup" to start training your AI assistant
             </Typography>
