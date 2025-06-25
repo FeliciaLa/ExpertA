@@ -188,6 +188,29 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children}
       </Container>
       
+      {/* Beta Banner */}
+      <Box sx={{ 
+        backgroundColor: 'grey.50', 
+        py: 1,
+        borderTop: '1px solid',
+        borderColor: 'grey.200'
+      }}>
+        <Container maxWidth="lg">
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            sx={{ 
+              display: 'block',
+              textAlign: 'center',
+              fontSize: '0.75rem',
+              opacity: 0.8
+            }}
+          >
+            Duplix AI is currently in beta — features are evolving and occasional issues may occur
+          </Typography>
+        </Container>
+      </Box>
+
       {/* Footer */}
       <Box 
         component="footer" 
