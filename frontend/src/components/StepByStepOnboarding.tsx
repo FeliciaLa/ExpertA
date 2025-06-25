@@ -13,7 +13,8 @@ import {
   LinearProgress,
   IconButton,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Modal
 } from '@mui/material';
 import { ArrowBack, ArrowForward, CheckCircle, InfoOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -165,9 +166,9 @@ const stepSections = [
     description: 'Complete your setup',
     steps: [
       {
-        label: 'Profile Complete!',
-        description: 'Congratulations! Your expert profile is ready',
-        field: 'completion'
+        label: 'Complete Setup',
+        description: 'Final step to complete your profile',
+        field: 'disclaimer'
       }
     ]
   }
@@ -208,6 +209,7 @@ const StepByStepOnboarding: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
   
   const { expert, refreshExpert } = useAuth();
 
@@ -329,8 +331,9 @@ const StepByStepOnboarding: React.FC = () => {
     await saveCurrentField();
 
     if (activeStep === steps.length - 1) {
-      // Last step - complete onboarding
+      // Last step - complete onboarding and show modal
       await completeOnboarding();
+      setShowCompletionModal(true);
     } else {
       setActiveStep(prev => prev + 1);
     }
@@ -343,8 +346,8 @@ const StepByStepOnboarding: React.FC = () => {
   const validateCurrentField = () => {
     const currentField = steps[activeStep].field;
     
-    // Completion step requires disclaimer acceptance
-    if (currentField === 'completion') {
+    // Disclaimer step requires disclaimer acceptance
+    if (currentField === 'disclaimer') {
       if (!disclaimerAccepted) {
         setError('Please accept the disclaimer to continue');
         return false;
@@ -509,11 +512,8 @@ const StepByStepOnboarding: React.FC = () => {
 
       await expertApi.completeOnboarding(onboardingData);
       
-      // Redirect immediately to Train AI page
-      navigate('/train');
-      
-      // Refresh expert data in background (no await needed since we're navigating away)
-      refreshExpert();
+      // Refresh expert data
+      await refreshExpert();
       
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
@@ -616,43 +616,24 @@ const StepByStepOnboarding: React.FC = () => {
           />
         );
 
-      case 'completion':
+      case 'disclaimer':
         return (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <CheckCircle sx={{ fontSize: 100, color: 'success.main', mb: 3 }} />
-            <Typography variant="h4" gutterBottom color="primary">
-              🎉 Profile Complete!
-            </Typography>
-            <Typography variant="h6" color="textSecondary" sx={{ mb: 3 }}>
-              Congratulations! Your expert profile is ready
-            </Typography>
-            <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
-              You've successfully set up your expert profile with all your skills, experience, and expertise. 
-              Now it's time to train your AI assistant.
-            </Typography>
-            
-            {/* AI Disclaimer Checkbox */}
-            <Box sx={{ mb: 4, textAlign: 'left', maxWidth: 600, mx: 'auto' }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={disclaimerAccepted}
-                    onChange={(e) => setDisclaimerAccepted(e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label={
-                  <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
-                    I understand that this chatbot is still in development, and results may not always reflect my intended tone, accuracy, or views. I acknowledge that some outputs may be incomplete, inaccurate, or unexpected, and I will not upload confidential or sensitive materials.
-                  </Typography>
-                }
-                sx={{ alignItems: 'flex-start', ml: 0 }}
-              />
-            </Box>
-            
-            <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-              Click "Complete Setup" to start training your AI assistant
-            </Typography>
+          <Box sx={{ py: 4 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={disclaimerAccepted}
+                  onChange={(e) => setDisclaimerAccepted(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label={
+                <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
+                  I understand that this chatbot is still in development, and results may not always reflect my intended tone, accuracy, or views. I acknowledge that some outputs may be incomplete, inaccurate, or unexpected, and I will not upload confidential or sensitive materials.
+                </Typography>
+              }
+              sx={{ alignItems: 'flex-start', ml: 0 }}
+            />
           </Box>
         );
         
@@ -977,26 +958,20 @@ const StepByStepOnboarding: React.FC = () => {
         </Box>
 
         {/* Section Header */}
-        {steps[activeStep].field !== 'completion' && (
-          <Box sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
-            <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
-              {currentSectionInfo.section.title}
-            </Typography>
-          </Box>
-        )}
+        <Box sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
+            {currentSectionInfo.section.title}
+          </Typography>
+        </Box>
 
         {/* Current Step */}
         <Box sx={{ mb: 4 }}>
-          {steps[activeStep].field !== 'completion' && (
-            <>
-              <Typography variant="h6" color="primary" gutterBottom>
-                {steps[activeStep].label}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                {steps[activeStep].description}
-              </Typography>
-            </>
-          )}
+          <Typography variant="h6" color="primary" gutterBottom>
+            {steps[activeStep].label}
+          </Typography>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+            {steps[activeStep].description}
+          </Typography>
           
           {renderStepContent()}
         </Box>
@@ -1021,7 +996,7 @@ const StepByStepOnboarding: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleNext}
-            disabled={loading}
+            disabled={loading || (steps[activeStep].field === 'disclaimer' && !disclaimerAccepted)}
             endIcon={loading ? <CircularProgress size={20} /> : 
               activeStep === steps.length - 1 ? <CheckCircle /> : <ArrowForward />}
           >
@@ -1029,6 +1004,51 @@ const StepByStepOnboarding: React.FC = () => {
           </Button>
         </Box>
       </Paper>
+
+      {/* Completion Modal */}
+      <Modal
+        open={showCompletionModal}
+        onClose={() => {
+          setShowCompletionModal(false);
+          navigate('/train');
+        }}
+      >
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: 24,
+          p: 4,
+          textAlign: 'center'
+        }}>
+          <CheckCircle sx={{ fontSize: 100, color: 'success.main', mb: 3 }} />
+          <Typography variant="h4" gutterBottom color="primary">
+            🎉 Profile Complete!
+          </Typography>
+          <Typography variant="h6" color="textSecondary" sx={{ mb: 3 }}>
+            Congratulations! Your expert profile is ready
+          </Typography>
+          <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
+            You've successfully set up your expert profile with all your skills, experience, and expertise. 
+            Now it's time to train your AI assistant.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setShowCompletionModal(false);
+              navigate('/train');
+            }}
+            fullWidth
+            size="large"
+          >
+            Start Training Your AI
+          </Button>
+        </Box>
+      </Modal>
     </Box>
   );
 };
