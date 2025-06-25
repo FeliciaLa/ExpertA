@@ -619,17 +619,37 @@ const StepByStepOnboarding: React.FC = () => {
       case 'completion':
         return (
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <CheckCircle sx={{ fontSize: 100, color: 'success.main', mb: 3 }} />
-            <Typography variant="h4" gutterBottom color="primary">
-              🎉 Profile Complete!
-            </Typography>
-            <Typography variant="h6" color="textSecondary" sx={{ mb: 3 }}>
-              Congratulations! Your expert profile is ready
-            </Typography>
-            <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
-              You've successfully set up your expert profile with all your skills, experience, and expertise. 
-              Now it's time to train your AI assistant.
-            </Typography>
+            {disclaimerAccepted ? (
+              <>
+                <CheckCircle sx={{ fontSize: 100, color: 'success.main', mb: 3 }} />
+                <Typography variant="h4" gutterBottom color="primary">
+                  🎉 Profile Complete!
+                </Typography>
+                <Typography variant="h6" color="textSecondary" sx={{ mb: 3 }}>
+                  Congratulations! Your expert profile is ready
+                </Typography>
+                <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
+                  You've successfully set up your expert profile with all your skills, experience, and expertise. 
+                  Now it's time to train your AI assistant.
+                </Typography>
+                <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
+                  Click "Complete Setup" to start training your AI assistant
+                </Typography>
+              </>
+            ) : (
+              <>
+                <Typography variant="h4" gutterBottom color="primary">
+                  Final Step: Accept Disclaimer
+                </Typography>
+                <Typography variant="h6" color="textSecondary" sx={{ mb: 3 }}>
+                  Please review and accept the disclaimer to complete your setup
+                </Typography>
+                <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
+                  You've successfully set up your expert profile with all your skills, experience, and expertise. 
+                  Just one final step to get started.
+                </Typography>
+              </>
+            )}
             
             {/* AI Disclaimer Checkbox */}
             <Box sx={{ mb: 4, textAlign: 'left', maxWidth: 600, mx: 'auto' }}>
@@ -649,10 +669,6 @@ const StepByStepOnboarding: React.FC = () => {
                 sx={{ alignItems: 'flex-start', ml: 0 }}
               />
             </Box>
-            
-            <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-              Click "Complete Setup" to start training your AI assistant
-            </Typography>
           </Box>
         );
         
