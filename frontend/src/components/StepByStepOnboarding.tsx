@@ -911,9 +911,17 @@ const StepByStepOnboarding: React.FC = () => {
         <Typography variant="h4" gutterBottom>
           Setup Complete!
         </Typography>
-        <Typography variant="body1" color="textSecondary">
+        <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
           Your profile has been set up successfully. You can now start training your AI.
         </Typography>
+        <Button
+          variant="contained"
+          size="large"
+          onClick={() => navigate('/train')}
+          sx={{ mt: 2 }}
+        >
+          Start Training AI
+        </Button>
       </Box>
     );
   }
