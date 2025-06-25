@@ -32,7 +32,7 @@ import { useNavigate } from 'react-router-dom';
 interface TrainingStats {
   documentsUploaded: number;
   qaMessagesCount: number;
-  trainingMinutes: number;
+  trainingMessages: number;
 }
 
 interface AITrainingProgressProps {
@@ -45,7 +45,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const [stats, setStats] = useState<TrainingStats>({
     documentsUploaded: 0,
     qaMessagesCount: 0,
-    trainingMinutes: 0
+    trainingMessages: 0
   });
   const [loading, setLoading] = useState(true);
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
@@ -96,7 +96,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
       setStats({
         documentsUploaded: documentsCount,
         qaMessagesCount: trainingStatsResponse.total_messages,
-        trainingMinutes: trainingStatsResponse.training_minutes
+        trainingMessages: trainingStatsResponse.training_minutes
       });
     } catch (error) {
       console.error('Error loading training stats:', error);
@@ -108,7 +108,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
       setStats({
         documentsUploaded: 0,
         qaMessagesCount: qaMessages,
-        trainingMinutes: trainingMinutes
+        trainingMessages: trainingMinutes
       });
     } finally {
       setLoading(false);
@@ -277,10 +277,10 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
               <Box sx={{ textAlign: 'center', p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 <ChatIcon color="primary" sx={{ fontSize: 24 }} />
                 <Typography variant="h6" color="primary" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                  {stats.trainingMinutes}
+                  {stats.trainingMessages}
                 </Typography>
                 <Typography variant="caption" color="textSecondary">
-                  Q&A Minutes
+                  Q&A Messages
                 </Typography>
               </Box>
             </Grid>
