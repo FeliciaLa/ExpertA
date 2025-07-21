@@ -264,43 +264,43 @@ export const ExpertDetailPage: React.FC = () => {
               {' '} to continue the conversation.
             </Typography>
           </Box>
-        </Box>
 
-        <Box 
-          component="div" 
-          onClick={() => setIsAuthDialogOpen(true)}
-          sx={{ 
-            width: '100%',
-            borderTop: '1px solid',
-            borderColor: 'divider',
-            p: 3,
-            cursor: 'pointer'
-          }}
-        >
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Sign in to chat with this expert"
-            size="medium"
-            InputProps={{
-              readOnly: true,
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                backgroundColor: '#f8f9fa',
-                cursor: 'pointer'
-              },
-              '&:hover .MuiOutlinedInput-root': {
-                backgroundColor: '#f0f0f0',
-                borderColor: '#1976d2'
-              },
-              '& .MuiInputBase-input': {
-                cursor: 'pointer'
-              },
+          {/* Sign-in field inside the chat preview box */}
+          <Box 
+            component="div" 
+            onClick={() => setIsAuthDialogOpen(true)}
+            sx={{ 
+              width: '100%',
+              borderTop: '1px solid #e0e0e0',
+              pt: 2,
               cursor: 'pointer'
             }}
-          />
+          >
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Sign in to chat with this expert"
+              size="medium"
+              InputProps={{
+                readOnly: true,
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  backgroundColor: '#f8f9fa',
+                  cursor: 'pointer'
+                },
+                '&:hover .MuiOutlinedInput-root': {
+                  backgroundColor: '#f0f0f0',
+                  borderColor: '#1976d2'
+                },
+                '& .MuiInputBase-input': {
+                  cursor: 'pointer'
+                },
+                cursor: 'pointer'
+              }}
+            />
+          </Box>
         </Box>
       </>
     );
