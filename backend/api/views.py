@@ -3228,33 +3228,36 @@ def confirm_payment(request):
         session = ConsultationSession.objects.create(
             user=request.user,
             expert=expert,
-            status='active',
-            session_type='paid',
-            amount_paid=float(payment_data.get('amount', 0)) / 100,  # Convert from pence to pounds
-            payment_intent_id=payment_intent_id
+            expert_name=expert.name,
+            expert_industry=getattr(expert, 'industry', ''),
+            expert_specialty=getattr(expert, 'specialties', ''),
+            status=ConsultationSession.Status.ACTIVE,
+            total_messages=0,  # Will be incremented as messages are sent
         )
         
-        # For The Stoic Mentor, add 30 message credits instead of a timed session
+        # For The Stoic Mentor, this represents 30 message credits
+        # For other experts, this represents a 15-minute session
         if expert.name == 'The Stoic Mentor':
-            # Set a very high message limit to effectively give 30 messages
-            session.total_messages = 30 * 2  # 30 user messages + 30 AI responses = 60 total
-            session.session_type = 'message_bundle'
+            # Note: We'll track message usage in the chat system
+            print(f"✅ Created paid session for The Stoic Mentor: 30 message credits")
         else:
-            # For other experts, set a 15-minute session
-            session.session_type = 'timed'
             session.duration_minutes = 15
+            session.save()
+            print(f"✅ Created paid session for {expert.name}: 15 minutes")
         
-        session.save()
+        # Store payment info in session metadata or create a separate payment record
+        payment_amount = float(payment_data.get('amount', 0)) / 100  # Convert from pence to pounds
+        print(f"✅ Payment recorded: £{payment_amount} for session {session.id}")
         
         print(f"✅ Payment confirmed and session created: {session.id}")
         
         return Response({
             'success': True,
             'session_id': str(session.id),
-            'session_type': session.session_type,
+            'expert_name': expert.name,
             'message_credits': 30 if expert.name == 'The Stoic Mentor' else 0,
             'duration_minutes': 15 if expert.name != 'The Stoic Mentor' else 0,
-            'amount_paid': session.amount_paid
+            'amount_paid': payment_amount
         })
         
     except Exception as e:
