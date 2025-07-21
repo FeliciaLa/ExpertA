@@ -3057,40 +3057,73 @@ def create_payment_intent(request):
         
         # Get expert and pricing info
         try:
-            expert_profile = ExpertProfile.objects.get(expert_id=expert_id)
-            if not expert_profile.monetization_enabled:
-                return Response({'error': 'This expert does not accept payments'}, status=400)
+            expert = User.objects.get(id=expert_id)
+            expert_profile, created = ExpertProfile.objects.get_or_create(
+                expert_id=expert_id,
+                defaults={'monetization_enabled': expert.name == 'The Stoic Mentor'}
+            )
+            
+            # Special handling for The Stoic Mentor - always enable monetization
+            if expert.name == 'The Stoic Mentor':
+                expert_profile.monetization_enabled = True
+                expert_profile.save()
+                expert_price = 2.99  # Fixed price for The Stoic Mentor
+            else:
+                if not expert_profile.monetization_enabled:
+                    return Response({'error': 'This expert does not accept payments'}, status=400)
+                expert_price = float(expert_profile.monetization_price or 5.0)
                 
-            expert_price = float(expert_profile.monetization_price or 5.0)
-        except ExpertProfile.DoesNotExist:
+        except User.DoesNotExist:
             return Response({'error': 'Expert not found'}, status=404)
         
-        # Check if expert has Stripe Connect set up
-        if not expert_profile.stripe_connected:
-            return Response({'error': 'Expert has not set up payment processing'}, status=400)
+        # For The Stoic Mentor, bypass Stripe Connect requirement
+        if expert.name != 'The Stoic Mentor':
+            # Check if expert has Stripe Connect set up
+            if not expert_profile.stripe_connected:
+                return Response({'error': 'Expert has not set up payment processing'}, status=400)
         
         # Calculate amounts (in pence for Stripe)
-        platform_fee_rate = 0.2  # 20% platform fee
-        total_amount = expert_price * 1.2  # Expert price + 20% platform fee
-        expert_amount = expert_price
-        platform_amount = total_amount - expert_amount
-        
-        # Create Payment Intent with Stripe Connect
-        intent = stripe.PaymentIntent.create(
-            amount=int(total_amount * 100),  # Convert to pence
-            currency='gbp',
-            application_fee_amount=int(platform_amount * 100),  # Platform fee in pence
-            transfer_data={
-                'destination': expert_profile.stripe_account_id,
-            },
-            metadata={
-                'expert_id': expert_id,
-                'user_id': str(request.user.id),
-                'expert_amount': str(expert_amount),
-                'platform_amount': str(platform_amount),
-                'session_type': 'consultation'
-            }
-        )
+        if expert.name == 'The Stoic Mentor':
+            # Direct payment to platform for The Stoic Mentor
+            total_amount = expert_price  # £2.99
+            expert_amount = 0  # Platform keeps it all for now
+            platform_amount = total_amount
+            
+            # Create simple Payment Intent without Stripe Connect
+            intent = stripe.PaymentIntent.create(
+                amount=int(total_amount * 100),  # Convert to pence
+                currency='gbp',
+                metadata={
+                    'expert_id': expert_id,
+                    'expert_name': expert.name,
+                    'user_id': str(request.user.id),
+                    'total_amount': str(total_amount),
+                    'session_type': 'consultation'
+                }
+            )
+        else:
+            # Regular Stripe Connect flow for other experts
+            platform_fee_rate = 0.2  # 20% platform fee
+            total_amount = expert_price * 1.2  # Expert price + 20% platform fee
+            expert_amount = expert_price
+            platform_amount = total_amount - expert_amount
+            
+            # Create Payment Intent with Stripe Connect
+            intent = stripe.PaymentIntent.create(
+                amount=int(total_amount * 100),  # Convert to pence
+                currency='gbp',
+                application_fee_amount=int(platform_amount * 100),  # Platform fee in pence
+                transfer_data={
+                    'destination': expert_profile.stripe_account_id,
+                },
+                metadata={
+                    'expert_id': expert_id,
+                    'user_id': str(request.user.id),
+                    'expert_amount': str(expert_amount),
+                    'platform_amount': str(platform_amount),
+                    'session_type': 'consultation'
+                }
+            )
         
         return Response({
             'client_secret': intent.client_secret,
