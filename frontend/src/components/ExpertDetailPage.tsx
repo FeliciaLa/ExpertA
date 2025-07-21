@@ -306,6 +306,121 @@ export const ExpertDetailPage: React.FC = () => {
     );
   };
 
+  // Check if this is The Stoic Mentor for special layout
+  const isStoicMentor = expert?.name === 'The Stoic Mentor';
+
+  // Special layout for The Stoic Mentor
+  if (isStoicMentor) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Button 
+          onClick={() => navigate('/experts')}
+          sx={{ mb: 3 }}
+        >
+          ← Back to Experts
+        </Button>
+        
+        {/* Special Hero Section for Stoic Mentor */}
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+          color: 'white',
+          p: 6,
+          borderRadius: 3,
+          mb: 4,
+          textAlign: 'center'
+        }}>
+          <Typography variant="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+            🏛️ The Stoic Mentor
+          </Typography>
+          <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
+            Your Guide to Ancient Wisdom and Modern Resilience
+          </Typography>
+          <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto', opacity: 0.8 }}>
+            Grounded in the timeless teachings of Marcus Aurelius, Seneca, and Epictetus. 
+            Discover practical wisdom for navigating life's challenges with clarity and purpose.
+          </Typography>
+        </Box>
+
+        {/* Special Grid Layout */}
+        <Grid container spacing={4}>
+          {/* Philosophy Cards */}
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 3, height: '100%', bgcolor: '#f8f9fa' }}>
+              <Typography variant="h6" gutterBottom color="primary">
+                ⚖️ Core Principles
+              </Typography>
+              <Typography variant="body2" paragraph>
+                • Accept what you cannot control<br/>
+                • Focus on your responses and choices<br/>
+                • Live according to virtue and reason<br/>
+                • Practice mindful presence
+              </Typography>
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 3, height: '100%', bgcolor: '#f8f9fa' }}>
+              <Typography variant="h6" gutterBottom color="primary">
+                🎯 Areas of Guidance
+              </Typography>
+              <Typography variant="body2" paragraph>
+                • Emotional resilience and discipline<br/>
+                • Leadership under pressure<br/>
+                • Personal setbacks and adversity<br/>
+                • Moral clarity and decision-making
+              </Typography>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 3, height: '100%', bgcolor: '#f8f9fa' }}>
+              <Typography variant="h6" gutterBottom color="primary">
+                📚 Wisdom Sources
+              </Typography>
+              <Typography variant="body2" paragraph>
+                • Marcus Aurelius' Meditations<br/>
+                • Seneca's Letters and Essays<br/>
+                • Epictetus' Discourses<br/>
+                • Modern Stoic interpretations
+              </Typography>
+            </Paper>
+          </Grid>
+
+          {/* Main Chat Area */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 4, minHeight: '600px', display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Avatar sx={{ width: 60, height: 60, bgcolor: 'primary.main', fontSize: '1.5rem' }}>
+                  🏛️
+                </Avatar>
+                <Box>
+                  <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 500 }}>
+                    Seek Wisdom from The Stoic Mentor
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Ask about philosophy, resilience, leadership, or life guidance
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <Box sx={{ flex: 1 }}>
+                {renderChatSection()}
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        <UserAuthDialog
+          open={isAuthDialogOpen}
+          onClose={() => setIsAuthDialogOpen(false)}
+          onSignIn={handleUserSignIn}
+          onRegister={handleUserRegister}
+        />
+      </Container>
+    );
+  }
+
+  // Default layout for all other experts
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Button 
