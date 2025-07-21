@@ -3115,19 +3115,36 @@ def create_payment_intent(request):
         except Exception as create_err:
             print(f"General error creating intent: {create_err}")
             return Response({'error': f'Error creating intent: {str(create_err)}'}, status=500)
-        print(f"Payment intent created successfully: {intent.id}")
-        print(f"Intent object type: {type(intent)}")
-        print(f"Intent as dict: {dict(intent) if hasattr(intent, 'keys') else 'Not a dict'}")
         
-        # Safe access to client_secret
-        client_secret = getattr(intent, 'client_secret', None)
+        # Debug the intent object
+        print(f"Payment intent created successfully!")
+        print(f"Intent object type: {type(intent)}")
+        print(f"Intent object dir: {[attr for attr in dir(intent) if not attr.startswith('_')]}")
+        
+        # Initialize defaults
+        intent_id = 'NO_ID'
+        client_secret = None
+        
+        try:
+            intent_id = getattr(intent, 'id', 'NO_ID')
+            print(f"Intent ID: {intent_id}")
+        except Exception as id_err:
+            print(f"Error accessing intent.id: {id_err}")
+        
+        try:
+            client_secret = getattr(intent, 'client_secret', None)
+            print(f"Client secret found: {bool(client_secret)}")
+        except Exception as secret_err:
+            print(f"Error accessing client_secret: {secret_err}")
+            return Response({'error': f'Error accessing client_secret: {str(secret_err)}'}, status=500)
+        
         if not client_secret:
             print(f"ERROR: client_secret is None or missing from intent")
             return Response({'error': 'Payment intent missing client_secret'}, status=500)
         
         return Response({
             'client_secret': client_secret,
-            'payment_intent_id': intent.id,
+            'payment_intent_id': intent_id,
             'amount': total_amount,
             'expert_amount': expert_amount,
             'platform_amount': platform_amount
