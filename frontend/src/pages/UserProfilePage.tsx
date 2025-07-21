@@ -733,51 +733,53 @@ const UserProfilePage: React.FC = () => {
               )}
             </Box>
 
-            {/* Right Side - User Statistics */}
-            <Box sx={{ flex: 1, maxWidth: 400 }}>
-              {(() => {
-                const stats = calculateUserStats();
-                return (
-                  <>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        Member Since
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {stats.memberSince}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        Experts Consulted
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {stats.expertsConsulted}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        Total Consultations
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {stats.totalConsultations}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
-                      <Typography variant="body1" color="text.secondary">
-                        Most Consulted Industry
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {stats.mostUsedIndustry}
-                      </Typography>
-                    </Box>
-                  </>
-                );
-              })()}
-            </Box>
+            {/* Right Side - User Statistics - Hidden for cleaner profile */}
+            {false && (
+              <Box sx={{ flex: 1, maxWidth: 400 }}>
+                {(() => {
+                  const stats = calculateUserStats();
+                  return (
+                    <>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                        <Typography variant="body1" color="text.secondary">
+                          Member Since
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium">
+                          {stats.memberSince}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                        <Typography variant="body1" color="text.secondary">
+                          Experts Consulted
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium">
+                          {stats.expertsConsulted}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                        <Typography variant="body1" color="text.secondary">
+                          Total Consultations
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium">
+                          {stats.totalConsultations}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                        <Typography variant="body1" color="text.secondary">
+                          Most Consulted Industry
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium">
+                          {stats.mostUsedIndustry}
+                        </Typography>
+                      </Box>
+                    </>
+                  );
+                })()}
+              </Box>
+            )}
           </Box>
 
         {/* Consultation History Section */}
