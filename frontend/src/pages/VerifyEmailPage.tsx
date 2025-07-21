@@ -14,6 +14,7 @@ const VerifyEmailPage: React.FC = () => {
   const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('user');
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     const verifyEmail = async () => {
@@ -62,6 +63,24 @@ const VerifyEmailPage: React.FC = () => {
     }
   }, [token, setUser, setIsAuthenticated, setIsUser, setIsExpert]);
 
+  // Auto-redirect users to The Stoic Mentor after successful verification
+  useEffect(() => {
+    if (isVerified && userRole === 'user') {
+      const countdownInterval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            navigate('/experts/the-stoic-mentor');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(countdownInterval);
+    }
+  }, [isVerified, userRole, navigate]);
+
   const handleGoToHome = () => {
     // Navigate based on user role after verification
     const userData = localStorage.getItem('user');
@@ -70,11 +89,12 @@ const VerifyEmailPage: React.FC = () => {
       if (parsedUser.role === 'expert') {
         navigate('/expert');
       } else {
-        navigate('/experts');
+        // Redirect users directly to The Stoic Mentor
+        navigate('/experts/the-stoic-mentor');
       }
     } else {
-      // Fallback to experts page
-      navigate('/experts');
+      // Fallback to The Stoic Mentor page
+      navigate('/experts/the-stoic-mentor');
     }
   };
 
@@ -108,11 +128,11 @@ const VerifyEmailPage: React.FC = () => {
             <Typography variant="body1" paragraph>
               {userRole === 'expert' 
                 ? 'Your email has been successfully verified! Now let\'s set up your expert profile to get started.'
-                : 'Your email has been successfully verified and your account is now active.'
+                : `Your email has been successfully verified! Redirecting to The Stoic Mentor in ${countdown} second${countdown !== 1 ? 's' : ''}...`
               }
             </Typography>
             <Button variant="contained" color="primary" onClick={handleGoToHome}>
-              {userRole === 'expert' ? 'Set Up Profile' : 'Browse Experts'}
+              {userRole === 'expert' ? 'Set Up Profile' : 'Chat with The Stoic Mentor'}
             </Button>
           </Box>
         ) : (
