@@ -488,15 +488,8 @@ export const ExpertDetailPage: React.FC = () => {
           </Grid>
         </Grid>
 
-        <UserAuthDialog
-          open={isAuthDialogOpen}
-          onClose={() => setIsAuthDialogOpen(false)}
-          onSignIn={handleUserSignIn}
-          onRegister={handleUserRegister}
-        />
-        
-        {/* Bottom navigation for Stoic Mentor */}
-        <Box sx={{ textAlign: 'center', mt: 4, mb: 12 }}>
+        {/* Bottom navigation for Stoic Mentor - positioned right under main container */}
+        <Box sx={{ textAlign: 'center', mt: 3, mb: 4 }}>
           <Button 
             onClick={() => navigate('/experts')}
             variant="outlined"
@@ -518,6 +511,13 @@ export const ExpertDetailPage: React.FC = () => {
             Explore Other Mentors
           </Button>
         </Box>
+
+        <UserAuthDialog
+          open={isAuthDialogOpen}
+          onClose={() => setIsAuthDialogOpen(false)}
+          onSignIn={handleUserSignIn}
+          onRegister={handleUserRegister}
+        />
       </Container>
     );
   }
