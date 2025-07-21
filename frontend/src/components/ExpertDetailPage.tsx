@@ -314,18 +314,14 @@ export const ExpertDetailPage: React.FC = () => {
     return (
       <Box sx={{
         minHeight: '100vh',
-        width: '100%',
+        width: '100vw',
+        marginLeft: 'calc(-50vw + 50%)',
         backgroundImage: 'url("/Temple image.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
         position: 'relative',
-        margin: 0,
-        padding: 0,
-        left: 0,
-        right: 0,
-        top: 0,
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -340,7 +336,9 @@ export const ExpertDetailPage: React.FC = () => {
         <Container maxWidth="lg" sx={{ 
           py: 4,
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
+          marginLeft: 'auto',
+          marginRight: 'auto'
         }}>
         {/* Condensed Stoic Hero Header */}
         <Box sx={{ 
