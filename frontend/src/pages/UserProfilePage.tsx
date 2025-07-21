@@ -626,21 +626,23 @@ const UserProfilePage: React.FC = () => {
             </Tooltip>
           </Box>
         </Box>
-                  {/* Profile Section with Statistics */}
+                  {/* Profile Section - Centered */}
           <Box sx={{ 
             display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' }, 
-            alignItems: { xs: 'center', md: 'flex-start' },
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
             gap: 4,
             mt: 2,
             mb: 4
           }}>
-            {/* Left Side - Profile Picture and Name */}
+            {/* Centered Profile Picture and Name */}
             <Box sx={{ 
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center',
-              minWidth: 200
+              width: '100%',
+              maxWidth: 300
             }}>
               <Box sx={{ position: 'relative', mb: 2 }}>
                 <Avatar 
