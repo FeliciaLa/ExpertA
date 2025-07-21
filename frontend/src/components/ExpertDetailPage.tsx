@@ -487,31 +487,34 @@ export const ExpertDetailPage: React.FC = () => {
             <Paper sx={{ 
               p: 3, 
               minHeight: '600px',
-              bgcolor: 'rgba(244, 241, 232, 0.95)',
+              background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+              color: '#f4f1e8',
               border: '1px solid #d4af37',
-              boxShadow: '0 4px 20px rgba(44, 62, 80, 0.1)'
+              boxShadow: '0 4px 20px rgba(44, 62, 80, 0.2)'
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ 
                   width: 50, 
                   height: 50, 
-                  bgcolor: '#2c3e50', 
+                  bgcolor: '#d4af37', 
+                  color: '#2c3e50',
                   mr: 2,
                   fontSize: '1.5rem',
-                  border: '2px solid #d4af37'
+                  border: '2px solid #d4af37',
+                  boxShadow: '0 2px 10px rgba(212, 175, 55, 0.3)'
                 }}>
                   🏛️
                 </Avatar>
                 <Box>
                   <Typography variant="h5" sx={{ 
-                    color: '#2c3e50', 
+                    color: '#d4af37', 
                     fontWeight: 600,
                     fontFamily: '"Times New Roman", serif'
                   }}>
                     Chat with {expert.name}'s AI
                   </Typography>
                   <Typography variant="body2" sx={{ 
-                    color: '#34495e',
+                    color: 'rgba(244,241,232,0.9)',
                     fontStyle: 'italic',
                     fontFamily: '"Times New Roman", serif'
                   }}>
