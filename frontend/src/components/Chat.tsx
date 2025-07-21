@@ -63,7 +63,7 @@ export const Chat: React.FC<ChatProps> = ({
   // Use full name instead of just first name
   const firstName = expertName;
   
-  // Debug info
+  // Load chat history when user is authenticated
   useEffect(() => {
     console.log('Chat component loaded:', { 
       isAuthenticated, 
@@ -73,7 +73,53 @@ export const Chat: React.FC<ChatProps> = ({
       monetizationEnabled,
       validExpertPrice
     });
-      }, [isAuthenticated, isUser, isExpert, expertId, monetizationEnabled, validExpertPrice]);
+
+    // Load chat history if user is authenticated
+    if (isAuthenticated && expertId) {
+      loadChatHistory();
+    }
+  }, [isAuthenticated, expertId]);
+
+  const loadChatHistory = async () => {
+    if (!isAuthenticated || !expertId) return;
+
+    try {
+      console.log('Loading chat history for expert:', expertId);
+      const historyData = await chatService.getChatHistory(expertId);
+      
+      if (historyData.sessions && historyData.sessions.length > 0) {
+        // Get the most recent active session
+        const activeSession = historyData.sessions.find((session: any) => session.status === 'active') 
+                           || historyData.sessions[0];
+        
+        if (activeSession && activeSession.messages) {
+          // Convert API messages to component format
+          const loadedMessages = activeSession.messages.map((msg: any) => ({
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content
+          }));
+          
+          setMessages(loadedMessages);
+          
+          // Update session stats from the loaded session
+          setSessionStats(prev => ({
+            ...prev,
+            messageCount: activeSession.total_messages,
+            freeMessagesRemaining: Math.max(0, 3 - Math.floor(activeSession.total_messages / 2))
+          }));
+          
+          console.log('Loaded chat history:', {
+            messagesCount: loadedMessages.length,
+            totalMessages: activeSession.total_messages,
+            sessionId: activeSession.session_id
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load chat history:', error);
+      // Don't show error to user, just continue with empty chat
+    }
+  };
 
   // Check if user should be blocked from sending more messages
   const shouldBlockMessage = () => {
@@ -121,12 +167,20 @@ export const Chat: React.FC<ChatProps> = ({
         { role: 'assistant', content: response.answer },
       ]);
       
-      // Update session stats
-      setSessionStats(prev => ({
-        ...prev,
-        messageCount: prev.messageCount + 1,
-        freeMessagesRemaining: monetizationEnabled ? Math.max(0, prev.freeMessagesRemaining - 1) : prev.freeMessagesRemaining
-      }));
+      // Update session stats with real data from backend
+      if (response.total_messages !== undefined) {
+        setSessionStats(prev => ({
+          ...prev,
+          messageCount: response.total_messages,
+          freeMessagesRemaining: monetizationEnabled ? Math.max(0, 3 - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining
+        }));
+        
+        console.log('Updated session stats:', {
+          totalMessages: response.total_messages,
+          sessionId: response.session_id,
+          freeMessagesRemaining: monetizationEnabled ? Math.max(0, 3 - Math.floor(response.total_messages / 2)) : 'unlimited'
+        });
+      }
       
     } catch (err: any) {
       console.error('Chat error:', err);

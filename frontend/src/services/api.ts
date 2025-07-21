@@ -309,6 +309,17 @@ export const chatService = {
       console.error('Chat service error:', error);
       throw error;
     }
+  },
+
+  getChatHistory: async (expertId?: string) => {
+    try {
+      const endpoint = expertId ? `chat/history/${expertId}/` : 'chat/history/';
+      const response = await api.get(endpoint);
+      return response.data;
+    } catch (error) {
+      console.error('Chat history error:', error);
+      throw error;
+    }
   }
 };
 
