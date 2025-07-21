@@ -3185,9 +3185,11 @@ def confirm_payment(request):
         if not payment_intent_id or not expert_id:
             return Response({'error': 'Payment intent ID and expert ID are required'}, status=400)
         
-        # Verify the payment intent with Stripe
+        # Verify the payment intent with Stripe using direct HTTP
         import requests
         import base64
+        
+        print(f"Verifying payment intent: {payment_intent_id}")
         
         stripe_url = f"https://api.stripe.com/v1/payment_intents/{payment_intent_id}"
         
@@ -3201,12 +3203,18 @@ def confirm_payment(request):
             'Stripe-Version': '2024-06-20'
         }
         
+        print(f"Making Stripe API call to verify payment: {stripe_url}")
         response = requests.get(stripe_url, headers=headers)
         
+        print(f"Stripe verification response status: {response.status_code}")
+        
         if response.status_code != 200:
+            error_data = response.json() if response.content else {}
+            print(f"Stripe verification failed: {error_data}")
             return Response({'error': 'Failed to verify payment with Stripe'}, status=400)
             
         payment_data = response.json()
+        print(f"Payment verification successful. Status: {payment_data.get('status')}")
         
         # Check if payment was successful
         if payment_data.get('status') != 'succeeded':
