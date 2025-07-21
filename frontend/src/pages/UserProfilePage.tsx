@@ -608,14 +608,17 @@ const UserProfilePage: React.FC = () => {
             <Typography variant="h4" color="primary">
               My Profile
             </Typography>
-                            <Tooltip title="How Duplix AI Works">
-              <IconButton
-                onClick={() => setIsHowItWorksOpen(true)}
-                sx={{ ml: 1 }}
-              >
-                <InfoIcon />
-              </IconButton>
-            </Tooltip>
+                            {/* Info button hidden for cleaner focused experience */}
+            {false && (
+              <Tooltip title="How Duplix AI Works">
+                <IconButton
+                  onClick={() => setIsHowItWorksOpen(true)}
+                  sx={{ ml: 1 }}
+                >
+                  <InfoIcon />
+                </IconButton>
+              </Tooltip>
+            )}
             <Tooltip title="Account Settings">
               <IconButton
                 onClick={() => setIsAccountSettingsOpen(true)}

@@ -15,10 +15,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { isAuthenticated, isUser, isExpert, signOut, expert, user, signIn, register } = useAuth();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Check if we're on The Stoic Mentor's page to hide header
+  // Check if we're on The Stoic Mentor's page or profile page to hide header
   const isStoicMentorPage = location.pathname.toLowerCase().includes('stoic') || 
                            location.pathname.includes('the-stoic-mentor') ||
-                           location.pathname.includes('stoic-mentor');
+                           location.pathname.includes('stoic-mentor') ||
+                           location.pathname.includes('/user/profile');
 
   const handleLogout = () => {
     signOut();
