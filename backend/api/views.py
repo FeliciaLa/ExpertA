@@ -3158,12 +3158,104 @@ def create_payment_intent(request):
             import traceback
             print(f"Full traceback: {traceback.format_exc()}")
             return Response({'error': f'Error creating intent: {str(e)}'}, status=500)
-        
-
-        
+            
     except Exception as e:
         print(f"Error creating payment intent: {str(e)}")
         return Response({'error': 'Failed to create payment intent'}, status=500)
+
+
+@api_view(['POST', 'OPTIONS'])
+@permission_classes([IsAuthenticated])
+def confirm_payment(request):
+    """Confirm a completed payment and update user's message credits"""
+    if request.method == 'OPTIONS':
+        response = Response()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        if not request.user or not request.user.is_authenticated:
+            return Response({'error': 'Authentication required'}, status=401)
+            
+        payment_intent_id = request.data.get('payment_intent_id')
+        expert_id = request.data.get('expert_id')
+        
+        if not payment_intent_id or not expert_id:
+            return Response({'error': 'Payment intent ID and expert ID are required'}, status=400)
+        
+        # Verify the payment intent with Stripe
+        import requests
+        import base64
+        
+        stripe_url = f"https://api.stripe.com/v1/payment_intents/{payment_intent_id}"
+        
+        # Create basic auth header
+        auth_string = f"{stripe.api_key}:"
+        auth_bytes = auth_string.encode('ascii')
+        auth_b64 = base64.b64encode(auth_bytes).decode('ascii')
+        
+        headers = {
+            'Authorization': f'Basic {auth_b64}',
+            'Stripe-Version': '2024-06-20'
+        }
+        
+        response = requests.get(stripe_url, headers=headers)
+        
+        if response.status_code != 200:
+            return Response({'error': 'Failed to verify payment with Stripe'}, status=400)
+            
+        payment_data = response.json()
+        
+        # Check if payment was successful
+        if payment_data.get('status') != 'succeeded':
+            return Response({'error': f'Payment not completed. Status: {payment_data.get("status")}'}, status=400)
+        
+        # Get expert details
+        try:
+            expert = User.objects.get(id=expert_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Expert not found'}, status=404)
+        
+        # Create a consultation session for the payment
+        session = ConsultationSession.objects.create(
+            user=request.user,
+            expert=expert,
+            status='active',
+            session_type='paid',
+            amount_paid=float(payment_data.get('amount', 0)) / 100,  # Convert from pence to pounds
+            payment_intent_id=payment_intent_id
+        )
+        
+        # For The Stoic Mentor, add 30 message credits instead of a timed session
+        if expert.name == 'The Stoic Mentor':
+            # Set a very high message limit to effectively give 30 messages
+            session.total_messages = 30 * 2  # 30 user messages + 30 AI responses = 60 total
+            session.session_type = 'message_bundle'
+        else:
+            # For other experts, set a 15-minute session
+            session.session_type = 'timed'
+            session.duration_minutes = 15
+        
+        session.save()
+        
+        print(f"✅ Payment confirmed and session created: {session.id}")
+        
+        return Response({
+            'success': True,
+            'session_id': str(session.id),
+            'session_type': session.session_type,
+            'message_credits': 30 if expert.name == 'The Stoic Mentor' else 0,
+            'duration_minutes': 15 if expert.name != 'The Stoic Mentor' else 0,
+            'amount_paid': session.amount_paid
+        })
+        
+    except Exception as e:
+        print(f"Error confirming payment: {str(e)}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
+        return Response({'error': 'Failed to confirm payment'}, status=500)
 
 
 @api_view(['POST', 'OPTIONS'])
