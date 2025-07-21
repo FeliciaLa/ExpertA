@@ -309,19 +309,23 @@ export const ExpertDetailPage: React.FC = () => {
   // Check if this is The Stoic Mentor for special layout
   const isStoicMentor = expert?.name === 'The Stoic Mentor';
 
-  // Special layout for The Stoic Mentor - Standard layout with Stoic theming
+  // Special layout for The Stoic Mentor - Full viewport background
   if (isStoicMentor) {
     return (
-      <Container maxWidth="lg" sx={{ 
-        py: 4, 
-        bgcolor: '#f4f1e8', 
+      <Box sx={{
         minHeight: '100vh',
+        width: '100%',
         backgroundImage: 'url("/Temple image.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
         position: 'relative',
+        margin: 0,
+        padding: 0,
+        left: 0,
+        right: 0,
+        top: 0,
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -331,12 +335,13 @@ export const ExpertDetailPage: React.FC = () => {
           bottom: 0,
           backgroundColor: 'rgba(244, 241, 232, 0.85)',
           zIndex: 0
-        },
-        '& > *': {
-          position: 'relative',
-          zIndex: 1
         }
       }}>
+        <Container maxWidth="lg" sx={{ 
+          py: 4,
+          position: 'relative',
+          zIndex: 1
+        }}>
         {/* Condensed Stoic Hero Header */}
         <Box sx={{ 
           background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
@@ -372,12 +377,12 @@ export const ExpertDetailPage: React.FC = () => {
           </Typography>
         </Box>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={3}>
           {/* Stoic Expert Profile Section */}
           <Grid item xs={12} md={5}>
             <Paper sx={{ 
               p: 3, 
-              height: '100%',
+              minHeight: '600px',
               background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
               color: '#f4f1e8',
               boxShadow: '0 4px 20px rgba(44, 62, 80, 0.2)',
@@ -470,9 +475,8 @@ export const ExpertDetailPage: React.FC = () => {
           <Grid item xs={12} md={7}>
             <Paper sx={{ 
               p: 3, 
-              height: '100%', 
               minHeight: '600px',
-              bgcolor: '#f4f1e8',
+              bgcolor: 'rgba(244, 241, 232, 0.95)',
               border: '1px solid #d4af37',
               boxShadow: '0 4px 20px rgba(44, 62, 80, 0.1)'
             }}>
@@ -518,7 +522,8 @@ export const ExpertDetailPage: React.FC = () => {
           onSignIn={handleUserSignIn}
           onRegister={handleUserRegister}
         />
-      </Container>
+        </Container>
+      </Box>
     );
   }
 
