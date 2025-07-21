@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Card, CardContent, Typography, Button, Alert, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress } from '@mui/material';
 import { Payment, CreditCard, Lock } from '@mui/icons-material';
-import { features, getEnvironment } from '../utils/environment';
+import { features, getEnvironment, STRIPE_PUBLISHABLE_KEY } from '../utils/environment';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -66,34 +66,94 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
     setError(null);
     
     try {
-      // In a real implementation, you would use Stripe.js here
-      // For now, we'll simulate the payment process
       console.log('Processing payment with Stripe...');
       
-      // Simulate payment processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Initialize Stripe with environment variable
+      const stripe = (window as any).Stripe(STRIPE_PUBLISHABLE_KEY);
       
-      // Simulate 90% success rate for testing
-      const paymentSuccess = Math.random() > 0.1;
-      
-      if (!paymentSuccess) {
-        throw new Error('Payment failed. Please try again.');
+      if (!stripe) {
+        throw new Error('Stripe failed to initialize');
       }
       
-      // Confirm payment on backend
-      const confirmResponse = await api.post('payment/confirm/', {
-        payment_intent_id: paymentData.payment_intent_id,
-        expert_id: expertId
+      // Validate card details before processing
+      const cardNumber = cardDetails.cardNumber.replace(/\s/g, '');
+      const expiryParts = cardDetails.expiryDate.split('/');
+      
+      if (cardNumber.length < 13 || cardNumber.length > 19) {
+        throw new Error('Please enter a valid card number');
+      }
+      
+      if (expiryParts.length !== 2 || expiryParts[0].length !== 2 || expiryParts[1].length !== 2) {
+        throw new Error('Please enter a valid expiry date (MM/YY)');
+      }
+      
+      const expMonth = parseInt(expiryParts[0]);
+      const expYear = parseInt('20' + expiryParts[1]);
+      
+      if (expMonth < 1 || expMonth > 12) {
+        throw new Error('Please enter a valid expiry month');
+      }
+      
+      if (cardDetails.cvv.length < 3 || cardDetails.cvv.length > 4) {
+        throw new Error('Please enter a valid CVV');
+      }
+      
+      if (!cardDetails.nameOnCard.trim()) {
+        throw new Error('Please enter the name on card');
+      }
+      
+      // Create a payment method using the card details
+      const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: {
+          number: cardNumber,
+          exp_month: expMonth,
+          exp_year: expYear,
+          cvc: cardDetails.cvv,
+        },
+        billing_details: {
+          name: cardDetails.nameOnCard.trim(),
+        },
       });
       
-      setShowPaymentDialog(false);
-      setCardDetails({ cardNumber: '', expiryDate: '', cvv: '', nameOnCard: '' });
-      
-      if (onPaymentSuccess) {
-        onPaymentSuccess();
+      if (pmError) {
+        throw new Error(pmError.message || 'Invalid card details');
       }
       
-      alert('Payment successful! Your consultation session is now active.');
+      // Confirm the payment intent
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+        paymentData.client_secret,
+        {
+          payment_method: paymentMethod.id,
+        }
+      );
+      
+      if (confirmError) {
+        throw new Error(confirmError.message || 'Payment failed');
+      }
+      
+      if (paymentIntent.status === 'succeeded') {
+        console.log('✅ Payment succeeded, confirming with backend...');
+        
+        // Confirm payment on backend
+        const confirmResponse = await api.post('payment/confirm/', {
+          payment_intent_id: paymentData.payment_intent_id,
+          expert_id: expertId
+        });
+        
+        console.log('✅ Backend confirmation successful:', confirmResponse.data);
+        
+        setShowPaymentDialog(false);
+        setCardDetails({ cardNumber: '', expiryDate: '', cvv: '', nameOnCard: '' });
+        
+        if (onPaymentSuccess) {
+          onPaymentSuccess();
+        }
+        
+        alert('Payment successful! Your consultation session is now active.');
+      } else {
+        throw new Error(`Payment not completed. Status: ${paymentIntent.status}`);
+      }
       
     } catch (err: any) {
       console.error('Payment error:', err);
