@@ -100,6 +100,7 @@ export const Chat: React.FC<ChatProps> = ({
                            || historyData.sessions[0];
         
         console.log('Active session:', activeSession);
+        console.log('Active session messages:', activeSession?.messages);
         
         if (activeSession && activeSession.messages) {
           // Convert API messages to component format
@@ -120,8 +121,11 @@ export const Chat: React.FC<ChatProps> = ({
           console.log('✅ Successfully loaded chat history:', {
             messagesCount: loadedMessages.length,
             totalMessages: activeSession.total_messages,
-            sessionId: activeSession.session_id
+            sessionId: activeSession.session_id,
+            loadedMessages: loadedMessages
           });
+          
+          console.log('🔥 MESSAGES SET TO:', loadedMessages);
         } else {
           console.log('⚠️ Active session has no messages');
         }
@@ -144,6 +148,11 @@ export const Chat: React.FC<ChatProps> = ({
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
+  }, [messages]);
+
+  // Debug messages state changes
+  useEffect(() => {
+    console.log('🔥 MESSAGES STATE CHANGED:', messages.length, messages);
   }, [messages]);
 
   // Check if user should be blocked from sending more messages
