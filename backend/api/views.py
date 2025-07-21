@@ -3104,9 +3104,17 @@ def create_payment_intent(request):
             }
         )
         print(f"Payment intent created successfully: {intent.id}")
+        print(f"Intent object type: {type(intent)}")
+        print(f"Intent as dict: {dict(intent) if hasattr(intent, 'keys') else 'Not a dict'}")
+        
+        # Safe access to client_secret
+        client_secret = getattr(intent, 'client_secret', None)
+        if not client_secret:
+            print(f"ERROR: client_secret is None or missing from intent")
+            return Response({'error': 'Payment intent missing client_secret'}, status=500)
         
         return Response({
-            'client_secret': intent.client_secret,
+            'client_secret': client_secret,
             'payment_intent_id': intent.id,
             'amount': total_amount,
             'expert_amount': expert_amount,
