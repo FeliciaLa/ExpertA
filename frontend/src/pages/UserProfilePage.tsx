@@ -600,14 +600,67 @@ const UserProfilePage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={2} sx={{ p: 4, borderRadius: 2, maxWidth: 1000, mx: 'auto' }}>
+    <Box sx={{
+      minHeight: '100vh',
+      width: '100vw',
+      marginLeft: 'calc(-50vw + 50%)',
+      paddingBottom: '100px',
+      position: 'relative',
+      '&::before': {
+        content: '""',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundImage: 'url("/Temple image.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        zIndex: -2
+      },
+      '&::after': {
+        content: '""',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(244, 241, 232, 0.85)',
+        zIndex: -1
+      }
+    }}>
+      <Container maxWidth="md" sx={{ 
+        py: 4,
+        position: 'relative',
+        zIndex: 1,
+        marginLeft: 'auto',
+        marginRight: 'auto'
+      }}>
+        <Paper elevation={2} sx={{ 
+          p: 4, 
+          borderRadius: 3, 
+          maxWidth: 1000, 
+          mx: 'auto',
+          background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+          color: '#f4f1e8',
+          border: '2px solid #d4af37',
+          boxShadow: '0 8px 32px rgba(44, 62, 80, 0.3)'
+        }}>
         {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h4" color="primary">
-              My Profile
-            </Typography>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography variant="h4" sx={{ 
+                color: '#d4af37',
+                fontFamily: '"Times New Roman", serif',
+                fontWeight: 'bold'
+              }}>
+                🏛️ My Profile
+              </Typography>
                             {/* Info button hidden for cleaner focused experience */}
             {false && (
               <Tooltip title="How Duplix AI Works">
@@ -619,14 +672,20 @@ const UserProfilePage: React.FC = () => {
                 </IconButton>
               </Tooltip>
             )}
-            <Tooltip title="Account Settings">
-              <IconButton
-                onClick={() => setIsAccountSettingsOpen(true)}
-                sx={{ ml: 1 }}
-              >
-                <SettingsIcon />
-              </IconButton>
-            </Tooltip>
+                          <Tooltip title="Account Settings">
+                <IconButton
+                  onClick={() => setIsAccountSettingsOpen(true)}
+                  sx={{ 
+                    ml: 1,
+                    color: '#d4af37',
+                    '&:hover': {
+                      bgcolor: 'rgba(212, 175, 55, 0.2)'
+                    }
+                  }}
+                >
+                  <SettingsIcon />
+                </IconButton>
+              </Tooltip>
           </Box>
         </Box>
                   {/* Profile Section - Centered */}
@@ -654,7 +713,10 @@ const UserProfilePage: React.FC = () => {
                     width: 120, 
                     height: 120, 
                     fontSize: '3rem',
-                    bgcolor: 'primary.main'
+                    bgcolor: '#d4af37',
+                    color: '#2c3e50',
+                    border: '3px solid #d4af37',
+                    boxShadow: '0 4px 20px rgba(212, 175, 55, 0.3)'
                   }}
                 >
                   {user?.name?.charAt(0).toUpperCase()}
@@ -675,12 +737,12 @@ const UserProfilePage: React.FC = () => {
                     position: 'absolute',
                     bottom: 0,
                     right: 0,
-                    bgcolor: 'primary.main',
-                    color: 'white',
+                    bgcolor: '#d4af37',
+                    color: '#2c3e50',
                     width: 36,
                     height: 36,
                     '&:hover': {
-                      bgcolor: 'primary.dark',
+                      bgcolor: '#b8941f',
                     },
                     '&:disabled': {
                       bgcolor: 'grey.400',
@@ -702,7 +764,25 @@ const UserProfilePage: React.FC = () => {
                     onChange={(e) => setEditedName(e.target.value)}
                     variant="outlined"
                     size="small"
-                    sx={{ minWidth: 200 }}
+                    sx={{ 
+                      minWidth: 200,
+                      '& .MuiOutlinedInput-root': {
+                        color: '#f4f1e8',
+                        fontFamily: '"Times New Roman", serif',
+                        '& fieldset': {
+                          borderColor: '#d4af37',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#d4af37',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#d4af37',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: '#f4f1e8',
+                      },
+                    }}
                     autoFocus
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
@@ -711,17 +791,37 @@ const UserProfilePage: React.FC = () => {
                     }}
                   />
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button size="small" onClick={handleSaveName} variant="contained">
+                    <Button size="small" onClick={handleSaveName} variant="contained" sx={{
+                      bgcolor: '#d4af37',
+                      color: '#2c3e50',
+                      fontFamily: '"Times New Roman", serif',
+                      '&:hover': {
+                        bgcolor: '#b8941f'
+                      }
+                    }}>
                       Save
                     </Button>
-                    <Button size="small" onClick={handleCancelNameEdit} variant="outlined">
+                    <Button size="small" onClick={handleCancelNameEdit} variant="outlined" sx={{
+                      borderColor: '#d4af37',
+                      color: '#d4af37',
+                      fontFamily: '"Times New Roman", serif',
+                      '&:hover': {
+                        borderColor: '#b8941f',
+                        color: '#b8941f',
+                        bgcolor: 'rgba(212, 175, 55, 0.1)'
+                      }
+                    }}>
                       Cancel
                     </Button>
                   </Box>
                 </Box>
               ) : (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="h5" gutterBottom>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    color: '#f4f1e8',
+                    fontFamily: '"Times New Roman", serif',
+                    fontWeight: 'bold'
+                  }}>
                     {user?.name}
                   </Typography>
                   <IconButton
@@ -730,7 +830,13 @@ const UserProfilePage: React.FC = () => {
                       setEditedName(user?.name || '');
                       setIsEditingName(true);
                     }}
-                    sx={{ mb: 1 }}
+                    sx={{ 
+                      mb: 1,
+                      color: '#d4af37',
+                      '&:hover': {
+                        bgcolor: 'rgba(212, 175, 55, 0.2)'
+                      }
+                    }}
                   >
                     <EditIcon fontSize="small" />
                   </IconButton>
@@ -789,16 +895,34 @@ const UserProfilePage: React.FC = () => {
 
         {/* Consultation History Section */}
         <Box sx={{ mt: 6 }}>
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            Your Consultation History
+          <Typography variant="h5" gutterBottom sx={{ 
+            mb: 3,
+            color: '#d4af37',
+            fontFamily: '"Times New Roman", serif',
+            fontWeight: 'bold'
+          }}>
+            🏛️ Your Consultation History
           </Typography>
           
           {(!user?.consultations?.sessions || user.consultations.sessions.length === 0) ? (
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
+            <Paper sx={{ 
+              p: 4, 
+              textAlign: 'center',
+              bgcolor: 'rgba(212, 175, 55, 0.1)',
+              border: '1px solid rgba(212, 175, 55, 0.3)',
+              borderRadius: 3
+            }}>
+              <Typography variant="h6" gutterBottom sx={{
+                color: '#d4af37',
+                fontFamily: '"Times New Roman", serif'
+              }}>
                 No consultations yet
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              <Typography variant="body2" sx={{ 
+                mb: 3,
+                color: 'rgba(244, 241, 232, 0.8)',
+                fontFamily: '"Times New Roman", serif'
+              }}>
                 Start exploring our experts to begin your first AI consultation. 
                 Each conversation will appear here for easy access to your consultation history.
               </Typography>
@@ -821,16 +945,30 @@ const UserProfilePage: React.FC = () => {
             <Grid container spacing={2}>
               {user.consultations.sessions.map((consultation) => (
                 <Grid item xs={12} key={consultation.id}>
-                  <Paper sx={{ p: 3 }}>
+                  <Paper sx={{ 
+                    p: 3,
+                    bgcolor: 'rgba(212, 175, 55, 0.1)',
+                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    borderRadius: 3
+                  }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Box>
-                        <Typography variant="h6" gutterBottom>
+                        <Typography variant="h6" gutterBottom sx={{
+                          color: '#d4af37',
+                          fontFamily: '"Times New Roman", serif'
+                        }}>
                           {consultation.expert_name}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <Typography variant="body2" gutterBottom sx={{
+                          color: 'rgba(244, 241, 232, 0.8)',
+                          fontFamily: '"Times New Roman", serif'
+                        }}>
                           {consultation.expert_industry} • {new Date(consultation.started_at).toLocaleDateString()} • {consultation.total_messages} messages
                         </Typography>
-                        <Typography variant="body1">
+                        <Typography variant="body1" sx={{
+                          color: 'rgba(244, 241, 232, 0.9)',
+                          fontFamily: '"Times New Roman", serif'
+                        }}>
                           Consultation with {consultation.expert_name} about {consultation.expert_specialty}
                         </Typography>
                       </Box>
@@ -838,6 +976,16 @@ const UserProfilePage: React.FC = () => {
                         variant="outlined"
                         size="small"
                         onClick={() => navigate(`/experts/${consultation.expert_id}`)}
+                        sx={{
+                          borderColor: '#d4af37',
+                          color: '#d4af37',
+                          fontFamily: '"Times New Roman", serif',
+                          '&:hover': {
+                            borderColor: '#b8941f',
+                            color: '#b8941f',
+                            bgcolor: 'rgba(212, 175, 55, 0.1)'
+                          }
+                        }}
                       >
                         Chat with {consultation.expert_name.split(' ')[0]}
                       </Button>
@@ -1318,8 +1466,9 @@ const UserProfilePage: React.FC = () => {
             </Alert>
           </Snackbar>
         )}
-      </Paper>
-    </Container>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 
