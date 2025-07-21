@@ -86,60 +86,37 @@ export const Chat: React.FC<ChatProps> = ({
     if (!isAuthenticated || !expertId) return;
 
     try {
-      console.log('Loading chat history for expert:', expertId);
-      console.log('Authentication status:', { isAuthenticated, token: localStorage.getItem('token') ? 'present' : 'missing' });
-      
       const historyData = await chatService.getChatHistory(expertId);
-      console.log('Chat history API response:', historyData);
+      console.log('Loading chat history:', historyData);
       
       if (historyData.sessions && historyData.sessions.length > 0) {
-        console.log('Found sessions:', historyData.sessions.length);
+        // Collect ALL messages from ALL sessions for this expert
+        const allMessages: Message[] = [];
         
-        // Get the most recent active session
-        const activeSession = historyData.sessions.find((session: any) => session.status === 'active') 
-                           || historyData.sessions[0];
+        historyData.sessions.forEach((session: any) => {
+          if (session.messages && Array.isArray(session.messages)) {
+            session.messages.forEach((msg: any) => {
+              allMessages.push({
+                role: msg.role as 'user' | 'assistant',
+                content: msg.content
+              });
+            });
+          }
+        });
         
-        console.log('Active session:', activeSession);
-        console.log('Active session messages:', activeSession?.messages);
+        console.log('💬 Setting all messages:', allMessages);
+        setMessages(allMessages);
         
-        if (activeSession && activeSession.messages) {
-          // Convert API messages to component format
-          const loadedMessages = activeSession.messages.map((msg: any) => ({
-            role: msg.role as 'user' | 'assistant',
-            content: msg.content
-          }));
-          
-          setMessages(loadedMessages);
-          
-          // Update session stats from the loaded session
-          setSessionStats(prev => ({
-            ...prev,
-            messageCount: activeSession.total_messages,
-            freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(activeSession.total_messages / 2))
-          }));
-          
-          console.log('✅ Successfully loaded chat history:', {
-            messagesCount: loadedMessages.length,
-            totalMessages: activeSession.total_messages,
-            sessionId: activeSession.session_id,
-            loadedMessages: loadedMessages
-          });
-          
-          console.log('🔥 MESSAGES SET TO:', loadedMessages);
-        } else {
-          console.log('⚠️ Active session has no messages');
-        }
-      } else {
-        console.log('ℹ️ No chat sessions found - starting fresh');
+        // Update session stats from the most recent session
+        const recentSession = historyData.sessions[0];
+        setSessionStats(prev => ({
+          ...prev,
+          messageCount: recentSession.total_messages,
+          freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(recentSession.total_messages / 2))
+        }));
       }
     } catch (error) {
-      console.error('❌ Failed to load chat history:', error);
-      console.error('Error details:', {
-        message: (error as any).message,
-        response: (error as any).response?.data,
-        status: (error as any).response?.status
-      });
-      // Don't show error to user, just continue with empty chat
+      console.error('Failed to load chat history:', error);
     }
   };
 
@@ -150,10 +127,7 @@ export const Chat: React.FC<ChatProps> = ({
     }
   }, [messages]);
 
-  // Debug messages state changes
-  useEffect(() => {
-    console.log('🔥 MESSAGES STATE CHANGED:', messages.length, messages);
-  }, [messages]);
+
 
   // Check if user should be blocked from sending more messages
   const shouldBlockMessage = () => {
