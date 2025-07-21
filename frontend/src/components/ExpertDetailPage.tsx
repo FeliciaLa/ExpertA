@@ -309,103 +309,96 @@ export const ExpertDetailPage: React.FC = () => {
   // Check if this is The Stoic Mentor for special layout
   const isStoicMentor = expert?.name === 'The Stoic Mentor';
 
-  // Special layout for The Stoic Mentor
+  // Special layout for The Stoic Mentor - Standard layout with Stoic theming
   if (isStoicMentor) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Button 
-          onClick={() => navigate('/experts')}
-          sx={{ mb: 3 }}
-        >
-          ← Back to Experts
-        </Button>
-        
-        {/* Special Hero Section for Stoic Mentor */}
-        <Box sx={{ 
-          background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
-          color: 'white',
-          p: 6,
-          borderRadius: 3,
-          mb: 4,
-          textAlign: 'center'
-        }}>
-          <Typography variant="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-            🏛️ The Stoic Mentor
-          </Typography>
-          <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
-            Your Guide to Ancient Wisdom and Modern Resilience
-          </Typography>
-          <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto', opacity: 0.8 }}>
-            Grounded in the timeless teachings of Marcus Aurelius, Seneca, and Epictetus. 
-            Discover practical wisdom for navigating life's challenges with clarity and purpose.
-          </Typography>
-        </Box>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Grid container spacing={4}>
+          {/* Stoic Expert Profile Section */}
+          <Grid item xs={12} md={5}>
+            <Paper sx={{ 
+              p: 3, 
+              height: '100%',
+              background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+              color: 'white'
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Avatar
+                  src={getProfileImageUrl()}
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    bgcolor: 'white',
+                    color: '#1a237e',
+                    fontSize: '2rem',
+                    mr: 2,
+                    border: '3px solid white'
+                  }}
+                >
+                  🏛️
+                </Avatar>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ color: 'white', fontWeight: 600 }}>
+                    {expert.name}
+                  </Typography>
+                  {expert.title && (
+                    <Typography variant="subtitle1" sx={{ color: 'rgba(255,255,255,0.9)', fontStyle: 'italic' }}>
+                      {expert.title}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
 
-        {/* Expert Profile Section for Stoic Mentor */}
-        <Paper sx={{ 
-          p: 4, 
-          mb: 4, 
-          background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
-          border: '1px solid #e0e0e0'
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Avatar
-              src={getProfileImageUrl()}
-              sx={{
-                width: 100,
-                height: 100,
-                bgcolor: '#1a237e',
-                fontSize: '3rem',
-                mr: 3,
-                border: '3px solid #1a237e'
-              }}
-            >
-              {expert.name[0]}
-            </Avatar>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h4" gutterBottom sx={{ color: '#1a237e', fontWeight: 600 }}>
-                {expert.name}
+              <Divider sx={{ my: 2, borderColor: 'rgba(255,255,255,0.3)' }} />
+
+              <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+                🏛️ About Your Mentor
               </Typography>
-              {expert.title && (
-                <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontStyle: 'italic' }}>
-                  {expert.title}
+              <Typography paragraph sx={{ color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+                Grounded in the timeless teachings of Marcus Aurelius, Seneca, and Epictetus. 
+                Your AI guide for navigating life's challenges with ancient wisdom and modern clarity.
+              </Typography>
+
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
+                <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255,255,255,0.9)' }}>
+                  "You have power over your mind - not outside events. Realize this, and you will find strength."
                 </Typography>
-              )}
-            </Box>
-          </Box>
-          
-          {expert.bio && (
-            <Box>
-              <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', mb: 2 }}>
-                About Your Mentor
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.7, color: '#424242' }}>
-                {expert.bio}
-              </Typography>
-            </Box>
-          )}
-        </Paper>
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mt: 1, display: 'block' }}>
+                  — Marcus Aurelius
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
 
-        {/* Main Chat Area */}
-        <Paper sx={{ p: 4, minHeight: '600px', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <Avatar sx={{ width: 60, height: 60, bgcolor: 'primary.main', fontSize: '1.5rem' }}>
-              🏛️
-            </Avatar>
-            <Box>
-              <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 500 }}>
-                Seek Wisdom from The Stoic Mentor
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Ask about philosophy, resilience, leadership, or life guidance
-              </Typography>
-            </Box>
-          </Box>
-          
-          <Box sx={{ flex: 1 }}>
-            {renderChatSection()}
-          </Box>
-        </Paper>
+          {/* Stoic Chat Section */}
+          <Grid item xs={12} md={7}>
+            <Paper sx={{ p: 3, height: '100%', minHeight: '600px' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Avatar sx={{ 
+                  width: 50, 
+                  height: 50, 
+                  bgcolor: '#1a237e', 
+                  mr: 2,
+                  fontSize: '1.5rem'
+                }}>
+                  🏛️
+                </Avatar>
+                <Box>
+                  <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 500 }}>
+                    Chat with {expert.name}'s AI
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Seek wisdom on philosophy, resilience, leadership, and life guidance
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <Box sx={{ height: 'calc(100% - 80px)' }}>
+                {renderChatSection()}
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
 
         <UserAuthDialog
           open={isAuthDialogOpen}
@@ -415,18 +408,18 @@ export const ExpertDetailPage: React.FC = () => {
         />
         
         {/* Bottom navigation for Stoic Mentor */}
-        <Box sx={{ textAlign: 'center', mt: 6, mb: 2 }}>
+        <Box sx={{ textAlign: 'center', mt: 4, mb: 2 }}>
           <Button 
             onClick={() => navigate('/experts')}
             variant="outlined"
             sx={{ 
-              color: '#666',
-              borderColor: '#ddd',
+              color: '#1a237e',
+              borderColor: '#1a237e',
               px: 4,
               py: 1.5,
               '&:hover': {
-                borderColor: '#1976d2',
-                color: '#1976d2'
+                backgroundColor: '#1a237e',
+                color: 'white'
               }
             }}
           >
