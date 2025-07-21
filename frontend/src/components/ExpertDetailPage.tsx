@@ -355,8 +355,7 @@ export const ExpertDetailPage: React.FC = () => {
                 🏛️ About Your Mentor
               </Typography>
               <Typography paragraph sx={{ color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
-                Grounded in the timeless teachings of Marcus Aurelius, Seneca, and Epictetus. 
-                Your AI guide for navigating life's challenges with ancient wisdom and modern clarity.
+                {expert.bio || 'No bio available'}
               </Typography>
 
               <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
