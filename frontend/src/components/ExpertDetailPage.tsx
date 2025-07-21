@@ -312,7 +312,31 @@ export const ExpertDetailPage: React.FC = () => {
   // Special layout for The Stoic Mentor - Standard layout with Stoic theming
   if (isStoicMentor) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, bgcolor: '#f4f1e8', minHeight: '100vh' }}>
+      <Container maxWidth="lg" sx={{ 
+        py: 4, 
+        bgcolor: '#f4f1e8', 
+        minHeight: '100vh',
+        backgroundImage: 'url("/Temple image.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(244, 241, 232, 0.85)',
+          zIndex: 0
+        },
+        '& > *': {
+          position: 'relative',
+          zIndex: 1
+        }
+      }}>
         {/* Condensed Stoic Hero Header */}
         <Box sx={{ 
           background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
