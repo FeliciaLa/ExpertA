@@ -358,3 +358,32 @@ class ConsultationSession(models.Model):
         self.duration_minutes = self.calculate_duration()
         self.status = self.Status.COMPLETED
         self.save()
+
+
+class ChatMessage(models.Model):
+    """Model to store individual chat messages between users and AI experts"""
+    class Role(models.TextChoices):
+        USER = 'user', 'User'
+        ASSISTANT = 'assistant', 'AI Assistant'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(ConsultationSession, on_delete=models.CASCADE, related_name='messages')
+    role = models.CharField(max_length=10, choices=Role.choices)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Optional metadata
+    token_count = models.IntegerField(null=True, blank=True)  # For tracking API usage
+    processing_time_ms = models.IntegerField(null=True, blank=True)  # Response time tracking
+    
+    class Meta:
+        db_table = 'chat_messages'
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['session', 'created_at']),
+            models.Index(fields=['role']),
+        ]
+
+    def __str__(self):
+        preview = self.content[:50] + "..." if len(self.content) > 50 else self.content
+        return f"{self.role}: {preview}"
