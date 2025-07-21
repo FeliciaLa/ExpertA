@@ -107,13 +107,19 @@ export const Chat: React.FC<ChatProps> = ({
         console.log('💬 Setting all messages:', allMessages);
         setMessages(allMessages);
         
-        // Update session stats from the most recent session
-        const recentSession = historyData.sessions[0];
+        // Calculate total messages across ALL sessions
+        const totalMessagesAcrossSessions = historyData.sessions.reduce((total: number, session: any) => {
+          return total + (session.total_messages || 0);
+        }, 0);
+        
+        // Update session stats with correct total count
         setSessionStats(prev => ({
           ...prev,
-          messageCount: recentSession.total_messages,
-          freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(recentSession.total_messages / 2))
+          messageCount: totalMessagesAcrossSessions,
+          freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(totalMessagesAcrossSessions / 2))
         }));
+        
+        console.log('📊 Total messages across all sessions:', totalMessagesAcrossSessions);
       }
     } catch (error) {
       console.error('Failed to load chat history:', error);
