@@ -313,6 +313,26 @@ export const ExpertDetailPage: React.FC = () => {
   if (isStoicMentor) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Condensed Stoic Hero Header */}
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+          color: 'white',
+          p: 4,
+          borderRadius: 3,
+          mb: 4,
+          textAlign: 'center'
+        }}>
+          <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
+            🏛️ The Stoic Mentor
+          </Typography>
+          <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+            Your Guide to Ancient Wisdom and Modern Resilience
+          </Typography>
+          <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto', opacity: 0.8 }}>
+            Grounded in the timeless teachings of Marcus Aurelius, Seneca, and Epictetus.
+          </Typography>
+        </Box>
+
         <Grid container spacing={4}>
           {/* Stoic Expert Profile Section */}
           <Grid item xs={12} md={5}>
