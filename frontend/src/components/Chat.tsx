@@ -304,9 +304,16 @@ export const Chat: React.FC<ChatProps> = ({
           <Box sx={{ p: 2, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider' }}>
             {sessionStats.hasActivePaidSession ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Chip label="15-Min Session Active" color="success" size="small" />
+                <Chip 
+                  label={expertName === 'The Stoic Mentor' ? "30 Messages Active" : "15-Min Session Active"}
+                  color="success" 
+                  size="small" 
+                />
                 <Typography variant="body2" color="text.secondary">
-                  Unlimited questions until session expires
+                  {expertName === 'The Stoic Mentor' 
+                    ? "30 additional messages available"
+                    : "Unlimited questions until session expires"
+                  }
                 </Typography>
               </Box>
             ) : (
