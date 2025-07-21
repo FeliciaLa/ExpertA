@@ -30,7 +30,6 @@ from .jwt_views import CustomTokenObtainPairSerializer
 from .utils import send_verification_email, is_token_expired
 from django.core.validators import ValidationError
 import os
-import stripe
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -41,9 +40,6 @@ from rest_framework.decorators import api_view, permission_classes
 logger = logging.getLogger(__name__)
 
 Expert = get_user_model()
-
-# Configure Stripe
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 @csrf_exempt
 @require_http_methods(["POST", "OPTIONS"])
@@ -3090,7 +3086,8 @@ def create_payment_intent(request):
         
         # Create simple Payment Intent without Stripe Connect
         print(f"Creating payment intent for £{total_amount} with user {request.user.id}")
-        print(f"Stripe API key configured: {bool(stripe.api_key)}")
+        stripe_secret_key = os.getenv('STRIPE_SECRET_KEY')
+        print(f"Stripe API key configured: {bool(stripe_secret_key)}")
         
         # Use requests library to call Stripe API directly
         import requests
@@ -3101,7 +3098,7 @@ def create_payment_intent(request):
             stripe_url = "https://api.stripe.com/v1/payment_intents"
             
             # Create basic auth header
-            auth_string = f"{stripe.api_key}:"
+            auth_string = f"{stripe_secret_key}:"
             auth_bytes = auth_string.encode('ascii')
             auth_b64 = base64.b64encode(auth_bytes).decode('ascii')
             
@@ -3191,10 +3188,11 @@ def confirm_payment(request):
         
         print(f"Verifying payment intent: {payment_intent_id}")
         
+        stripe_secret_key = os.getenv('STRIPE_SECRET_KEY')
         stripe_url = f"https://api.stripe.com/v1/payment_intents/{payment_intent_id}"
         
         # Create basic auth header
-        auth_string = f"{stripe.api_key}:"
+        auth_string = f"{stripe_secret_key}:"
         auth_bytes = auth_string.encode('ascii')
         auth_b64 = base64.b64encode(auth_bytes).decode('ascii')
         
@@ -3263,7 +3261,15 @@ def confirm_payment(request):
         print(f"Error confirming payment: {str(e)}")
         import traceback
         print(f"Full traceback: {traceback.format_exc()}")
-        return Response({'error': 'Failed to confirm payment'}, status=500)
+        print(f"Error type: {type(e)}")
+        print(f"Error args: {e.args}")
+        
+        # Try to continue without using Stripe library at all
+        return Response({
+            'error': 'Payment confirmation failed',
+            'details': str(e),
+            'note': 'Payment may have succeeded but confirmation failed. Please contact support.'
+        }, status=500)
 
 
 @api_view(['POST', 'OPTIONS'])
