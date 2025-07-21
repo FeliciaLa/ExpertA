@@ -78,6 +78,7 @@ export const Chat: React.FC<ChatProps> = ({
 
     // Load chat history if user is authenticated
     if (isAuthenticated && expertId) {
+      console.log('🔥 FORCING CHAT HISTORY LOAD:', { isAuthenticated, expertId });
       loadChatHistory();
     }
   }, [isAuthenticated, expertId]);
