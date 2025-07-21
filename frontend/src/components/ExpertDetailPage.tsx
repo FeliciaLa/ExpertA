@@ -316,21 +316,34 @@ export const ExpertDetailPage: React.FC = () => {
         minHeight: '100vh',
         width: '100vw',
         marginLeft: 'calc(-50vw + 50%)',
-        backgroundImage: 'url("/Temple image.png")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
+        paddingBottom: '100px',
         position: 'relative',
         '&::before': {
           content: '""',
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundImage: 'url("/Temple image.png")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -2
+        },
+        '&::after': {
+          content: '""',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
           backgroundColor: 'rgba(244, 241, 232, 0.85)',
-          zIndex: 0
+          zIndex: -1
         }
       }}>
         <Container maxWidth="lg" sx={{ 
