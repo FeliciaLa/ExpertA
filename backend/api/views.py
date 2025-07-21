@@ -36,7 +36,7 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 
 logger = logging.getLogger(__name__)
 
@@ -3041,6 +3041,7 @@ def get_stripe_connect_status(request, expert_id):
 
 # User Payment Processing Views
 @api_view(['POST', 'OPTIONS'])
+@permission_classes([IsAuthenticated])
 def create_payment_intent(request):
     """Create a Stripe Payment Intent for user consultation payment"""
     if request.method == 'OPTIONS':
@@ -3051,6 +3052,9 @@ def create_payment_intent(request):
         return response
     
     try:
+        # Check if user is authenticated
+        if not request.user or not request.user.is_authenticated:
+            return Response({'error': 'Authentication required'}, status=401)
         expert_id = request.data.get('expert_id')
         if not expert_id:
             return Response({'error': 'Expert ID is required'}, status=400)
@@ -3085,6 +3089,8 @@ def create_payment_intent(request):
         platform_amount = total_amount
         
         # Create simple Payment Intent without Stripe Connect
+        print(f"Creating payment intent for £{total_amount} with user {request.user.id}")
+        print(f"Stripe API key configured: {bool(stripe.api_key)}")
         intent = stripe.PaymentIntent.create(
             amount=int(total_amount * 100),  # Convert to pence
             currency='gbp',
@@ -3097,6 +3103,7 @@ def create_payment_intent(request):
                 'message_count': '30'
             }
         )
+        print(f"Payment intent created successfully: {intent.id}")
         
         return Response({
             'client_secret': intent.client_secret,
