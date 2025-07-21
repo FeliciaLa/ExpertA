@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   TextField,
@@ -58,6 +58,7 @@ export const Chat: React.FC<ChatProps> = ({
     freeMessagesRemaining: 3
   });
   
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isUser, isExpert, isAuthenticated, user, expert, signIn, register } = useAuth();
   
   // Use full name instead of just first name
@@ -136,6 +137,11 @@ export const Chat: React.FC<ChatProps> = ({
       // Don't show error to user, just continue with empty chat
     }
   };
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Check if user should be blocked from sending more messages
   const shouldBlockMessage = () => {
@@ -360,6 +366,7 @@ export const Chat: React.FC<ChatProps> = ({
               {error}
             </Typography>
           )}
+          <div ref={messagesEndRef} />
         </Box>
 
         <Box 
@@ -421,12 +428,12 @@ export const Chat: React.FC<ChatProps> = ({
   };
 
   return (
-    <Box sx={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
       <Paper 
         elevation={2} 
         sx={{ 
           width: '100%',
-          flex: 1,
+          height: '600px',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
