@@ -652,16 +652,16 @@ const UserProfilePage: React.FC = () => {
           boxShadow: '0 8px 32px rgba(44, 62, 80, 0.3)'
         }}>
         {/* Header */}
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h4" sx={{ 
-                color: '#d4af37',
-                fontFamily: '"Times New Roman", serif',
-                fontWeight: 'bold'
-              }}>
-                My Profile
-              </Typography>
-                            {/* Info button hidden for cleaner focused experience */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h4" sx={{ 
+              color: '#d4af37',
+              fontFamily: '"Times New Roman", serif',
+              fontWeight: 'bold'
+            }}>
+              My Profile
+            </Typography>
+            {/* Info button hidden for cleaner focused experience */}
             {false && (
               <Tooltip title="How Duplix AI Works">
                 <IconButton
@@ -672,20 +672,42 @@ const UserProfilePage: React.FC = () => {
                 </IconButton>
               </Tooltip>
             )}
-                          <Tooltip title="Account Settings">
-                <IconButton
-                  onClick={() => setIsAccountSettingsOpen(true)}
-                  sx={{ 
-                    ml: 1,
-                    color: '#d4af37',
-                    '&:hover': {
-                      bgcolor: 'rgba(212, 175, 55, 0.2)'
-                    }
-                  }}
-                >
-                  <SettingsIcon />
-                </IconButton>
-              </Tooltip>
+          </Box>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/experts/stoicism-expert')}
+              sx={{
+                bgcolor: '#d4af37',
+                color: '#2c3e50',
+                fontFamily: '"Times New Roman", serif',
+                fontWeight: 'bold',
+                px: 3,
+                py: 1,
+                borderRadius: 2,
+                boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
+                '&:hover': {
+                  bgcolor: '#b8941f',
+                  boxShadow: '0 6px 16px rgba(212, 175, 55, 0.4)'
+                }
+              }}
+            >
+              ← Back to Chat with The Stoic Mentor
+            </Button>
+            <Tooltip title="Account Settings">
+              <IconButton
+                onClick={() => setIsAccountSettingsOpen(true)}
+                sx={{ 
+                  ml: 1,
+                  color: '#d4af37',
+                  '&:hover': {
+                    bgcolor: 'rgba(212, 175, 55, 0.2)'
+                  }
+                }}
+              >
+                <SettingsIcon />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
                   {/* Profile Section - Centered */}
@@ -987,7 +1009,7 @@ const UserProfilePage: React.FC = () => {
                           }
                         }}
                       >
-                        Chat with {consultation.expert_name.split(' ')[0]}
+                        Continue Chat
                       </Button>
                     </Box>
                   </Paper>
