@@ -313,7 +313,7 @@ export const Chat: React.FC<ChatProps> = ({
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip 
-                    label={`${sessionStats.freeMessagesRemaining} free questions left`} 
+                    label={`${sessionStats.freeMessagesRemaining} free messages left`} 
                     color={sessionStats.freeMessagesRemaining > 0 ? "primary" : "warning"}
                     size="small" 
                   />

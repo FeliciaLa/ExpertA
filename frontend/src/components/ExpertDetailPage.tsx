@@ -217,7 +217,7 @@ export const ExpertDetailPage: React.FC = () => {
         <Chat 
           expertId={expert.id} 
           expertName={expert.name}
-          monetizationEnabled={expert.profile?.monetization_enabled || false}
+          monetizationEnabled={expert.name === 'The Stoic Mentor' ? true : (expert.profile?.monetization_enabled || false)}
           expertPrice={Number(expert.profile?.monetization_price) || 5}
         />
       );
