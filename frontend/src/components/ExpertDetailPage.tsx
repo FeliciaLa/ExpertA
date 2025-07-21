@@ -487,39 +487,6 @@ export const ExpertDetailPage: React.FC = () => {
             </Paper>
           </Grid>
         </Grid>
-        
-        {/* Separate section for navigation - clearly outside grey container */}
-        <Box sx={{ 
-          textAlign: 'center', 
-          mt: 4, 
-          mb: 4,
-          pt: 3,
-          borderTop: '1px solid #d4af37',
-          bgcolor: 'transparent'
-        }}>
-          <Button 
-            onClick={() => navigate('/experts')}
-            variant="outlined"
-            sx={{ 
-              color: '#2c3e50',
-              borderColor: '#d4af37',
-              bgcolor: '#f4f1e8',
-              px: 4,
-              py: 1.5,
-              fontFamily: '"Times New Roman", serif',
-              fontWeight: 600,
-              letterSpacing: '0.5px',
-              boxShadow: '0 2px 8px rgba(44, 62, 80, 0.1)',
-              '&:hover': {
-                backgroundColor: '#d4af37',
-                color: '#2c3e50',
-                borderColor: '#d4af37'
-              }
-            }}
-          >
-            Explore Other Mentors
-          </Button>
-        </Box>
 
         <UserAuthDialog
           open={isAuthDialogOpen}
