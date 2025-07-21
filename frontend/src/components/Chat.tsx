@@ -55,7 +55,7 @@ export const Chat: React.FC<ChatProps> = ({
   const [sessionStats, setSessionStats] = useState({
     messageCount: 0,
     hasActivePaidSession: false,
-    freeMessagesRemaining: 25
+    freeMessagesRemaining: 3
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -114,7 +114,7 @@ export const Chat: React.FC<ChatProps> = ({
           setSessionStats(prev => ({
             ...prev,
             messageCount: activeSession.total_messages,
-            freeMessagesRemaining: Math.max(0, 25 - Math.floor(activeSession.total_messages / 2))
+            freeMessagesRemaining: Math.max(0, 3 - Math.floor(activeSession.total_messages / 2))
           }));
           
           console.log('✅ Successfully loaded chat history:', {
@@ -197,13 +197,13 @@ export const Chat: React.FC<ChatProps> = ({
         setSessionStats(prev => ({
           ...prev,
           messageCount: response.total_messages,
-                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, 25 - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining
+                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, 3 - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining
         }));
         
         console.log('Updated session stats:', {
           totalMessages: response.total_messages,
           sessionId: response.session_id,
-                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, 25 - Math.floor(response.total_messages / 2)) : 'unlimited'
+                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, 3 - Math.floor(response.total_messages / 2)) : 'unlimited'
         });
       }
       
@@ -237,9 +237,7 @@ export const Chat: React.FC<ChatProps> = ({
     // Add a system message about the paid session
     setMessages(prev => [...prev, {
       role: 'assistant',
-      content: expertName === 'The Stoic Mentor' 
-        ? `🎉 Thank you for your payment! You now have 30 additional messages with ${firstName}. Feel free to ask detailed questions and get in-depth philosophical guidance. Your extended session is active now.`
-        : `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice. Your session is active now.`
+      content: `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice. Your session is active now.`
     }]);
   };
 
@@ -317,12 +315,9 @@ export const Chat: React.FC<ChatProps> = ({
                     color={sessionStats.freeMessagesRemaining > 0 ? "primary" : "warning"}
                     size="small" 
                   />
-                  <Typography variant="body2" color="text.secondary">
-                    {expertName === 'The Stoic Mentor' 
-                      ? 'Then £2.99 for 30 messages' 
-                      : `Then £${(validExpertPrice * 1.2).toFixed(2)} for 15-min session`
-                    }
-                  </Typography>
+                              <Typography variant="body2" color="text.secondary">
+              Then £{(validExpertPrice * 1.2).toFixed(2)} for 15-min session
+            </Typography>
                 </Box>
               </Box>
             )}
@@ -464,7 +459,7 @@ export const Chat: React.FC<ChatProps> = ({
         <PaymentSection
           expertId={expertId}
           expertName={firstName}
-          price={expertName === 'The Stoic Mentor' ? 2.99 : validExpertPrice * 1.2}
+          price={validExpertPrice * 1.2}
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
@@ -474,8 +469,8 @@ export const Chat: React.FC<ChatProps> = ({
           isOpen={showPaymentSuccess}
           onClose={() => setShowPaymentSuccess(false)}
           expertName={firstName}
-          sessionDuration={expertName === 'The Stoic Mentor' ? 30 : 15}
-          amountPaid={expertName === 'The Stoic Mentor' ? 2.99 : validExpertPrice * 1.2}
+          sessionDuration={15}
+          amountPaid={validExpertPrice * 1.2}
         />
       )}
     </Box>

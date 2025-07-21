@@ -214,12 +214,12 @@ export const ExpertDetailPage: React.FC = () => {
     // Simple check: if authenticated (user OR expert), allow chat with ANY AI
     if (isAuthenticated) {
       return (
-        <Chat 
-          expertId={expert.id} 
-          expertName={expert.name}
-          monetizationEnabled={expert.name === 'The Stoic Mentor' ? true : (expert.profile?.monetization_enabled || false)}
-          expertPrice={Number(expert.profile?.monetization_price) || 5}
-        />
+                    <Chat
+              expertId={expert.id}
+              expertName={expert.name}
+              monetizationEnabled={expert.profile?.monetization_enabled || false}
+              expertPrice={Number(expert.profile?.monetization_price) || 5}
+            />
       );
     }
     
