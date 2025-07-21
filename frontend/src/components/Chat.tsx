@@ -78,7 +78,6 @@ export const Chat: React.FC<ChatProps> = ({
 
     // Load chat history if user is authenticated
     if (isAuthenticated && expertId) {
-      console.log('🔥 FORCING CHAT HISTORY LOAD:', { isAuthenticated, expertId });
       loadChatHistory();
     }
   }, [isAuthenticated, expertId]);
@@ -115,7 +114,7 @@ export const Chat: React.FC<ChatProps> = ({
           setSessionStats(prev => ({
             ...prev,
             messageCount: activeSession.total_messages,
-            freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(activeSession.total_messages / 2))
+            freeMessagesRemaining: Math.max(0, 25 - Math.floor(activeSession.total_messages / 2))
           }));
           
           console.log('✅ Successfully loaded chat history:', {
@@ -198,13 +197,13 @@ export const Chat: React.FC<ChatProps> = ({
         setSessionStats(prev => ({
           ...prev,
           messageCount: response.total_messages,
-                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining
+                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, 25 - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining
         }));
         
         console.log('Updated session stats:', {
           totalMessages: response.total_messages,
           sessionId: response.session_id,
-                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(response.total_messages / 2)) : 'unlimited'
+                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, 25 - Math.floor(response.total_messages / 2)) : 'unlimited'
         });
       }
       
