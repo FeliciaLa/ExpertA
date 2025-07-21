@@ -3272,48 +3272,7 @@ def confirm_payment(request):
         }, status=500)
 
 
-@api_view(['POST', 'OPTIONS'])
-def confirm_payment(request):
-    """Confirm payment and create consultation session"""
-    if request.method == 'OPTIONS':
-        response = Response()
-        response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        return response
-    
-    try:
-        payment_intent_id = request.data.get('payment_intent_id')
-        expert_id = request.data.get('expert_id')
-        
-        if not payment_intent_id or not expert_id:
-            return Response({'error': 'Payment intent ID and expert ID are required'}, status=400)
-        
-        # Retrieve the payment intent from Stripe
-        intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-        
-        if intent.status != 'succeeded':
-            return Response({'error': 'Payment not completed'}, status=400)
-        
-        # Create consultation session record
-        from .models import ConsultationSession
-        session = ConsultationSession.objects.create(
-            user=request.user,
-            expert_id=expert_id,
-            payment_intent_id=payment_intent_id,
-            amount_paid=float(intent.amount) / 100,  # Convert from pence
-            status=ConsultationSession.Status.ACTIVE
-        )
-        
-        return Response({
-            'success': True,
-            'session_id': str(session.id),
-            'message': 'Payment confirmed and session created'
-        })
-        
-    except Exception as e:
-        print(f"Error confirming payment: {str(e)}")
-        return Response({'error': 'Failed to confirm payment'}, status=500)
+
 
 
 class ChatHistoryView(APIView):
