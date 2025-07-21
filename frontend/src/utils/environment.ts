@@ -15,6 +15,6 @@ export const getEnvironment = () => {
 
 // Feature flags
 export const features = {
-  payments: true, // Enable payments globally
+  payments: true, // Enable payments for The Stoic Mentor
   // Add more features here as needed
 }; 
