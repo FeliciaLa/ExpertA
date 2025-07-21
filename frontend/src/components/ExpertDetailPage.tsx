@@ -204,7 +204,7 @@ export const ExpertDetailPage: React.FC = () => {
   const handleLogoutClick = () => {
     handleProfileMenuClose();
     signOut();
-    navigate('/');
+    // Stay on The Stoic Mentor page after logout
   };
 
   // Render chat or login prompt based on authentication
