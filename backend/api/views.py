@@ -3092,8 +3092,12 @@ def create_payment_intent(request):
         print(f"Creating payment intent for £{total_amount} with user {request.user.id}")
         print(f"Stripe API key configured: {bool(stripe.api_key)}")
         
+        # Set Stripe API version explicitly
+        stripe.api_version = "2024-06-20"
+        
         try:
             # Create basic PaymentIntent with minimal parameters
+            print("About to call stripe.PaymentIntent.create...")
             intent = stripe.PaymentIntent.create(
                 amount=int(total_amount * 100),  # Convert to pence
                 currency='gbp',
@@ -3121,6 +3125,38 @@ def create_payment_intent(request):
             print(f"General error creating intent: {create_err}")
             import traceback
             print(f"Full traceback: {traceback.format_exc()}")
+            
+            # Try using raw Stripe API call as fallback
+            try:
+                print("Trying raw Stripe API call as fallback...")
+                response = stripe.api_resources.abstract.APIResource._static_request(
+                    method='post',
+                    url='/v1/payment_intents',
+                    params={
+                        'amount': int(total_amount * 100),
+                        'currency': 'gbp',
+                        'metadata[expert_id]': expert_id,
+                        'metadata[expert_name]': expert.name,
+                        'metadata[user_id]': str(request.user.id),
+                        'metadata[total_amount]': str(total_amount),
+                        'metadata[session_type]': 'stoic_mentor_messages',
+                        'metadata[message_count]': '30'
+                    }
+                )
+                print(f"Raw API response: {response}")
+                
+                if response and 'client_secret' in response:
+                    return Response({
+                        'client_secret': response['client_secret'],
+                        'payment_intent_id': response.get('id', 'unknown'),
+                        'amount': total_amount,
+                        'expert_amount': expert_amount,
+                        'platform_amount': platform_amount
+                    })
+                    
+            except Exception as raw_err:
+                print(f"Raw API call also failed: {raw_err}")
+                
             return Response({'error': f'Error creating intent: {str(create_err)}'}, status=500)
         
         return Response({
