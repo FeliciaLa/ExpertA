@@ -659,7 +659,7 @@ const UserProfilePage: React.FC = () => {
                 fontFamily: '"Times New Roman", serif',
                 fontWeight: 'bold'
               }}>
-                🏛️ My Profile
+                My Profile
               </Typography>
                             {/* Info button hidden for cleaner focused experience */}
             {false && (
@@ -901,7 +901,7 @@ const UserProfilePage: React.FC = () => {
             fontFamily: '"Times New Roman", serif',
             fontWeight: 'bold'
           }}>
-            🏛️ Your Consultation History
+            Your Consultation History
           </Typography>
           
           {(!user?.consultations?.sessions || user.consultations.sessions.length === 0) ? (
