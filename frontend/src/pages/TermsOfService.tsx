@@ -141,6 +141,9 @@ const TermsOfService: React.FC = () => {
               AI-generated responses are based on the content provided by experts and external training data, but they may contain errors, hallucinations, or misinterpretations. These responses do not represent professional advice, and users should not rely on them for decision-making without independent verification.
             </Typography>
             <Typography variant="body1" paragraph>
+              <strong>Important Health and Safety Notice:</strong> Our AI chatbots are not a substitute for professional medical, mental health, therapeutic, legal, financial, or other professional services. If you are experiencing a mental health crisis or emergency situation, please contact emergency services or a qualified mental health professional immediately. Do not use this platform for urgent health or safety matters.
+            </Typography>
+            <Typography variant="body1" paragraph>
               Experts understand that the chatbots may not always reflect their voice or views accurately and may produce unintended or simplified responses. Users understand that they are interacting with AI personas—not live human experts—and accept the limitations that come with automated systems.
             </Typography>
             <Typography variant="body1" paragraph>
