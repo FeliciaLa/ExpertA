@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { debugLogin } from '../services/api';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -167,35 +166,7 @@ const UserAuthDialog: React.FC<UserAuthDialogProps> = ({
     }
   };
 
-  // Debug login handler
-  const handleDebugLogin = async () => {
-    setIsSubmitting(true);
-    try {
-      const testEmail = 'f@lu1.com';
-      const testPassword = 'password123';
-      
-      console.log('Using debug login with test account:', testEmail);
-      
-      // Try debug login with test account
-      const response = await debugLogin(testEmail, testPassword);
-      console.log('Debug login response:', response);
-      
-      if (response && response.tokens) {
-        // Success - call the normal sign in handler to update state
-        const result = await onSignIn(testEmail, testPassword);
-        if (result.success) {
-          onClose();
-        }
-      } else {
-        setError('Debug login failed - no valid tokens returned');
-      }
-    } catch (error) {
-      console.error('Debug login error:', error);
-      setError('Debug login failed: ' + (error instanceof Error ? error.message : String(error)));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -262,17 +233,6 @@ const UserAuthDialog: React.FC<UserAuthDialogProps> = ({
                   {isSubmitting ? 'Signing in...' : 'Sign In'}
                 </Button>
               </Box>
-              
-              {/* Debug login button */}
-              <Button 
-                variant="outlined" 
-                color="secondary"
-                onClick={handleDebugLogin}
-                disabled={isSubmitting}
-                sx={{ mt: 2 }}
-              >
-                Debug Login (Test Account)
-              </Button>
             </Box>
           </form>
         </TabPanel>
