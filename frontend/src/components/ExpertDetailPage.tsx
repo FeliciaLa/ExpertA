@@ -496,7 +496,7 @@ export const ExpertDetailPage: React.FC = () => {
         />
         
         {/* Bottom navigation for Stoic Mentor */}
-        <Box sx={{ textAlign: 'center', mt: 4, mb: 6 }}>
+        <Box sx={{ textAlign: 'center', mt: 4, mb: 12 }}>
           <Button 
             onClick={() => navigate('/experts')}
             variant="outlined"
