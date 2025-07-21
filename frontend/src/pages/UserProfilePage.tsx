@@ -994,23 +994,6 @@ const UserProfilePage: React.FC = () => {
                           Consultation with {consultation.expert_name} about {consultation.expert_specialty}
                         </Typography>
                       </Box>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => navigate(`/experts/${consultation.expert_id}`)}
-                        sx={{
-                          borderColor: '#d4af37',
-                          color: '#d4af37',
-                          fontFamily: '"Times New Roman", serif',
-                          '&:hover': {
-                            borderColor: '#b8941f',
-                            color: '#b8941f',
-                            bgcolor: 'rgba(212, 175, 55, 0.1)'
-                          }
-                        }}
-                      >
-                        Continue Chat
-                      </Button>
                     </Box>
                   </Paper>
                 </Grid>
