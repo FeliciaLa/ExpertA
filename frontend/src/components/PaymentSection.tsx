@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Card, CardContent, Typography, Button, Alert, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress } from '@mui/material';
 import { Payment, CreditCard, Lock } from '@mui/icons-material';
 import { features, getEnvironment, STRIPE_PUBLISHABLE_KEY } from '../utils/environment';
@@ -22,12 +22,10 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentData, setPaymentData] = useState<any>(null);
-  const [cardDetails, setCardDetails] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    nameOnCard: ''
-  });
+  const [stripe, setStripe] = useState<any>(null);
+  const [elements, setElements] = useState<any>(null);
+  const [cardElement, setCardElement] = useState<any>(null);
+  const cardElementRef = useRef<HTMLDivElement>(null);
   
   const { user } = useAuth();
 
@@ -35,6 +33,45 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   if (!features.payments) {
     return null;
   }
+
+  // Initialize Stripe Elements when dialog opens
+  useEffect(() => {
+    if (showPaymentDialog && !stripe) {
+      const stripeInstance = (window as any).Stripe(STRIPE_PUBLISHABLE_KEY);
+      setStripe(stripeInstance);
+      
+      if (stripeInstance) {
+        const elementsInstance = stripeInstance.elements();
+        setElements(elementsInstance);
+        
+        // Create card element
+        const cardElementInstance = elementsInstance.create('card', {
+          style: {
+            base: {
+              fontSize: '16px',
+              color: '#424770',
+              '::placeholder': {
+                color: '#aab7c4',
+              },
+            },
+          },
+        });
+        
+        setCardElement(cardElementInstance);
+      }
+    }
+  }, [showPaymentDialog]);
+
+  // Mount card element when it's ready
+  useEffect(() => {
+    if (cardElement && cardElementRef.current) {
+      cardElement.mount(cardElementRef.current);
+      
+      return () => {
+        cardElement.unmount();
+      };
+    }
+  }, [cardElement]);
 
   const handlePaymentClick = async () => {
     if (!user) {
@@ -60,60 +97,21 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   };
 
   const handlePaymentSubmit = async () => {
-    if (!paymentData) return;
+    if (!paymentData || !stripe || !cardElement) {
+      setError('Payment system not ready. Please try again.');
+      return;
+    }
     
     setIsProcessing(true);
     setError(null);
     
     try {
-      console.log('Processing payment with Stripe...');
+      console.log('Processing payment with Stripe Elements...');
       
-      // Initialize Stripe with environment variable
-      const stripe = (window as any).Stripe(STRIPE_PUBLISHABLE_KEY);
-      
-      if (!stripe) {
-        throw new Error('Stripe failed to initialize');
-      }
-      
-      // Validate card details before processing
-      const cardNumber = cardDetails.cardNumber.replace(/\s/g, '');
-      const expiryParts = cardDetails.expiryDate.split('/');
-      
-      if (cardNumber.length < 13 || cardNumber.length > 19) {
-        throw new Error('Please enter a valid card number');
-      }
-      
-      if (expiryParts.length !== 2 || expiryParts[0].length !== 2 || expiryParts[1].length !== 2) {
-        throw new Error('Please enter a valid expiry date (MM/YY)');
-      }
-      
-      const expMonth = parseInt(expiryParts[0]);
-      const expYear = parseInt('20' + expiryParts[1]);
-      
-      if (expMonth < 1 || expMonth > 12) {
-        throw new Error('Please enter a valid expiry month');
-      }
-      
-      if (cardDetails.cvv.length < 3 || cardDetails.cvv.length > 4) {
-        throw new Error('Please enter a valid CVV');
-      }
-      
-      if (!cardDetails.nameOnCard.trim()) {
-        throw new Error('Please enter the name on card');
-      }
-      
-      // Create a payment method using the card details
+      // Create payment method using Stripe Elements
       const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
-        card: {
-          number: cardNumber,
-          exp_month: expMonth,
-          exp_year: expYear,
-          cvc: cardDetails.cvv,
-        },
-        billing_details: {
-          name: cardDetails.nameOnCard.trim(),
-        },
+        card: cardElement,
       });
       
       if (pmError) {
@@ -144,7 +142,9 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
         console.log('✅ Backend confirmation successful:', confirmResponse.data);
         
         setShowPaymentDialog(false);
-        setCardDetails({ cardNumber: '', expiryDate: '', cvv: '', nameOnCard: '' });
+        setStripe(null);
+        setElements(null);
+        setCardElement(null);
         
         if (onPaymentSuccess) {
           onPaymentSuccess();
@@ -163,28 +163,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
     }
   };
 
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
 
-  const formatExpiryDate = (value: string) => {
-    const v = value.replace(/\D/g, '');
-    if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
-    }
-    return v;
-  };
 
   return (
     <>
@@ -240,7 +219,19 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
       </Card>
 
       {/* Payment Dialog */}
-      <Dialog open={showPaymentDialog} onClose={() => !isProcessing && setShowPaymentDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={showPaymentDialog} 
+        onClose={() => {
+          if (!isProcessing) {
+            setShowPaymentDialog(false);
+            setStripe(null);
+            setElements(null);
+            setCardElement(null);
+          }
+        }} 
+        maxWidth="sm" 
+        fullWidth
+      >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Lock color="primary" />
@@ -273,53 +264,39 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
           )}
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="Card Number"
-              value={cardDetails.cardNumber}
-              onChange={(e) => setCardDetails(prev => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
-              placeholder="4242 4242 4242 4242"
-              disabled={isProcessing}
-              inputProps={{ maxLength: 19 }}
-            />
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label="Expiry Date"
-                value={cardDetails.expiryDate}
-                onChange={(e) => setCardDetails(prev => ({ ...prev, expiryDate: formatExpiryDate(e.target.value) }))}
-                placeholder="MM/YY"
-                disabled={isProcessing}
-                inputProps={{ maxLength: 5 }}
-                sx={{ flex: 1 }}
-              />
-              <TextField
-                label="CVV"
-                value={cardDetails.cvv}
-                onChange={(e) => setCardDetails(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '') }))}
-                placeholder="123"
-                disabled={isProcessing}
-                inputProps={{ maxLength: 4 }}
-                sx={{ flex: 1 }}
+            <Box>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Card Details
+              </Typography>
+              <Box
+                ref={cardElementRef}
+                sx={{
+                  border: '1px solid #ddd',
+                  borderRadius: 1,
+                  padding: 2,
+                  minHeight: '40px',
+                  backgroundColor: isProcessing ? '#f5f5f5' : 'white',
+                }}
               />
             </Box>
-            
-            <TextField
-              label="Name on Card"
-              value={cardDetails.nameOnCard}
-              onChange={(e) => setCardDetails(prev => ({ ...prev, nameOnCard: e.target.value }))}
-              placeholder="John Doe"
-              disabled={isProcessing}
-            />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowPaymentDialog(false)} disabled={isProcessing}>
+          <Button 
+            onClick={() => {
+              setShowPaymentDialog(false);
+              setStripe(null);
+              setElements(null);
+              setCardElement(null);
+            }} 
+            disabled={isProcessing}
+          >
             Cancel
           </Button>
           <Button 
             onClick={handlePaymentSubmit} 
             variant="contained" 
-            disabled={isProcessing || !cardDetails.cardNumber || !cardDetails.expiryDate || !cardDetails.cvv || !cardDetails.nameOnCard}
+            disabled={isProcessing || !cardElement}
             startIcon={isProcessing ? <CircularProgress size={20} /> : <Lock />}
           >
             {isProcessing ? 'Processing...' : `Pay £${paymentData?.amount?.toFixed(2) || price}`}
