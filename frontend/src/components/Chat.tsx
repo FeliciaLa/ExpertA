@@ -60,8 +60,8 @@ export const Chat: React.FC<ChatProps> = ({
   
   const { isUser, isExpert, isAuthenticated, user, expert, signIn, register } = useAuth();
   
-  // Extract first name
-  const firstName = expertName.split(' ')[0];
+  // Use full name instead of just first name
+  const firstName = expertName;
   
   // Debug info
   useEffect(() => {

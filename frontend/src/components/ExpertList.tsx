@@ -376,7 +376,7 @@ export const ExpertList: React.FC = () => {
                         handleChatButtonClick(e, expert);
                       }}
                     >
-                      Chat with {expert.name.split(' ')[0]}'s AI
+                      Chat with {expert.name}'s AI
                     </Button>
                   </Box>
                 </CardContent>

@@ -373,7 +373,7 @@ export const ExpertDetailPage: React.FC = () => {
             {/* Always show the title, regardless of authentication state */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
               <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 500 }}>
-                Chat with {expert.name.split(' ')[0]}'s AI
+                Chat with {expert.name}'s AI
               </Typography>
               <Tooltip 
                 title="This chatbot is AI-powered and still in development. Responses may be inaccurate or incomplete."
