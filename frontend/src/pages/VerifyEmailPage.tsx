@@ -70,7 +70,7 @@ const VerifyEmailPage: React.FC = () => {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(countdownInterval);
-            navigate('/experts/the-stoic-mentor');
+            navigate('/experts/stoicism-expert');
             return 0;
           }
           return prev - 1;
@@ -90,11 +90,11 @@ const VerifyEmailPage: React.FC = () => {
         navigate('/expert');
       } else {
         // Redirect users directly to The Stoic Mentor
-        navigate('/experts/the-stoic-mentor');
+        navigate('/experts/stoicism-expert');
       }
     } else {
       // Fallback to The Stoic Mentor page
-      navigate('/experts/the-stoic-mentor');
+      navigate('/experts/stoicism-expert');
     }
   };
 
