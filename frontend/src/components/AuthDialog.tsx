@@ -68,7 +68,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [userRole, setUserRole] = useState<'user' | 'expert'>('expert');
+  const [userRole, setUserRole] = useState<'user' | 'expert'>('user');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -301,19 +301,22 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
               {!expertRegisterOnly && (
                 <FormControl component="fieldset" sx={{ mb: 1 }}>
                   <FormLabel component="legend" sx={{ mb: 1 }}>
-                    I want to register as:
+                    Register as User:
                   </FormLabel>
                   <RadioGroup
                     row
                     value={userRole}
                     onChange={(e) => setUserRole(e.target.value as 'user' | 'expert')}
                   >
-                    <FormControlLabel 
-                      value="expert" 
-                      control={<Radio disabled={isSubmitting} />} 
-                      label="Expert"
-                      disabled={isSubmitting}
-                    />
+                    {/* Hidden for now - Expert registration temporarily disabled */}
+                    {false && (
+                      <FormControlLabel 
+                        value="expert" 
+                        control={<Radio disabled={isSubmitting} />} 
+                        label="Expert"
+                        disabled={isSubmitting}
+                      />
+                    )}
                     <FormControlLabel 
                       value="user" 
                       control={<Radio disabled={isSubmitting} />} 
@@ -322,10 +325,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
                     />
                   </RadioGroup>
                   <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    {userRole === 'expert' 
-                      ? 'Train your AI expert and share your expertise with others'
-                      : 'Browse and chat with expert AI assistants to get help with your questions'
-                    }
+                    Browse and chat with expert AI assistants to get help with your questions
                   </Typography>
                 </FormControl>
               )}
