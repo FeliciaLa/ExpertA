@@ -59,6 +59,7 @@ export const Chat: React.FC<ChatProps> = ({
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { isUser, isExpert, isAuthenticated, user, expert, signIn, register } = useAuth();
   
   // Use full name instead of just first name
@@ -140,7 +141,9 @@ export const Chat: React.FC<ChatProps> = ({
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   // Check if user should be blocked from sending more messages
@@ -322,6 +325,7 @@ export const Chat: React.FC<ChatProps> = ({
         )}
 
         <Box
+          ref={messagesContainerRef}
           sx={{
             flex: 1,
             overflow: 'auto',
