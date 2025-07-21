@@ -15,6 +15,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { isAuthenticated, isUser, isExpert, signOut, expert, user, signIn, register } = useAuth();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
+  // Check if we're on The Stoic Mentor's page to hide header
+  const isStoicMentorPage = location.pathname.toLowerCase().includes('stoic') || 
+                           location.pathname.includes('the-stoic-mentor') ||
+                           location.pathname.includes('stoic-mentor');
+
   const handleLogout = () => {
     signOut();
     navigate('/');
@@ -85,94 +90,97 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <>
-      <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: 1 }}>
-        <Toolbar>
-          <Typography 
-            variant="h6" 
-            component="div" 
-            sx={{ 
-              flexGrow: 1, 
-              color: 'primary.main',
-              cursor: 'pointer'
-            }}
-            onClick={() => navigate('/')}
-          >
-            Duplix AI
-          </Typography>
-          
-          {/* Show Train AI button only for experts */}
-          {isExpert && (
-            <Button
-              data-tour="train-ai"
-              color="primary"
-              onClick={handleTrainAIClick}
+      {/* Hide header only for The Stoic Mentor page */}
+      {!isStoicMentorPage && (
+        <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: 1 }}>
+          <Toolbar>
+            <Typography 
+              variant="h6" 
+              component="div" 
               sx={{ 
-                color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
-                mr: 2
+                flexGrow: 1, 
+                color: 'primary.main',
+                cursor: 'pointer'
               }}
+              onClick={() => navigate('/')}
             >
-              {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
-            </Button>
-          )}
-          
-          {/* My Profile button - visible for all authenticated users */}
-          {isAuthenticated && (
-            <Button
-              color="primary"
-              onClick={() => isExpert ? navigate('/expert') : navigate('/user/profile')}
-              sx={{ 
-                color: (isExpert && location.pathname === '/expert') || 
-                      (!isExpert && location.pathname === '/user/profile') 
-                      ? 'primary.main' : 'text.secondary',
-                mr: 2
-              }}
-            >
-              MY PROFILE
-            </Button>
-          )}
-          
-          {/* Browse Experts button - only visible when authenticated */}
-          {isAuthenticated && (
-            <Button
-              data-tour="browse-experts"
-              color="primary"
-              onClick={() => navigate('/experts')}
-              sx={{ 
-                color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
-                mr: 2
-              }}
-            >
-              BROWSE EXPERTS
-            </Button>
-          )}
-          
-          {/* Login button - only visible when not authenticated */}
-          {!isAuthenticated && (
-            <Button
-              color="primary"
-              onClick={handleAuthClick}
-              sx={{ 
-                color: 'text.secondary',
-                mr: 2
-              }}
-            >
-              LOGIN / SIGN UP
-            </Button>
-          )}
-          
-          {/* Show username and logout when authenticated */}
-          {isAuthenticated && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              Duplix AI
+            </Typography>
+            
+            {/* Show Train AI button only for experts */}
+            {isExpert && (
+              <Button
+                data-tour="train-ai"
+                color="primary"
+                onClick={handleTrainAIClick}
+                sx={{ 
+                  color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
+                  mr: 2
+                }}
+              >
+                {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
+              </Button>
+            )}
+            
+            {/* My Profile button - visible for all authenticated users */}
+            {isAuthenticated && (
               <Button
                 color="primary"
-                onClick={handleLogout}
+                onClick={() => isExpert ? navigate('/expert') : navigate('/user/profile')}
+                sx={{ 
+                  color: (isExpert && location.pathname === '/expert') || 
+                        (!isExpert && location.pathname === '/user/profile') 
+                        ? 'primary.main' : 'text.secondary',
+                  mr: 2
+                }}
               >
-                LOGOUT
+                MY PROFILE
               </Button>
-            </Box>
-          )}
-        </Toolbar>
-      </AppBar>
+            )}
+            
+            {/* Browse Experts button - only visible when authenticated */}
+            {isAuthenticated && (
+              <Button
+                data-tour="browse-experts"
+                color="primary"
+                onClick={() => navigate('/experts')}
+                sx={{ 
+                  color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
+                  mr: 2
+                }}
+              >
+                BROWSE EXPERTS
+              </Button>
+            )}
+            
+            {/* Login button - only visible when not authenticated */}
+            {!isAuthenticated && (
+              <Button
+                color="primary"
+                onClick={handleAuthClick}
+                sx={{ 
+                  color: 'text.secondary',
+                  mr: 2
+                }}
+              >
+                LOGIN / SIGN UP
+              </Button>
+            )}
+            
+            {/* Show username and logout when authenticated */}
+            {isAuthenticated && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Button
+                  color="primary"
+                  onClick={handleLogout}
+                >
+                  LOGOUT
+                </Button>
+              </Box>
+            )}
+          </Toolbar>
+        </AppBar>
+      )}
       
 
 
@@ -184,7 +192,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         onRegister={(name, email, password, isExpertRegistration, userRole) => handleRegister(name, email, password, isExpertRegistration, userRole)}
       />
       
-      <Container component="main" sx={{ mt: 4, mb: 8 }}>
+      <Container component="main" sx={{ mt: isStoicMentorPage ? 0 : 4, mb: 8 }}>
         {children}
       </Container>
       
