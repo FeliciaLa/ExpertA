@@ -18,7 +18,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import ModelSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile
+from .models import TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile, ConsultationSession, ChatMessage
 from .serializers import ExpertSerializer, ExpertProfileSerializer, UserSerializer, UserRegistrationSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -681,11 +681,10 @@ class ChatView(APIView):
                     "detail": str(e)
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            # Track consultation session if user is authenticated
+            # Track consultation session and save messages if user is authenticated
+            session = None
+            message_count = 0
             if user:
-                from .models import ConsultationSession
-                from django.utils import timezone
-                
                 try:
                     # Get or create consultation session for this user and expert
                     session, created = ConsultationSession.objects.get_or_create(
@@ -701,26 +700,57 @@ class ChatView(APIView):
                         }
                     )
                     
+                    # Save user message to database
+                    user_message = ChatMessage.objects.create(
+                        session=session,
+                        role=ChatMessage.Role.USER,
+                        content=question
+                    )
+                    print(f"Saved user message: {user_message.id}")
+                    
+                    # Save AI response to database
+                    ai_message = ChatMessage.objects.create(
+                        session=session,
+                        role=ChatMessage.Role.ASSISTANT,
+                        content=response
+                    )
+                    print(f"Saved AI response: {ai_message.id}")
+                    
                     # Increment message count (user message + AI response = 2 messages)
                     session.total_messages += 2
                     session.save()
+                    
+                    # Get current message count for this session
+                    message_count = session.total_messages
                     
                     print(f"\n=== Consultation Session Tracking ===")
                     print(f"Session ID: {session.id}")
                     print(f"Created: {created}")
                     print(f"Total Messages: {session.total_messages}")
                     print(f"Status: {session.status}")
+                    print(f"Messages saved: User({user_message.id}), AI({ai_message.id})")
                     
                 except Exception as e:
                     print(f"Error tracking consultation session: {str(e)}")
                     # Don't fail the entire request if session tracking fails
                     pass
 
-            return Response({
+            # Prepare response with message tracking
+            response_data = {
                 "answer": response,
                 "expert_id": expert.id,
                 "expert_name": expert.name or expert.email
-            }, status=status.HTTP_200_OK)
+            }
+            
+            # Add message count if user is authenticated (for payment logic)
+            if user and session:
+                response_data.update({
+                    "session_id": str(session.id),
+                    "message_count": message_count,
+                    "total_messages": session.total_messages
+                })
+            
+            return Response(response_data, status=status.HTTP_200_OK)
 
         except Exception as e:
             print(f"Error in chat: {str(e)}")
@@ -1599,9 +1629,9 @@ class ExpertChatbotView(APIView):
             print(f"\n=== Response Debug ===")
             print(f"AI Response: {response}")
             
-            # Track consultation session
-            from .models import ConsultationSession
-            from django.utils import timezone
+            # Track consultation session and save messages
+            session = None
+            message_count = 0
             
             try:
                 # Get or create consultation session for this user and expert
@@ -1618,26 +1648,57 @@ class ExpertChatbotView(APIView):
                     }
                 )
                 
+                # Save user message to database
+                user_message = ChatMessage.objects.create(
+                    session=session,
+                    role=ChatMessage.Role.USER,
+                    content=message
+                )
+                print(f"Saved user message: {user_message.id}")
+                
+                # Save AI response to database
+                ai_message = ChatMessage.objects.create(
+                    session=session,
+                    role=ChatMessage.Role.ASSISTANT,
+                    content=response
+                )
+                print(f"Saved AI response: {ai_message.id}")
+                
                 # Increment message count (user message + AI response = 2 messages)
                 session.total_messages += 2
                 session.save()
+                
+                # Get current message count for this session
+                message_count = session.total_messages
                 
                 print(f"\n=== Consultation Session Debug ===")
                 print(f"Session ID: {session.id}")
                 print(f"Created: {created}")
                 print(f"Total Messages: {session.total_messages}")
                 print(f"Status: {session.status}")
+                print(f"Messages saved: User({user_message.id}), AI({ai_message.id})")
                 
             except Exception as e:
                 print(f"Error tracking consultation session: {str(e)}")
                 # Don't fail the entire request if session tracking fails
                 pass
             
-            return Response({
+            # Prepare response with message tracking
+            response_data = {
                 'expert_id': expert.id,
                 'expert_name': expert.name or expert.email,
                 'answer': response
-            })
+            }
+            
+            # Add message count if session exists (for payment logic)
+            if session:
+                response_data.update({
+                    'session_id': str(session.id),
+                    'message_count': message_count,
+                    'total_messages': session.total_messages
+                })
+            
+            return Response(response_data)
             
         except User.DoesNotExist:
             return Response({
@@ -3086,3 +3147,70 @@ def confirm_payment(request):
     except Exception as e:
         print(f"Error confirming payment: {str(e)}")
         return Response({'error': 'Failed to confirm payment'}, status=500)
+
+
+class ChatHistoryView(APIView):
+    """
+    Endpoint for users to retrieve their chat history with experts
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, expert_id=None):
+        try:
+            user = request.user
+            
+            # Get consultation sessions for this user
+            if expert_id:
+                # Get sessions with specific expert
+                sessions = ConsultationSession.objects.filter(
+                    user=user,
+                    expert_id=expert_id
+                ).order_by('-started_at')
+            else:
+                # Get all sessions for user
+                sessions = ConsultationSession.objects.filter(
+                    user=user
+                ).order_by('-started_at')
+            
+            sessions_data = []
+            for session in sessions:
+                # Get messages for this session
+                messages = ChatMessage.objects.filter(
+                    session=session
+                ).order_by('created_at')
+                
+                messages_data = []
+                for message in messages:
+                    messages_data.append({
+                        'id': str(message.id),
+                        'role': message.role,
+                        'content': message.content,
+                        'created_at': message.created_at.isoformat(),
+                        'token_count': message.token_count,
+                        'processing_time_ms': message.processing_time_ms
+                    })
+                
+                sessions_data.append({
+                    'session_id': str(session.id),
+                    'expert_id': str(session.expert.id),
+                    'expert_name': session.expert_name,
+                    'expert_industry': session.expert_industry,
+                    'expert_specialty': session.expert_specialty,
+                    'started_at': session.started_at.isoformat(),
+                    'ended_at': session.ended_at.isoformat() if session.ended_at else None,
+                    'total_messages': session.total_messages,
+                    'duration_minutes': session.duration_minutes,
+                    'status': session.status,
+                    'messages': messages_data
+                })
+            
+            return Response({
+                'sessions': sessions_data,
+                'total_sessions': len(sessions_data)
+            })
+            
+        except Exception as e:
+            print(f"Error retrieving chat history: {str(e)}")
+            return Response({
+                'error': 'Failed to retrieve chat history'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

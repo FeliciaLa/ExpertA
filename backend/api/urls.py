@@ -28,6 +28,7 @@ from .views import (
     VerifyEmailChangeView,
     ChangePasswordView,
     ConsultationSessionView,
+    ChatHistoryView,
     create_stripe_connect_url,
     stripe_connect_callback,
     disconnect_stripe_account,
@@ -159,6 +160,8 @@ def cors_test(request):
 
 urlpatterns = [
     path('chat/', ChatView.as_view(), name='chat'),
+    path('chat/history/', ChatHistoryView.as_view(), name='chat-history'),
+    path('chat/history/<str:expert_id>/', ChatHistoryView.as_view(), name='chat-history-expert'),
     path('token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('expert-form/', ExpertFormView.as_view(), name='expert_form'),
