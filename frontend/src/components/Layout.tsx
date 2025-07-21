@@ -215,7 +215,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               opacity: 0.8
             }}
           >
-            Duplix AI is currently in beta — features are evolving and occasional issues may occur
+            Powered by Duplix AI — currently in beta, features are evolving and occasional issues may occur
           </Typography>
         </Container>
       </Box>
