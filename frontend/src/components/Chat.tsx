@@ -85,12 +85,19 @@ export const Chat: React.FC<ChatProps> = ({
 
     try {
       console.log('Loading chat history for expert:', expertId);
+      console.log('Authentication status:', { isAuthenticated, token: localStorage.getItem('token') ? 'present' : 'missing' });
+      
       const historyData = await chatService.getChatHistory(expertId);
+      console.log('Chat history API response:', historyData);
       
       if (historyData.sessions && historyData.sessions.length > 0) {
+        console.log('Found sessions:', historyData.sessions.length);
+        
         // Get the most recent active session
         const activeSession = historyData.sessions.find((session: any) => session.status === 'active') 
                            || historyData.sessions[0];
+        
+        console.log('Active session:', activeSession);
         
         if (activeSession && activeSession.messages) {
           // Convert API messages to component format
@@ -108,15 +115,24 @@ export const Chat: React.FC<ChatProps> = ({
             freeMessagesRemaining: Math.max(0, 3 - Math.floor(activeSession.total_messages / 2))
           }));
           
-          console.log('Loaded chat history:', {
+          console.log('✅ Successfully loaded chat history:', {
             messagesCount: loadedMessages.length,
             totalMessages: activeSession.total_messages,
             sessionId: activeSession.session_id
           });
+        } else {
+          console.log('⚠️ Active session has no messages');
         }
+      } else {
+        console.log('ℹ️ No chat sessions found - starting fresh');
       }
     } catch (error) {
-      console.error('Failed to load chat history:', error);
+      console.error('❌ Failed to load chat history:', error);
+      console.error('Error details:', {
+        message: (error as any).message,
+        response: (error as any).response?.data,
+        status: (error as any).response?.status
+      });
       // Don't show error to user, just continue with empty chat
     }
   };
