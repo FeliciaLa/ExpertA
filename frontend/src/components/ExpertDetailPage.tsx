@@ -386,74 +386,26 @@ export const ExpertDetailPage: React.FC = () => {
           )}
         </Paper>
 
-        {/* Special Grid Layout */}
-        <Grid container spacing={4}>
-          {/* Philosophy Cards */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3, height: '100%', bgcolor: '#f8f9fa' }}>
-              <Typography variant="h6" gutterBottom color="primary">
-                ⚖️ Core Principles
+        {/* Main Chat Area */}
+        <Paper sx={{ p: 4, minHeight: '600px', display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+            <Avatar sx={{ width: 60, height: 60, bgcolor: 'primary.main', fontSize: '1.5rem' }}>
+              🏛️
+            </Avatar>
+            <Box>
+              <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 500 }}>
+                Seek Wisdom from The Stoic Mentor
               </Typography>
-              <Typography variant="body2" paragraph>
-                • Accept what you cannot control<br/>
-                • Focus on your responses and choices<br/>
-                • Live according to virtue and reason<br/>
-                • Practice mindful presence
+              <Typography variant="body2" color="text.secondary">
+                Ask about philosophy, resilience, leadership, or life guidance
               </Typography>
-            </Paper>
-          </Grid>
+            </Box>
+          </Box>
           
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3, height: '100%', bgcolor: '#f8f9fa' }}>
-              <Typography variant="h6" gutterBottom color="primary">
-                🎯 Areas of Guidance
-              </Typography>
-              <Typography variant="body2" paragraph>
-                • Emotional resilience and discipline<br/>
-                • Leadership under pressure<br/>
-                • Personal setbacks and adversity<br/>
-                • Moral clarity and decision-making
-              </Typography>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3, height: '100%', bgcolor: '#f8f9fa' }}>
-              <Typography variant="h6" gutterBottom color="primary">
-                📚 Wisdom Sources
-              </Typography>
-              <Typography variant="body2" paragraph>
-                • Marcus Aurelius' Meditations<br/>
-                • Seneca's Letters and Essays<br/>
-                • Epictetus' Discourses<br/>
-                • Modern Stoic interpretations
-              </Typography>
-            </Paper>
-          </Grid>
-
-          {/* Main Chat Area */}
-          <Grid item xs={12}>
-            <Paper sx={{ p: 4, minHeight: '600px', display: 'flex', flexDirection: 'column' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <Avatar sx={{ width: 60, height: 60, bgcolor: 'primary.main', fontSize: '1.5rem' }}>
-                  🏛️
-                </Avatar>
-                <Box>
-                  <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 500 }}>
-                    Seek Wisdom from The Stoic Mentor
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Ask about philosophy, resilience, leadership, or life guidance
-                  </Typography>
-                </Box>
-              </Box>
-              
-              <Box sx={{ flex: 1 }}>
-                {renderChatSection()}
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+          <Box sx={{ flex: 1 }}>
+            {renderChatSection()}
+          </Box>
+        </Paper>
 
         <UserAuthDialog
           open={isAuthDialogOpen}
