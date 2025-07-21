@@ -3093,13 +3093,10 @@ def create_payment_intent(request):
         print(f"Stripe API key configured: {bool(stripe.api_key)}")
         
         try:
-            # Add required confirm parameter for automatic payment methods
+            # Create basic PaymentIntent with minimal parameters
             intent = stripe.PaymentIntent.create(
                 amount=int(total_amount * 100),  # Convert to pence
                 currency='gbp',
-                automatic_payment_methods={
-                    'enabled': True,
-                },
                 metadata={
                     'expert_id': expert_id,
                     'expert_name': expert.name,
@@ -3109,42 +3106,26 @@ def create_payment_intent(request):
                     'message_count': '30'
                 }
             )
+            print(f"✅ Stripe PaymentIntent created successfully!")
+            
+            # Debug the intent object immediately after creation
+            print(f"Intent type: {type(intent)}")
+            print(f"Intent ID: {intent.id}")
+            print(f"Client secret exists: {hasattr(intent, 'client_secret')}")
+            print(f"Client secret value: {intent.client_secret}")
+            
         except stripe.error.StripeError as stripe_err:
             print(f"Stripe error: {stripe_err}")
             return Response({'error': f'Stripe error: {str(stripe_err)}'}, status=500)
         except Exception as create_err:
             print(f"General error creating intent: {create_err}")
+            import traceback
+            print(f"Full traceback: {traceback.format_exc()}")
             return Response({'error': f'Error creating intent: {str(create_err)}'}, status=500)
         
-        # Debug the intent object
-        print(f"Payment intent created successfully!")
-        print(f"Intent object type: {type(intent)}")
-        print(f"Intent object dir: {[attr for attr in dir(intent) if not attr.startswith('_')]}")
-        
-        # Initialize defaults
-        intent_id = 'NO_ID'
-        client_secret = None
-        
-        try:
-            intent_id = getattr(intent, 'id', 'NO_ID')
-            print(f"Intent ID: {intent_id}")
-        except Exception as id_err:
-            print(f"Error accessing intent.id: {id_err}")
-        
-        try:
-            client_secret = getattr(intent, 'client_secret', None)
-            print(f"Client secret found: {bool(client_secret)}")
-        except Exception as secret_err:
-            print(f"Error accessing client_secret: {secret_err}")
-            return Response({'error': f'Error accessing client_secret: {str(secret_err)}'}, status=500)
-        
-        if not client_secret:
-            print(f"ERROR: client_secret is None or missing from intent")
-            return Response({'error': 'Payment intent missing client_secret'}, status=500)
-        
         return Response({
-            'client_secret': client_secret,
-            'payment_intent_id': intent_id,
+            'client_secret': intent.client_secret,
+            'payment_intent_id': intent.id,
             'amount': total_amount,
             'expert_amount': expert_amount,
             'platform_amount': platform_amount
