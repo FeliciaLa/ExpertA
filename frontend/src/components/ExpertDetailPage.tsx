@@ -273,7 +273,7 @@ export const ExpertDetailPage: React.FC = () => {
             width: '100%',
             borderTop: '1px solid',
             borderColor: 'divider',
-            p: 2,
+            p: 3,
             cursor: 'pointer'
           }}
         >
