@@ -3092,80 +3092,74 @@ def create_payment_intent(request):
         print(f"Creating payment intent for £{total_amount} with user {request.user.id}")
         print(f"Stripe API key configured: {bool(stripe.api_key)}")
         
-        # Set Stripe API version explicitly
-        stripe.api_version = "2024-06-20"
+        # Use requests library to call Stripe API directly
+        import requests
+        import base64
         
         try:
-            # Create basic PaymentIntent with minimal parameters
-            print("About to call stripe.PaymentIntent.create...")
-            intent = stripe.PaymentIntent.create(
-                amount=int(total_amount * 100),  # Convert to pence
-                currency='gbp',
-                metadata={
-                    'expert_id': expert_id,
-                    'expert_name': expert.name,
-                    'user_id': str(request.user.id),
-                    'total_amount': str(total_amount),
-                    'session_type': 'stoic_mentor_messages',
-                    'message_count': '30'
-                }
-            )
-            print(f"✅ Stripe PaymentIntent created successfully!")
+            # Prepare Stripe API call using requests
+            stripe_url = "https://api.stripe.com/v1/payment_intents"
             
-            # Debug the intent object immediately after creation
-            print(f"Intent type: {type(intent)}")
-            print(f"Intent ID: {intent.id}")
-            print(f"Client secret exists: {hasattr(intent, 'client_secret')}")
-            print(f"Client secret value: {intent.client_secret}")
+            # Create basic auth header
+            auth_string = f"{stripe.api_key}:"
+            auth_bytes = auth_string.encode('ascii')
+            auth_b64 = base64.b64encode(auth_bytes).decode('ascii')
             
-        except stripe.error.StripeError as stripe_err:
-            print(f"Stripe error: {stripe_err}")
-            return Response({'error': f'Stripe error: {str(stripe_err)}'}, status=500)
-        except Exception as create_err:
-            print(f"General error creating intent: {create_err}")
-            import traceback
-            print(f"Full traceback: {traceback.format_exc()}")
+            headers = {
+                'Authorization': f'Basic {auth_b64}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Stripe-Version': '2024-06-20'
+            }
             
-            # Try using raw Stripe API call as fallback
-            try:
-                print("Trying raw Stripe API call as fallback...")
-                response = stripe.api_resources.abstract.APIResource._static_request(
-                    method='post',
-                    url='/v1/payment_intents',
-                    params={
-                        'amount': int(total_amount * 100),
-                        'currency': 'gbp',
-                        'metadata[expert_id]': expert_id,
-                        'metadata[expert_name]': expert.name,
-                        'metadata[user_id]': str(request.user.id),
-                        'metadata[total_amount]': str(total_amount),
-                        'metadata[session_type]': 'stoic_mentor_messages',
-                        'metadata[message_count]': '30'
-                    }
-                )
-                print(f"Raw API response: {response}")
+            data = {
+                'amount': int(total_amount * 100),  # Convert to pence
+                'currency': 'gbp',
+                'metadata[expert_id]': expert_id,
+                'metadata[expert_name]': expert.name,
+                'metadata[user_id]': str(request.user.id),
+                'metadata[total_amount]': str(total_amount),
+                'metadata[session_type]': 'stoic_mentor_messages',
+                'metadata[message_count]': '30'
+            }
+            
+            print(f"Making direct Stripe API call to {stripe_url}")
+            response = requests.post(stripe_url, headers=headers, data=data)
+            
+            print(f"Stripe API response status: {response.status_code}")
+            print(f"Stripe API response headers: {dict(response.headers)}")
+            
+            if response.status_code == 200:
+                intent_data = response.json()
+                print(f"✅ Stripe PaymentIntent created successfully!")
+                print(f"Intent ID: {intent_data.get('id')}")
+                print(f"Client secret exists: {'client_secret' in intent_data}")
                 
-                if response and 'client_secret' in response:
+                if 'client_secret' in intent_data:
                     return Response({
-                        'client_secret': response['client_secret'],
-                        'payment_intent_id': response.get('id', 'unknown'),
+                        'client_secret': intent_data['client_secret'],
+                        'payment_intent_id': intent_data['id'],
                         'amount': total_amount,
                         'expert_amount': expert_amount,
                         'platform_amount': platform_amount
                     })
-                    
-            except Exception as raw_err:
-                print(f"Raw API call also failed: {raw_err}")
+                else:
+                    print(f"❌ No client_secret in response: {intent_data}")
+                    return Response({'error': 'Payment intent missing client_secret'}, status=500)
+            else:
+                error_data = response.json() if response.content else {}
+                print(f"❌ Stripe API error: {response.status_code} - {error_data}")
+                return Response({'error': f'Stripe API error: {error_data.get("error", {}).get("message", "Unknown error")}'}, status=500)
                 
-            return Response({'error': f'Error creating intent: {str(create_err)}'}, status=500)
+        except requests.exceptions.RequestException as req_err:
+            print(f"Request error: {req_err}")
+            return Response({'error': f'Request error: {str(req_err)}'}, status=500)
+        except Exception as e:
+            print(f"General error: {e}")
+            import traceback
+            print(f"Full traceback: {traceback.format_exc()}")
+            return Response({'error': f'Error creating intent: {str(e)}'}, status=500)
         
-        return Response({
-            'client_secret': intent.client_secret,
-            'payment_intent_id': intent.id,
-            'amount': total_amount,
-            'expert_amount': expert_amount,
-            'platform_amount': platform_amount
-        })
+
         
     except Exception as e:
         print(f"Error creating payment intent: {str(e)}")
