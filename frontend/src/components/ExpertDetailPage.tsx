@@ -195,7 +195,10 @@ export const ExpertDetailPage: React.FC = () => {
     }
     
     // Sample preview messages to show when not logged in
-    const previewMessages = [
+    const previewMessages = expert?.name === 'The Stoic Mentor' ? [
+      { role: 'user', content: 'How can I find peace when everything feels chaotic?' },
+      { role: 'assistant', content: `Remember, as Marcus Aurelius taught us: "You have power over your mind - not outside events. Realize this, and you will find strength." Focus on what is within your control - your thoughts, your responses, your character. The chaos around you cannot disturb your inner citadel unless you allow it entry.` }
+    ] : [
       { role: 'user', content: 'What can I ask you?' },
       { role: 'assistant', content: `I'm here to help with anything in my area of expertise — from quick advice to deep dives into complex topics.` }
     ];
