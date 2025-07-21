@@ -341,6 +341,51 @@ export const ExpertDetailPage: React.FC = () => {
           </Typography>
         </Box>
 
+        {/* Expert Profile Section for Stoic Mentor */}
+        <Paper sx={{ 
+          p: 4, 
+          mb: 4, 
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+          border: '1px solid #e0e0e0'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Avatar
+              src={getProfileImageUrl()}
+              sx={{
+                width: 100,
+                height: 100,
+                bgcolor: '#1a237e',
+                fontSize: '3rem',
+                mr: 3,
+                border: '3px solid #1a237e'
+              }}
+            >
+              {expert.name[0]}
+            </Avatar>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="h4" gutterBottom sx={{ color: '#1a237e', fontWeight: 600 }}>
+                {expert.name}
+              </Typography>
+              {expert.title && (
+                <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontStyle: 'italic' }}>
+                  {expert.title}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+          
+          {expert.bio && (
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ color: '#1a237e', mb: 2 }}>
+                About Your Mentor
+              </Typography>
+              <Typography variant="body1" sx={{ lineHeight: 1.7, color: '#424242' }}>
+                {expert.bio}
+              </Typography>
+            </Box>
+          )}
+        </Paper>
+
         {/* Special Grid Layout */}
         <Grid container spacing={4}>
           {/* Philosophy Cards */}
@@ -416,6 +461,26 @@ export const ExpertDetailPage: React.FC = () => {
           onSignIn={handleUserSignIn}
           onRegister={handleUserRegister}
         />
+        
+        {/* Bottom navigation for Stoic Mentor */}
+        <Box sx={{ textAlign: 'center', mt: 6, mb: 2 }}>
+          <Button 
+            onClick={() => navigate('/experts')}
+            variant="outlined"
+            sx={{ 
+              color: '#666',
+              borderColor: '#ddd',
+              px: 4,
+              py: 1.5,
+              '&:hover': {
+                borderColor: '#1976d2',
+                color: '#1976d2'
+              }
+            }}
+          >
+            Explore other mentors
+          </Button>
+        </Box>
       </Container>
     );
   }
