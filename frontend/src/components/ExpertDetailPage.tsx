@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -12,21 +12,11 @@ import {
   Tooltip,
   Menu,
   MenuItem,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Alert
+  IconButton
 } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
-import CloseIcon from '@mui/icons-material/Close';
-import EditIcon from '@mui/icons-material/Edit';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Chat } from './Chat';
 import api from '../services/api';
@@ -63,21 +53,7 @@ export const ExpertDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [profileError, setProfileError] = useState<string | null>(null);
-  const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { isUser, signIn, register, isAuthenticated, user, signOut, setUser } = useAuth();
-
-  // Update editedName when user changes
-  useEffect(() => {
-    if (user?.name) {
-      setEditedName(user.name);
-    }
-  }, [user?.name]);
+  const { isUser, signIn, register, isAuthenticated, user, signOut } = useAuth();
 
   useEffect(() => {
     const fetchExpertDetails = async () => {
@@ -222,7 +198,7 @@ export const ExpertDetailPage: React.FC = () => {
 
   const handleProfileClick = () => {
     handleProfileMenuClose();
-    setIsProfileModalOpen(true);
+    navigate('/user/profile');
   };
 
   const handleLogoutClick = () => {
@@ -231,92 +207,7 @@ export const ExpertDetailPage: React.FC = () => {
     // Stay on The Stoic Mentor page after logout
   };
 
-  // Profile modal functions
-  const handleProfileModalClose = () => {
-    setIsProfileModalOpen(false);
-    setIsEditingName(false);
-    setProfileError(null);
-    setProfileSuccess(null);
-    setEditedName(user?.name || '');
-  };
 
-  const handleSaveName = async () => {
-    if (!editedName.trim()) return;
-    
-    try {
-      setProfileError(null);
-      const response = await api.patch('/user/profile/update/', { name: editedName.trim() });
-      
-      // Update user context with the new name
-      if (user && setUser) {
-        setUser({
-          ...user,
-          name: editedName.trim()
-        });
-      }
-      
-      // Update localStorage
-      const updatedUser = { ...user, name: editedName.trim() };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      setIsEditingName(false);
-      setProfileSuccess('Name updated successfully!');
-    } catch (error) {
-      console.error('Error updating name:', error);
-      setProfileError('Failed to update name. Please try again.');
-    }
-  };
-
-  const handleCancelNameEdit = () => {
-    setEditedName(user?.name || '');
-    setIsEditingName(false);
-  };
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setUploading(true);
-      setProfileError(null);
-      
-      const formData = new FormData();
-      formData.append('profile_image', file);
-      
-      const response = await api.patch('/user/profile/update/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      // Update user context with new profile image
-      if (user && setUser) {
-        setUser({
-          ...user,
-          profile_image: response.data.profile_image
-        });
-      }
-      
-      // Update localStorage
-      const updatedUser = { ...user, profile_image: response.data.profile_image };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      setProfileSuccess('Profile image updated successfully!');
-    } catch (err: any) {
-      console.error('Failed to upload image:', err);
-      setProfileError('Failed to upload profile image. Please try again.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const getUserProfileImageUrl = () => {
-    if (!user?.profile_image) return '';
-    if (user.profile_image.startsWith('http')) return user.profile_image;
-    
-    const baseUrl = api.defaults.baseURL?.replace('/api/', '').replace('/api', '') || '';
-    return `${baseUrl}${user.profile_image}`;
-  };
 
   // Render chat or login prompt based on authentication
   const renderChatSection = () => {
@@ -737,216 +628,7 @@ export const ExpertDetailPage: React.FC = () => {
           onRegister={handleUserRegister}
         />
 
-        {/* Stoic-themed Profile Modal */}
-        <Dialog
-          open={isProfileModalOpen}
-          onClose={handleProfileModalClose}
-          maxWidth="sm"
-          fullWidth
-          PaperProps={{
-            sx: {
-              bgcolor: 'rgba(44, 62, 80, 0.95)',
-              color: '#f4f1e8',
-              border: '2px solid #d4af37',
-              borderRadius: 3,
-              backdropFilter: 'blur(10px)'
-            }
-          }}
-        >
-          <DialogTitle sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            color: '#d4af37',
-            fontFamily: '"Times New Roman", serif',
-            fontSize: '1.5rem',
-            fontWeight: 'bold'
-          }}>
-            My Profile
-            <IconButton 
-              onClick={handleProfileModalClose} 
-              sx={{ color: '#d4af37' }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
 
-          <DialogContent sx={{ pt: 2 }}>
-            {profileError && (
-              <Alert severity="error" sx={{ mb: 2, bgcolor: 'rgba(211, 47, 47, 0.1)', color: '#f4f1e8' }}>
-                {profileError}
-              </Alert>
-            )}
-
-            {profileSuccess && (
-              <Alert severity="success" sx={{ mb: 2, bgcolor: 'rgba(46, 125, 50, 0.1)', color: '#f4f1e8' }}>
-                {profileSuccess}
-              </Alert>
-            )}
-
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
-              {/* Profile Picture */}
-              <Box sx={{ position: 'relative', mb: 2 }}>
-                <Avatar 
-                  src={getUserProfileImageUrl()}
-                  sx={{ 
-                    width: 100, 
-                    height: 100, 
-                    fontSize: '2.5rem',
-                    bgcolor: '#d4af37',
-                    color: '#2c3e50',
-                    border: '3px solid #d4af37'
-                  }}
-                >
-                  {user?.name?.charAt(0).toUpperCase()}
-                </Avatar>
-                
-                {/* Profile Image Upload Button */}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-                <IconButton
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    right: 0,
-                    bgcolor: '#d4af37',
-                    color: '#2c3e50',
-                    width: 32,
-                    height: 32,
-                    '&:hover': {
-                      bgcolor: '#b8941f',
-                    },
-                    '&:disabled': {
-                      bgcolor: 'grey.400',
-                    }
-                  }}
-                >
-                  {uploading ? (
-                    <CircularProgress size={16} sx={{ color: '#2c3e50' }} />
-                  ) : (
-                    <CameraAltIcon fontSize="small" />
-                  )}
-                </IconButton>
-              </Box>
-
-              {/* Name Editing */}
-              {isEditingName ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%' }}>
-                  <TextField
-                    value={editedName}
-                    onChange={(e) => setEditedName(e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    autoFocus
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSaveName();
-                      }
-                    }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#f4f1e8',
-                        '& fieldset': {
-                          borderColor: '#d4af37',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#d4af37',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#d4af37',
-                        },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: '#f4f1e8',
-                      },
-                    }}
-                  />
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button 
-                      size="small" 
-                      onClick={handleSaveName} 
-                      variant="contained"
-                      sx={{ 
-                        bgcolor: '#d4af37', 
-                        color: '#2c3e50',
-                        '&:hover': { bgcolor: '#b8941f' }
-                      }}
-                    >
-                      Save
-                    </Button>
-                    <Button 
-                      size="small" 
-                      onClick={handleCancelNameEdit} 
-                      variant="outlined"
-                      sx={{ 
-                        borderColor: '#d4af37', 
-                        color: '#d4af37',
-                        '&:hover': { borderColor: '#b8941f', color: '#b8941f' }
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </Box>
-                </Box>
-              ) : (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="h6" sx={{ 
-                    color: '#f4f1e8',
-                    fontFamily: '"Times New Roman", serif'
-                  }}>
-                    {user?.name}
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      setEditedName(user?.name || '');
-                      setIsEditingName(true);
-                    }}
-                    sx={{ color: '#d4af37' }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              )}
-            </Box>
-
-            <Typography variant="body2" sx={{ 
-              color: 'rgba(244,241,232,0.8)', 
-              textAlign: 'center',
-              fontFamily: '"Times New Roman", serif',
-              fontStyle: 'italic'
-            }}>
-              "Know thyself" - Ancient Greek Proverb
-            </Typography>
-          </DialogContent>
-
-          <DialogActions sx={{ px: 3, pb: 3, justifyContent: 'center' }}>
-            <Button
-              onClick={handleProfileModalClose}
-              variant="outlined"
-              sx={{ 
-                borderColor: '#d4af37', 
-                color: '#d4af37',
-                fontFamily: '"Times New Roman", serif',
-                '&:hover': { 
-                  borderColor: '#b8941f', 
-                  color: '#b8941f',
-                  bgcolor: 'rgba(212, 175, 55, 0.1)'
-                }
-              }}
-            >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
         </Container>
       </Box>
     );
