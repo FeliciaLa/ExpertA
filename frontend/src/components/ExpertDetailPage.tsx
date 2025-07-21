@@ -312,11 +312,11 @@ export const ExpertDetailPage: React.FC = () => {
   // Special layout for The Stoic Mentor - Standard layout with Stoic theming
   if (isStoicMentor) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 4, bgcolor: '#f4f1ea', minHeight: '100vh' }}>
         {/* Condensed Stoic Hero Header */}
         <Box sx={{ 
-          background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
-          color: 'white',
+          background: 'linear-gradient(135deg, #3b3f58 0%, #4a5a7a 100%)',
+          color: '#fcfbf7',
           p: 4,
           borderRadius: 3,
           mb: 4,
@@ -339,8 +339,8 @@ export const ExpertDetailPage: React.FC = () => {
             <Paper sx={{ 
               p: 3, 
               height: '100%',
-              background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
-              color: 'white'
+              background: 'linear-gradient(135deg, #3b3f58 0%, #4a5a7a 100%)',
+              color: '#fcfbf7'
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar
@@ -348,41 +348,41 @@ export const ExpertDetailPage: React.FC = () => {
                   sx={{
                     width: 80,
                     height: 80,
-                    bgcolor: 'white',
-                    color: '#1a237e',
+                    bgcolor: '#fcfbf7',
+                    color: '#3b3f58',
                     fontSize: '2rem',
                     mr: 2,
-                    border: '3px solid white'
+                    border: '3px solid #fcfbf7'
                   }}
                 >
                   🏛️
                 </Avatar>
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ color: 'white', fontWeight: 600 }}>
+                  <Typography variant="h5" gutterBottom sx={{ color: '#fcfbf7', fontWeight: 600 }}>
                     {expert.name}
                   </Typography>
                   {expert.title && (
-                    <Typography variant="subtitle1" sx={{ color: 'rgba(255,255,255,0.9)', fontStyle: 'italic' }}>
+                    <Typography variant="subtitle1" sx={{ color: 'rgba(252,251,247,0.9)', fontStyle: 'italic' }}>
                       {expert.title}
                     </Typography>
                   )}
                 </Box>
               </Box>
 
-              <Divider sx={{ my: 2, borderColor: 'rgba(255,255,255,0.3)' }} />
+              <Divider sx={{ my: 2, borderColor: 'rgba(252,251,247,0.3)' }} />
 
-              <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+              <Typography variant="h6" gutterBottom sx={{ color: '#fcfbf7' }}>
                 🏛️ About Your Mentor
               </Typography>
-              <Typography paragraph sx={{ color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+              <Typography paragraph sx={{ color: 'rgba(252,251,247,0.9)', lineHeight: 1.6 }}>
                 {expert.bio || 'No bio available'}
               </Typography>
 
-              <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
-                <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(255,255,255,0.9)' }}>
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(252,251,247,0.1)', borderRadius: 2 }}>
+                <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'rgba(252,251,247,0.9)' }}>
                   "You have power over your mind - not outside events. Realize this, and you will find strength."
                 </Typography>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mt: 1, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(252,251,247,0.7)', mt: 1, display: 'block' }}>
                   — Marcus Aurelius
                 </Typography>
               </Box>
@@ -396,14 +396,14 @@ export const ExpertDetailPage: React.FC = () => {
                 <Avatar sx={{ 
                   width: 50, 
                   height: 50, 
-                  bgcolor: '#1a237e', 
+                  bgcolor: '#3b3f58', 
                   mr: 2,
                   fontSize: '1.5rem'
                 }}>
                   🏛️
                 </Avatar>
                 <Box>
-                  <Typography variant="h5" sx={{ color: '#1a237e', fontWeight: 500 }}>
+                  <Typography variant="h5" sx={{ color: '#3b3f58', fontWeight: 500 }}>
                     Chat with {expert.name}'s AI
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -432,13 +432,13 @@ export const ExpertDetailPage: React.FC = () => {
             onClick={() => navigate('/experts')}
             variant="outlined"
             sx={{ 
-              color: '#1a237e',
-              borderColor: '#1a237e',
+              color: '#3b3f58',
+              borderColor: '#3b3f58',
               px: 4,
               py: 1.5,
               '&:hover': {
-                backgroundColor: '#1a237e',
-                color: 'white'
+                backgroundColor: '#3b3f58',
+                color: '#fcfbf7'
               }
             }}
           >
