@@ -3091,18 +3091,30 @@ def create_payment_intent(request):
         # Create simple Payment Intent without Stripe Connect
         print(f"Creating payment intent for £{total_amount} with user {request.user.id}")
         print(f"Stripe API key configured: {bool(stripe.api_key)}")
-        intent = stripe.PaymentIntent.create(
-            amount=int(total_amount * 100),  # Convert to pence
-            currency='gbp',
-            metadata={
-                'expert_id': expert_id,
-                'expert_name': expert.name,
-                'user_id': str(request.user.id),
-                'total_amount': str(total_amount),
-                'session_type': 'stoic_mentor_messages',
-                'message_count': '30'
-            }
-        )
+        
+        try:
+            # Add required confirm parameter for automatic payment methods
+            intent = stripe.PaymentIntent.create(
+                amount=int(total_amount * 100),  # Convert to pence
+                currency='gbp',
+                automatic_payment_methods={
+                    'enabled': True,
+                },
+                metadata={
+                    'expert_id': expert_id,
+                    'expert_name': expert.name,
+                    'user_id': str(request.user.id),
+                    'total_amount': str(total_amount),
+                    'session_type': 'stoic_mentor_messages',
+                    'message_count': '30'
+                }
+            )
+        except stripe.error.StripeError as stripe_err:
+            print(f"Stripe error: {stripe_err}")
+            return Response({'error': f'Stripe error: {str(stripe_err)}'}, status=500)
+        except Exception as create_err:
+            print(f"General error creating intent: {create_err}")
+            return Response({'error': f'Error creating intent: {str(create_err)}'}, status=500)
         print(f"Payment intent created successfully: {intent.id}")
         print(f"Intent object type: {type(intent)}")
         print(f"Intent as dict: {dict(intent) if hasattr(intent, 'keys') else 'Not a dict'}")
