@@ -799,17 +799,20 @@ const UserProfilePage: React.FC = () => {
                 Start exploring our experts to begin your first AI consultation. 
                 Each conversation will appear here for easy access to your consultation history.
               </Typography>
-              <Button
-                variant="contained"
-                onClick={() => navigate('/experts')}
-                sx={{ 
-                  py: 1.5,
-                  px: 3,
-                  borderRadius: 2
-                }}
-              >
-                Browse Experts Now
-              </Button>
+              {/* Browse Experts button hidden for cleaner profile experience */}
+              {false && (
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/experts')}
+                  sx={{ 
+                    py: 1.5,
+                    px: 3,
+                    borderRadius: 2
+                  }}
+                >
+                  Browse Experts Now
+                </Button>
+              )}
             </Paper>
           ) : (
             <Grid container spacing={2}>
