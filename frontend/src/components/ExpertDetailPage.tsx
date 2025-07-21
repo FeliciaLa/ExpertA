@@ -9,8 +9,14 @@ import {
   Button,
   Container,
   TextField,
-  Tooltip
+  Tooltip,
+  Menu,
+  MenuItem,
+  IconButton
 } from '@mui/material';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Chat } from './Chat';
 import api from '../services/api';
@@ -46,7 +52,8 @@ export const ExpertDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const { isUser, signIn, register, isAuthenticated, user } = useAuth();
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
+  const { isUser, signIn, register, isAuthenticated, user, signOut } = useAuth();
 
   useEffect(() => {
     const fetchExpertDetails = async () => {
@@ -178,6 +185,26 @@ export const ExpertDetailPage: React.FC = () => {
       // Error is handled by the dialog
       throw error;
     }
+  };
+
+  // Profile dropdown handlers
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setProfileMenuAnchor(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setProfileMenuAnchor(null);
+  };
+
+  const handleProfileClick = () => {
+    handleProfileMenuClose();
+    navigate('/user/profile');
+  };
+
+  const handleLogoutClick = () => {
+    handleProfileMenuClose();
+    signOut();
+    navigate('/');
   };
 
   // Render chat or login prompt based on authentication
@@ -356,6 +383,65 @@ export const ExpertDetailPage: React.FC = () => {
           marginLeft: 'auto',
           marginRight: 'auto'
         }}>
+        
+        {/* Custom Profile Dropdown for Stoic Mentor */}
+        {isAuthenticated && (
+          <Box sx={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            zIndex: 10
+          }}>
+            <IconButton
+              onClick={handleProfileMenuOpen}
+              sx={{
+                bgcolor: 'rgba(44, 62, 80, 0.9)',
+                color: '#d4af37',
+                border: '2px solid #d4af37',
+                '&:hover': {
+                  bgcolor: 'rgba(44, 62, 80, 1)',
+                  boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)'
+                },
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <AccountCircleIcon />
+            </IconButton>
+            
+            <Menu
+              anchorEl={profileMenuAnchor}
+              open={Boolean(profileMenuAnchor)}
+              onClose={handleProfileMenuClose}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              PaperProps={{
+                sx: {
+                  mt: 1,
+                  bgcolor: 'rgba(44, 62, 80, 0.95)',
+                  color: '#f4f1e8',
+                  border: '1px solid #d4af37',
+                  '& .MuiMenuItem-root': {
+                    color: '#f4f1e8',
+                    fontFamily: '"Times New Roman", serif',
+                    '&:hover': {
+                      bgcolor: 'rgba(212, 175, 55, 0.2)'
+                    }
+                  }
+                }
+              }}
+            >
+              <MenuItem onClick={handleProfileClick}>
+                <PersonIcon sx={{ mr: 1, color: '#d4af37' }} />
+                My Profile
+              </MenuItem>
+              <MenuItem onClick={handleLogoutClick}>
+                <LogoutIcon sx={{ mr: 1, color: '#d4af37' }} />
+                Logout
+              </MenuItem>
+            </Menu>
+          </Box>
+        )}
+        
         {/* Condensed Stoic Hero Header */}
         <Box sx={{ 
           background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
