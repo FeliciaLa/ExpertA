@@ -107,17 +107,36 @@ export const Chat: React.FC<ChatProps> = ({
         console.log('💬 Setting all messages:', allMessages);
         setMessages(allMessages);
         
+        // Check if there's an active PAID session (new session with 0 messages after payment)
+        const activePaidSession = historyData.sessions.find((session: any) => 
+          session.status === 'active' && session.total_messages === 0
+        );
+        
         // Calculate total messages across ALL sessions
         const totalMessagesAcrossSessions = historyData.sessions.reduce((total: number, session: any) => {
           return total + (session.total_messages || 0);
         }, 0);
         
-        // Update session stats with correct total count
-        setSessionStats(prev => ({
-          ...prev,
-          messageCount: totalMessagesAcrossSessions,
-          freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(totalMessagesAcrossSessions / 2))
-        }));
+        if (activePaidSession) {
+          // User has paid - show paid session with 30 message credits
+          const paidSessionMessages = activePaidSession.total_messages || 0;
+          setSessionStats(prev => ({
+            ...prev,
+            hasActivePaidSession: true,
+            messageCount: totalMessagesAcrossSessions,
+            freeMessagesRemaining: Math.max(0, 30 - Math.floor(paidSessionMessages / 2)) // Count down from 30 paid messages
+          }));
+          console.log('💳 Active paid session found - 30 message credits available');
+        } else {
+          // User is still on free messages
+          setSessionStats(prev => ({
+            ...prev,
+            hasActivePaidSession: false,
+            messageCount: totalMessagesAcrossSessions,
+            freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(totalMessagesAcrossSessions / 2))
+          }));
+          console.log('🆓 Using free messages');
+        }
         
         console.log('📊 Total messages across all sessions:', totalMessagesAcrossSessions);
       }
@@ -183,16 +202,27 @@ export const Chat: React.FC<ChatProps> = ({
       
       // Update session stats with real data from backend
       if (response.total_messages !== undefined) {
-        setSessionStats(prev => ({
-          ...prev,
-          messageCount: response.total_messages,
-                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining
-        }));
+        setSessionStats(prev => {
+          if (prev.hasActivePaidSession) {
+            // User has paid - count down from 30 messages for this session
+            return {
+              ...prev,
+              messageCount: response.total_messages,
+              freeMessagesRemaining: Math.max(0, 30 - Math.floor(response.total_messages / 2))
+            };
+          } else {
+            // User is on free messages
+            return {
+              ...prev,
+              messageCount: response.total_messages,
+              freeMessagesRemaining: monetizationEnabled ? Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining
+            };
+          }
+        });
         
         console.log('Updated session stats:', {
           totalMessages: response.total_messages,
-          sessionId: response.session_id,
-                      freeMessagesRemaining: monetizationEnabled ? Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(response.total_messages / 2)) : 'unlimited'
+          sessionId: response.session_id
         });
       }
       
@@ -217,7 +247,7 @@ export const Chat: React.FC<ChatProps> = ({
     setSessionStats(prev => ({
       ...prev,
       hasActivePaidSession: true,
-      freeMessagesRemaining: 0
+      freeMessagesRemaining: expertName === 'The Stoic Mentor' ? 30 : 0 // 30 messages for Stoic Mentor
     }));
     
     setShowPaymentDialog(false);
