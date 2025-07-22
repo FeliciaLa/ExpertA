@@ -213,19 +213,35 @@ export const Chat: React.FC<ChatProps> = ({
       // Update session stats with real data from backend
       if (response.total_messages !== undefined) {
         setSessionStats(prev => {
+          console.log('🔥 Updating session stats after message:', {
+            hasActivePaidSession: prev.hasActivePaidSession,
+            responseMessages: response.total_messages,
+            currentFreeRemaining: prev.freeMessagesRemaining
+          });
+          
           if (prev.hasActivePaidSession) {
             // User has paid - count down from 30 messages for this session
+            const newRemaining = Math.max(0, 30 - Math.floor(response.total_messages / 2));
+            console.log('💳 PAID SESSION UPDATE:', {
+              sessionMessages: response.total_messages,
+              newRemaining: newRemaining
+            });
             return {
               ...prev,
               messageCount: response.total_messages,
-              freeMessagesRemaining: Math.max(0, 30 - Math.floor(response.total_messages / 2))
+              freeMessagesRemaining: newRemaining
             };
           } else {
             // User is on free messages
+            const newRemaining = monetizationEnabled ? Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining;
+            console.log('🆓 FREE SESSION UPDATE:', {
+              sessionMessages: response.total_messages,
+              newRemaining: newRemaining
+            });
             return {
               ...prev,
               messageCount: response.total_messages,
-              freeMessagesRemaining: monetizationEnabled ? Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining
+              freeMessagesRemaining: newRemaining
             };
           }
         });
