@@ -281,8 +281,8 @@ export const Chat: React.FC<ChatProps> = ({
           });
           
           if (prev.hasActivePaidSession) {
-            // User has paid - count down from 30 messages for this session
-            const newRemaining = Math.max(0, 30 - Math.floor(response.total_messages / 2));
+            // User has paid - count down from 2 messages for this session
+            const newRemaining = Math.max(0, 2 - Math.floor(response.total_messages / 2));
             console.log('💳 PAID SESSION UPDATE:', {
               sessionMessages: response.total_messages,
               newRemaining: newRemaining
@@ -346,7 +346,7 @@ export const Chat: React.FC<ChatProps> = ({
     setMessages(prev => [...prev, {
       role: 'assistant',
       content: expertName === 'The Stoic Mentor' 
-        ? `🎉 Thank you for your payment! You now have 30 additional messages with ${firstName}. Feel free to ask detailed questions and get in-depth philosophical guidance. Your extended session is active now.`
+        ? `🎉 Thank you for your payment! You now have 2 additional messages with ${firstName}. Feel free to ask detailed questions and get in-depth philosophical guidance. Your extended session is active now.`
         : `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice. Your session is active now.`
     }]);
   };
@@ -434,7 +434,7 @@ export const Chat: React.FC<ChatProps> = ({
                   />
                               <Typography variant="body2" color="text.secondary">
               {expertName === 'The Stoic Mentor'
-                ? 'Then £2.99 for 30 messages'
+                ? 'Then £2.99 for 2 messages'
                 : `Then £${(validExpertPrice * 1.2).toFixed(2)} for 15-min session`
               }
             </Typography>
