@@ -93,16 +93,24 @@ export const Chat: React.FC<ChatProps> = ({
         // Collect ALL messages from ALL sessions for this expert
         const allMessages: Message[] = [];
         
-        historyData.sessions.forEach((session: any) => {
+        historyData.sessions.forEach((session: any, sessionIndex: number) => {
+          console.log(`🔍 Processing session ${sessionIndex}: ${session.session_id?.substring(0,8)}`);
           if (session.messages && Array.isArray(session.messages)) {
-            session.messages.forEach((msg: any) => {
-              allMessages.push({
+            console.log(`  Session has ${session.messages.length} messages`);
+            session.messages.forEach((msg: any, msgIndex: number) => {
+              const messageObj = {
                 role: msg.role as 'user' | 'assistant',
                 content: msg.content
-              });
+              };
+              allMessages.push(messageObj);
+              console.log(`  Added message ${allMessages.length}: ${msg.role} - "${msg.content.substring(0, 30)}..."`);
             });
+          } else {
+            console.log(`  Session has no messages or messages not an array:`, session.messages);
           }
         });
+        
+        console.log(`🔥 FINAL allMessages array length: ${allMessages.length}`);
         
         console.log('💬 Setting all messages:', allMessages);
         console.log('🔍 SESSION BREAKDOWN:');
@@ -114,7 +122,14 @@ export const Chat: React.FC<ChatProps> = ({
             });
           }
         });
+        
+        console.log('🔥 TOTAL MESSAGES TO SET:', allMessages.length);
         setMessages(allMessages);
+        
+        // Force a re-render check
+        setTimeout(() => {
+          console.log('🔥 MESSAGES AFTER SET:', allMessages.length);
+        }, 100);
         
         // Sort sessions by creation date (most recent first)
         const sortedSessions = [...historyData.sessions].sort((a, b) => 
