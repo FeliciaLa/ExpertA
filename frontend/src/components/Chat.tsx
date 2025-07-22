@@ -205,12 +205,15 @@ export const Chat: React.FC<ChatProps> = ({
 
     try {
       const response = await chatService.sendMessage(userMessage, expertId);
+      console.log('🔥 CHAT RESPONSE:', response);
+      
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: response.answer },
       ]);
       
       // Update session stats with real data from backend
+      console.log('🔥 CHECKING total_messages:', response.total_messages);
       if (response.total_messages !== undefined) {
         setSessionStats(prev => {
           console.log('🔥 Updating session stats after message:', {
@@ -250,6 +253,8 @@ export const Chat: React.FC<ChatProps> = ({
           totalMessages: response.total_messages,
           sessionId: response.session_id
         });
+      } else {
+        console.log('❌ NO total_messages in response - session stats NOT updated');
       }
       
     } catch (err: any) {
