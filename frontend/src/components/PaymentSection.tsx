@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Card, CardContent, Typography, Button, Alert, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress } from '@mui/material';
+import { Box, Card, CardContent, Typography, Button, Alert, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Paper, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
 import { Payment, CreditCard, Lock } from '@mui/icons-material';
 import { features, getEnvironment, STRIPE_PUBLISHABLE_KEY } from '../utils/environment';
-import api from '../services/api';
+import api, { paymentService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 interface PaymentSectionProps {
@@ -10,6 +10,14 @@ interface PaymentSectionProps {
   expertName?: string;
   price?: number;
   onPaymentSuccess?: () => void;
+}
+
+interface SavedPaymentMethod {
+  id: string;
+  brand: string;
+  last4: string;
+  exp_month: number;
+  exp_year: number;
 }
 
 const PaymentSection: React.FC<PaymentSectionProps> = ({ 
@@ -26,6 +34,9 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   const [elements, setElements] = useState<any>(null);
   const [cardElement, setCardElement] = useState<any>(null);
   const cardElementRef = useRef<HTMLDivElement>(null);
+  const [savedPaymentMethods, setSavedPaymentMethods] = useState<SavedPaymentMethod[]>([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('new');
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
   
   const { user } = useAuth();
 
@@ -34,30 +45,50 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
     return null;
   }
 
-  // Initialize Stripe Elements when dialog opens
+  // Load saved payment methods
+  const loadSavedPaymentMethods = async () => {
+    try {
+      setLoadingPaymentMethods(true);
+      const response = await paymentService.getSavedPaymentMethods();
+      setSavedPaymentMethods(response.payment_methods || []);
+    } catch (error) {
+      console.error('Failed to load saved payment methods:', error);
+      setSavedPaymentMethods([]);
+    } finally {
+      setLoadingPaymentMethods(false);
+    }
+  };
+
+  // Initialize Stripe Elements and load payment methods when dialog opens
   useEffect(() => {
-    if (showPaymentDialog && !stripe) {
-      const stripeInstance = (window as any).Stripe(STRIPE_PUBLISHABLE_KEY);
-      setStripe(stripeInstance);
+    if (showPaymentDialog) {
+      // Load saved payment methods
+      loadSavedPaymentMethods();
       
-      if (stripeInstance) {
-        const elementsInstance = stripeInstance.elements();
-        setElements(elementsInstance);
+      // Initialize Stripe if not already done
+      if (!stripe) {
+        const stripeInstance = (window as any).Stripe(STRIPE_PUBLISHABLE_KEY);
+        setStripe(stripeInstance);
         
-        // Create card element
-        const cardElementInstance = elementsInstance.create('card', {
-          style: {
-            base: {
-              fontSize: '16px',
-              color: '#424770',
-              '::placeholder': {
-                color: '#aab7c4',
+        if (stripeInstance) {
+          const elementsInstance = stripeInstance.elements();
+          setElements(elementsInstance);
+          
+          // Create card element
+          const cardElementInstance = elementsInstance.create('card', {
+            style: {
+              base: {
+                fontSize: '16px',
+                color: '#424770',
+                '::placeholder': {
+                  color: '#aab7c4',
+                },
               },
             },
-          },
-        });
-        
-        setCardElement(cardElementInstance);
+          });
+          
+          setCardElement(cardElementInstance);
+        }
       }
     }
   }, [showPaymentDialog]);
@@ -97,7 +128,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   };
 
   const handlePaymentSubmit = async () => {
-    if (!paymentData || !stripe || !cardElement) {
+    if (!paymentData || !stripe) {
       setError('Payment system not ready. Please try again.');
       return;
     }
@@ -106,23 +137,38 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
     setError(null);
     
     try {
-      console.log('Processing payment with Stripe Elements...');
+      console.log('Processing payment...');
       
-      // Create payment method using Stripe Elements
-      const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-      });
+      let paymentMethodId: string;
       
-      if (pmError) {
-        throw new Error(pmError.message || 'Invalid card details');
+      if (selectedPaymentMethod === 'new') {
+        // Create new payment method using Stripe Elements
+        if (!cardElement) {
+          throw new Error('Card element not ready. Please try again.');
+        }
+        
+        const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+        });
+        
+        if (pmError) {
+          throw new Error(pmError.message || 'Invalid card details');
+        }
+        
+        paymentMethodId = paymentMethod.id;
+        console.log('✅ New payment method created:', paymentMethodId);
+      } else {
+        // Use saved payment method
+        paymentMethodId = selectedPaymentMethod;
+        console.log('✅ Using saved payment method:', paymentMethodId);
       }
       
-      // Confirm the payment intent
+      // Confirm the payment intent with the payment method
       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
         paymentData.client_secret,
         {
-          payment_method: paymentMethod.id,
+          payment_method: paymentMethodId,
         }
       );
       
@@ -145,6 +191,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
         setStripe(null);
         setElements(null);
         setCardElement(null);
+        setSelectedPaymentMethod('new'); // Reset selection
         
         if (onPaymentSuccess) {
           onPaymentSuccess();
@@ -258,21 +305,69 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
           )}
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                Card Details
-              </Typography>
-              <Box
-                ref={cardElementRef}
-                sx={{
-                  border: '1px solid #ddd',
-                  borderRadius: 1,
-                  padding: 2,
-                  minHeight: '40px',
-                  backgroundColor: isProcessing ? '#f5f5f5' : 'white',
-                }}
-              />
-            </Box>
+            {/* Payment Method Selection */}
+            {loadingPaymentMethods ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <CircularProgress size={20} />
+                <Typography>Loading saved payment methods...</Typography>
+              </Box>
+            ) : (
+              <FormControl component="fieldset">
+                <FormLabel component="legend">Payment Method</FormLabel>
+                <RadioGroup
+                  value={selectedPaymentMethod}
+                  onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                >
+                  {savedPaymentMethods.map((method) => (
+                    <FormControlLabel
+                      key={method.id}
+                      value={method.id}
+                      control={<Radio />}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <CreditCard fontSize="small" />
+                          <Typography>
+                            {method.brand.toUpperCase()} •••• {method.last4}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Expires {method.exp_month.toString().padStart(2, '0')}/{method.exp_year}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  ))}
+                  <FormControlLabel
+                    value="new"
+                    control={<Radio />}
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <CreditCard fontSize="small" />
+                        <Typography>Add new payment method</Typography>
+                      </Box>
+                    }
+                  />
+                </RadioGroup>
+              </FormControl>
+            )}
+
+            {/* Card Details Input (only show if "new" is selected) */}
+            {selectedPaymentMethod === 'new' && (
+              <Box>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                  Card Details
+                </Typography>
+                <Box
+                  ref={cardElementRef}
+                  sx={{
+                    border: '1px solid #ddd',
+                    borderRadius: 1,
+                    padding: 2,
+                    minHeight: '40px',
+                    backgroundColor: isProcessing ? '#f5f5f5' : 'white',
+                  }}
+                />
+              </Box>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
@@ -290,7 +385,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
           <Button 
             onClick={handlePaymentSubmit} 
             variant="contained" 
-            disabled={isProcessing || !cardElement}
+            disabled={isProcessing || (selectedPaymentMethod === 'new' && !cardElement)}
             startIcon={isProcessing ? <CircularProgress size={20} /> : <Lock />}
           >
             {isProcessing ? 'Processing...' : `Pay £${paymentData?.amount?.toFixed(2) || price}`}

@@ -279,6 +279,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     pending_email = models.EmailField(blank=True, null=True)
     email_change_token = models.CharField(max_length=255, blank=True, null=True)
     email_change_token_created_at = models.DateTimeField(blank=True, null=True)
+    
+    # Stripe integration
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
 
     objects = UserManager()
 

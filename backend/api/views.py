@@ -3104,10 +3104,7 @@ def create_payment_intent(request):
         import base64
         
         try:
-            # Prepare Stripe API call using requests
-            stripe_url = "https://api.stripe.com/v1/payment_intents"
-            
-            # Create basic auth header
+            # Create basic auth header for Stripe API calls
             auth_string = f"{stripe_secret_key}:"
             auth_bytes = auth_string.encode('ascii')
             auth_b64 = base64.b64encode(auth_bytes).decode('ascii')
@@ -3118,16 +3115,51 @@ def create_payment_intent(request):
                 'Stripe-Version': '2024-06-20'
             }
             
+            # Create or get Stripe customer for this user
+            customer_id = None
+            if request.user.stripe_customer_id:
+                customer_id = request.user.stripe_customer_id
+                print(f"Using existing Stripe customer: {customer_id}")
+            else:
+                # Create new Stripe customer
+                customer_url = "https://api.stripe.com/v1/customers"
+                customer_data = {
+                    'email': request.user.email,
+                    'name': request.user.name,
+                    'metadata[user_id]': str(request.user.id)
+                }
+                
+                customer_response = requests.post(customer_url, headers=headers, data=customer_data)
+                if customer_response.status_code == 200:
+                    customer_data = customer_response.json()
+                    customer_id = customer_data['id']
+                    
+                    # Save customer ID to user
+                    request.user.stripe_customer_id = customer_id
+                    request.user.save()
+                    print(f"✅ Created new Stripe customer: {customer_id}")
+                else:
+                    print(f"❌ Failed to create Stripe customer: {customer_response.text}")
+            
+            # Prepare payment intent with customer
+            stripe_url = "https://api.stripe.com/v1/payment_intents"
+            
             data = {
                 'amount': int(total_amount * 100),  # Convert to pence
                 'currency': 'gbp',
+                'setup_future_usage': 'off_session',  # Save payment method for future use
                 'metadata[expert_id]': expert_id,
                 'metadata[expert_name]': expert.name,
                 'metadata[user_id]': str(request.user.id),
                 'metadata[total_amount]': str(total_amount),
                 'metadata[session_type]': 'stoic_mentor_messages',
-                'metadata[message_count]': '30'
+                'metadata[message_count]': '20'
             }
+            
+            # Add customer to payment intent if we have one
+            if customer_id:
+                data['customer'] = customer_id
+                print(f"Adding customer {customer_id} to payment intent")
             
             print(f"Making direct Stripe API call to {stripe_url}")
             response = requests.post(stripe_url, headers=headers, data=data)
@@ -3286,6 +3318,65 @@ def confirm_payment(request):
 
 
 
+
+
+class SavedPaymentMethodsView(APIView):
+    """
+    Endpoint for users to retrieve their saved payment methods
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            user = request.user
+            
+            # Check if user has a Stripe customer ID
+            if not user.stripe_customer_id:
+                return Response({'payment_methods': []}, status=200)
+            
+            # Get saved payment methods from Stripe
+            stripe_secret_key = os.getenv('STRIPE_SECRET_KEY')
+            import requests
+            import base64
+            
+            # Create auth header
+            auth_string = f"{stripe_secret_key}:"
+            auth_bytes = auth_string.encode('ascii')
+            auth_b64 = base64.b64encode(auth_bytes).decode('ascii')
+            
+            headers = {
+                'Authorization': f'Basic {auth_b64}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Stripe-Version': '2024-06-20'
+            }
+            
+            # Get payment methods for customer
+            pm_url = f"https://api.stripe.com/v1/payment_methods?customer={user.stripe_customer_id}&type=card"
+            response = requests.get(pm_url, headers=headers)
+            
+            if response.status_code == 200:
+                stripe_data = response.json()
+                payment_methods = []
+                
+                for pm in stripe_data.get('data', []):
+                    card = pm.get('card', {})
+                    payment_methods.append({
+                        'id': pm['id'],
+                        'brand': card.get('brand', '').capitalize(),
+                        'last4': card.get('last4', ''),
+                        'exp_month': card.get('exp_month', ''),
+                        'exp_year': card.get('exp_year', ''),
+                        'created': pm.get('created', 0)
+                    })
+                
+                return Response({'payment_methods': payment_methods}, status=200)
+            else:
+                print(f"Failed to get payment methods: {response.text}")
+                return Response({'payment_methods': []}, status=200)
+                
+        except Exception as e:
+            print(f"Error getting payment methods: {str(e)}")
+            return Response({'error': 'Failed to retrieve payment methods'}, status=500)
 
 
 class ChatHistoryView(APIView):

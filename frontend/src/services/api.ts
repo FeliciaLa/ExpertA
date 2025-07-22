@@ -323,6 +323,31 @@ export const chatService = {
   }
 };
 
+export const paymentService = {
+  getSavedPaymentMethods: async () => {
+    try {
+      const response = await api.get('payment/saved-methods/');
+      return response.data;
+    } catch (error) {
+      console.error('Saved payment methods error:', error);
+      throw error;
+    }
+  },
+
+  createPaymentIntent: async (expertId: string, useExistingCard: boolean = false) => {
+    try {
+      const response = await api.post('payment/create-intent/', { 
+        expert_id: expertId,
+        use_existing_card: useExistingCard 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Create payment intent error:', error);
+      throw error;
+    }
+  }
+};
+
 export const authApi = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
     try {
