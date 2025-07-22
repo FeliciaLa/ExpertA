@@ -677,66 +677,69 @@ class ChatView(APIView):
                     "detail": str(e)
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                            # Track consultation session and save messages if user is authenticated
-                session = None
-                message_count = 0
-                if user:
-                    try:
-                        # Get the MOST RECENT active session for this user and expert
-                        session = ConsultationSession.objects.filter(
+            # Track consultation session and save messages if user is authenticated
+            session = None
+            message_count = 0
+            if user:
+                try:
+                    # Get the MOST RECENT active session for this user and expert
+                    session = ConsultationSession.objects.filter(
+                        user=user,
+                        expert=expert,
+                        status=ConsultationSession.Status.ACTIVE
+                    ).order_by('-started_at').first()
+                    
+                    # If no active session exists, create a new one
+                    created = False
+                    if not session:
+                        session = ConsultationSession.objects.create(
                             user=user,
                             expert=expert,
+                            expert_name=expert.name or expert.email,
+                            expert_industry=getattr(expert.profile, 'industry', '') if hasattr(expert, 'profile') else '',
+                            expert_specialty=expert.specialties or '',
+                            total_messages=0,
+                            duration_minutes=0,
                             status=ConsultationSession.Status.ACTIVE
-                        ).order_by('-started_at').first()
-                        
-                        # If no active session exists, create a new one
-                        if not session:
-                            session = ConsultationSession.objects.create(
-                                user=user,
-                                expert=expert,
-                                expert_name=expert.name or expert.email,
-                                expert_industry=getattr(expert.profile, 'industry', '') if hasattr(expert, 'profile') else '',
-                                expert_specialty=expert.specialties or '',
-                                total_messages=0,
-                                duration_minutes=0,
-                                status=ConsultationSession.Status.ACTIVE
-                            )
-                        
-                        print(f"🎯 Using session: {session.id} (started: {session.started_at}, messages: {session.total_messages})")
-                        
-                        # Save user message to database
-                        user_message = ChatMessage.objects.create(
-                            session=session,
-                            role=ChatMessage.Role.USER,
-                            content=question
                         )
-                        print(f"Saved user message: {user_message.id}")
-                        
-                        # Save AI response to database
-                        ai_message = ChatMessage.objects.create(
-                            session=session,
-                            role=ChatMessage.Role.ASSISTANT,
-                            content=response
-                        )
-                        print(f"Saved AI response: {ai_message.id}")
-                        
-                        # Increment message count (user message + AI response = 2 messages)
-                        session.total_messages += 2
-                        session.save()
-                        
-                        # Get current message count for this session
-                        message_count = session.total_messages
-                        
-                        print(f"\n=== Consultation Session Tracking ===")
-                        print(f"Session ID: {session.id}")
-                        print(f"Total Messages: {session.total_messages}")
-                        print(f"Status: {session.status}")
-                        print(f"Messages saved: User({user_message.id}), AI({ai_message.id})")
-                        
-                    except Exception as e:
-                        print(f"Error tracking consultation session: {str(e)}")
-                        # Don't fail the entire request if session tracking fails
-                        pass
+                        created = True
+                    
+                    print(f"🎯 Using session: {session.id} (created: {created}, messages: {session.total_messages})")
+                    
+                    # Save user message to database
+                    user_message = ChatMessage.objects.create(
+                        session=session,
+                        role=ChatMessage.Role.USER,
+                        content=question
+                    )
+                    print(f"Saved user message: {user_message.id}")
+                    
+                    # Save AI response to database
+                    ai_message = ChatMessage.objects.create(
+                        session=session,
+                        role=ChatMessage.Role.ASSISTANT,
+                        content=response
+                    )
+                    print(f"Saved AI response: {ai_message.id}")
+                    
+                    # Increment message count (user message + AI response = 2 messages)
+                    session.total_messages += 2
+                    session.save()
+                    
+                    # Get current message count for this session
+                    message_count = session.total_messages
+                    
+                    print(f"\n=== Consultation Session Tracking ===")
+                    print(f"Session ID: {session.id}")
+                    print(f"Created: {created}")
+                    print(f"Total Messages: {session.total_messages}")
+                    print(f"Status: {session.status}")
+                    print(f"Messages saved: User({user_message.id}), AI({ai_message.id})")
+                    
+                except Exception as e:
+                    print(f"Error tracking consultation session: {str(e)}")
+                    # Don't fail the entire request if session tracking fails
+                    pass
 
             # Prepare response with message tracking
             response_data = {
