@@ -169,16 +169,25 @@ export const Chat: React.FC<ChatProps> = ({
         if (activePaidSession) {
           // User has paid - count messages ONLY within the paid session
           const paidSessionMessages = activePaidSession.total_messages || 0;
+          const calculation = 2 - Math.floor(paidSessionMessages / 2);
+          const finalRemaining = Math.max(0, calculation);
+          
+          console.log('🔍 PAID SESSION CALCULATION:', {
+            paidSessionMessages,
+            calculation: `2 - Math.floor(${paidSessionMessages} / 2) = 2 - ${Math.floor(paidSessionMessages / 2)} = ${calculation}`,
+            finalRemaining
+          });
+          
           setSessionStats(prev => ({
             ...prev,
             hasActivePaidSession: true,
             messageCount: paidSessionMessages,
-            freeMessagesRemaining: Math.max(0, 30 - Math.floor(paidSessionMessages / 2))
+            freeMessagesRemaining: finalRemaining
           }));
           console.log('💳 Active paid session found:', {
             sessionId: activePaidSession.session_id,
             paidMessages: paidSessionMessages,
-            creditsRemaining: Math.max(0, 30 - Math.floor(paidSessionMessages / 2))
+            creditsRemaining: finalRemaining
           });
         } else {
           // User is still on free messages - count across ALL sessions
