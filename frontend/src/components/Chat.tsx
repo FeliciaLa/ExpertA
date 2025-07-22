@@ -107,35 +107,45 @@ export const Chat: React.FC<ChatProps> = ({
         console.log('💬 Setting all messages:', allMessages);
         setMessages(allMessages);
         
-        // Check if there's an active PAID session (new session with 0 messages after payment)
-        const activePaidSession = historyData.sessions.find((session: any) => 
-          session.status === 'active' && session.total_messages === 0
+        // Sort sessions by creation date (most recent first)
+        const sortedSessions = [...historyData.sessions].sort((a, b) => 
+          new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
         );
         
-        // Calculate total messages across ALL sessions
+        // Calculate total messages across ALL sessions (needed for free message counting)
         const totalMessagesAcrossSessions = historyData.sessions.reduce((total: number, session: any) => {
           return total + (session.total_messages || 0);
         }, 0);
         
+        // Check if there's an active PAID session
+        // Logic: If there are multiple sessions, the most recent active session is likely the paid session
+        const activePaidSession = sortedSessions.length > 1 && sortedSessions[0].status === 'active' 
+          ? sortedSessions[0] 
+          : null;
+        
         if (activePaidSession) {
-          // User has paid - show paid session with 30 message credits
+          // User has paid - count messages ONLY within the paid session
           const paidSessionMessages = activePaidSession.total_messages || 0;
           setSessionStats(prev => ({
             ...prev,
             hasActivePaidSession: true,
-            messageCount: totalMessagesAcrossSessions,
-            freeMessagesRemaining: Math.max(0, 30 - Math.floor(paidSessionMessages / 2)) // Count down from 30 paid messages
+            messageCount: paidSessionMessages,
+            freeMessagesRemaining: Math.max(0, 30 - Math.floor(paidSessionMessages / 2))
           }));
-          console.log('💳 Active paid session found - 30 message credits available');
+          console.log('💳 Active paid session found:', {
+            sessionId: activePaidSession.id,
+            paidMessages: paidSessionMessages,
+            creditsRemaining: Math.max(0, 30 - Math.floor(paidSessionMessages / 2))
+          });
         } else {
-          // User is still on free messages
+          // User is still on free messages - count across ALL sessions
           setSessionStats(prev => ({
             ...prev,
             hasActivePaidSession: false,
             messageCount: totalMessagesAcrossSessions,
             freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(totalMessagesAcrossSessions / 2))
           }));
-          console.log('🆓 Using free messages');
+          console.log('🆓 Using free messages - total across all sessions:', totalMessagesAcrossSessions);
         }
         
         console.log('📊 Total messages across all sessions:', totalMessagesAcrossSessions);
