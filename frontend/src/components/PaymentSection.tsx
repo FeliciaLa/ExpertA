@@ -167,23 +167,17 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
   return (
     <>
-      <Card sx={{ mt: 3, border: '2px dashed orange' }}>
+      <Card sx={{ mt: 3 }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
             <Payment color="primary" />
             <Typography variant="h6" color="primary">
-              Payment System
+              Secure Payment
             </Typography>
-            <Chip 
-              label={`${getEnvironment().toUpperCase()} ONLY`} 
-              color="warning" 
-              size="small" 
-            />
           </Box>
 
           <Alert severity="info" sx={{ mb: 2 }}>
-            <strong>🚧 Development Feature</strong> - This payment system is only visible on staging/development environments. 
-            Uses Stripe test mode - no real charges will be made.
+            <strong>💳 Secure Payment</strong> - Powered by Stripe. Your payment information is encrypted and secure.
           </Alert>
 
           {error && (
@@ -213,7 +207,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
           </Button>
 
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
-            💳 Test Mode - Use card 4242 4242 4242 4242
+            🔒 Secured by Stripe - Industry-leading payment security
           </Typography>
         </CardContent>
       </Card>
