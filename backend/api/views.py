@@ -3084,13 +3084,13 @@ def create_payment_intent(request):
                 expert_profile.save()
             
             # Fixed pricing for The Stoic Mentor
-            expert_price = 2.99
+            expert_price = 1.99
                 
         except User.DoesNotExist:
             return Response({'error': 'Expert not found'}, status=404)
         
         # Direct payment to platform for The Stoic Mentor only
-        total_amount = expert_price  # £2.99
+        total_amount = expert_price  # £1.99
         expert_amount = 0  # Platform keeps all for now
         platform_amount = total_amount
         

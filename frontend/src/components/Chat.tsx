@@ -169,12 +169,12 @@ export const Chat: React.FC<ChatProps> = ({
         if (activePaidSession) {
           // User has paid - count messages ONLY within the paid session
           const paidSessionMessages = activePaidSession.total_messages || 0;
-          const calculation = 2 - Math.floor(paidSessionMessages / 2);
+          const calculation = 20 - Math.floor(paidSessionMessages / 2);
           const finalRemaining = Math.max(0, calculation);
           
           console.log('🔍 PAID SESSION CALCULATION:', {
             paidSessionMessages,
-            calculation: `2 - Math.floor(${paidSessionMessages} / 2) = 2 - ${Math.floor(paidSessionMessages / 2)} = ${calculation}`,
+            calculation: `20 - Math.floor(${paidSessionMessages} / 2) = 20 - ${Math.floor(paidSessionMessages / 2)} = ${calculation}`,
             finalRemaining
           });
           
@@ -282,7 +282,7 @@ export const Chat: React.FC<ChatProps> = ({
           
           if (prev.hasActivePaidSession) {
             // User has paid - count down from 2 messages for this session
-            const newRemaining = Math.max(0, 2 - Math.floor(response.total_messages / 2));
+            const newRemaining = Math.max(0, 20 - Math.floor(response.total_messages / 2));
             console.log('💳 PAID SESSION UPDATE:', {
               sessionMessages: response.total_messages,
               newRemaining: newRemaining
@@ -336,7 +336,7 @@ export const Chat: React.FC<ChatProps> = ({
     setSessionStats(prev => ({
       ...prev,
       hasActivePaidSession: true,
-      freeMessagesRemaining: expertName === 'The Stoic Mentor' ? 2 : 0 // 2 messages for testing
+      freeMessagesRemaining: expertName === 'The Stoic Mentor' ? 20 : 0 // 20 messages for paid session
     }));
     
     setShowPaymentDialog(false);
@@ -413,7 +413,7 @@ export const Chat: React.FC<ChatProps> = ({
             {sessionStats.hasActivePaidSession ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Chip 
-                  label={expertName === 'The Stoic Mentor' ? "2 Messages Active" : "15-Min Session Active"}
+                  label={expertName === 'The Stoic Mentor' ? "20 Messages Active" : "15-Min Session Active"}
                   color="success" 
                   size="small" 
                 />
@@ -434,7 +434,7 @@ export const Chat: React.FC<ChatProps> = ({
                   />
                               <Typography variant="body2" color="text.secondary">
               {expertName === 'The Stoic Mentor'
-                ? 'Then £2.99 for 2 messages'
+                ? 'Then £1.99 for 20 messages'
                 : `Then £${(validExpertPrice * 1.2).toFixed(2)} for 15-min session`
               }
             </Typography>
@@ -579,7 +579,7 @@ export const Chat: React.FC<ChatProps> = ({
         <PaymentSection
           expertId={expertId}
           expertName={firstName}
-          price={expertName === 'The Stoic Mentor' ? 2.99 : validExpertPrice * 1.2}
+                      price={expertName === 'The Stoic Mentor' ? 1.99 : validExpertPrice * 1.2}
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
@@ -590,7 +590,7 @@ export const Chat: React.FC<ChatProps> = ({
           onClose={() => setShowPaymentSuccess(false)}
           expertName={firstName}
           sessionDuration={expertName === 'The Stoic Mentor' ? 30 : 15}
-          amountPaid={expertName === 'The Stoic Mentor' ? 2.99 : validExpertPrice * 1.2}
+                      amountPaid={expertName === 'The Stoic Mentor' ? 1.99 : validExpertPrice * 1.2}
         />
       )}
     </Box>

@@ -218,7 +218,7 @@ export const ExpertDetailPage: React.FC = () => {
               expertId={expert.id}
               expertName={expert.name}
               monetizationEnabled={expert.name === 'The Stoic Mentor' ? true : false}
-              expertPrice={expert.name === 'The Stoic Mentor' ? 2.99 : 5}
+              expertPrice={expert.name === 'The Stoic Mentor' ? 1.99 : 5}
             />
       );
     }
