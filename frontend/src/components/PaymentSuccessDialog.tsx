@@ -37,7 +37,10 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
               </button>
             </div>
             <p className="text-gray-600">
-              Your premium consultation session is now active
+              {expertName === 'The Stoic Mentor' 
+                ? 'Your premium message pack is now active'
+                : 'Your premium consultation session is now active'
+              }
             </p>
           </div>
 
@@ -45,7 +48,7 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
             <div className="flex items-center justify-center gap-2 mb-3">
               <Clock className="w-5 h-5 text-green-600" />
               <span className="font-semibold text-green-800">
-                {sessionDuration}-Minute Session Active
+                {expertName === 'The Stoic Mentor' ? '20 Messages Active' : `${sessionDuration}-Minute Session Active`}
               </span>
             </div>
             <div className="space-y-2 text-sm text-green-700">
@@ -54,8 +57,8 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
                 <span className="font-medium">{expertName}</span>
               </div>
               <div className="flex justify-between">
-                <span>Duration:</span>
-                <span>{sessionDuration} minutes</span>
+                <span>{expertName === 'The Stoic Mentor' ? 'Messages:' : 'Duration:'}</span>
+                <span>{expertName === 'The Stoic Mentor' ? '20 messages' : `${sessionDuration} minutes`}</span>
               </div>
               <div className="flex justify-between">
                 <span>Amount paid:</span>
@@ -69,7 +72,10 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
               ✨ <strong>You can now ask detailed questions</strong> and get comprehensive expert advice
             </p>
             <p>
-              🕒 Your session timer will start with your next message
+              {expertName === 'The Stoic Mentor' 
+                ? '💬 Your 20 message credits are now available'
+                : '🕒 Your session timer will start with your next message'
+              }
             </p>
             <p>
               📧 A receipt has been sent to your email address

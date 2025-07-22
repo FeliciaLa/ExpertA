@@ -343,12 +343,16 @@ export const Chat: React.FC<ChatProps> = ({
     setShowPaymentSuccess(true);
     
     // Add a system message about the paid session
-    setMessages(prev => [...prev, {
-      role: 'assistant',
+    const systemMessage = {
+      id: Date.now().toString(),
+      role: 'assistant' as const,
       content: expertName === 'The Stoic Mentor' 
-        ? `🎉 Thank you for your payment! You now have 2 additional messages with ${firstName}. Feel free to ask detailed questions and get in-depth philosophical guidance. Your extended session is active now.`
-        : `🎉 Thank you for your payment! You now have a 15-minute consultation session with ${firstName}. Feel free to ask detailed questions and get in-depth expert advice. Your session is active now.`
-    }]);
+        ? `🎉 Thank you for your payment! You now have 20 additional messages with ${firstName}. Feel free to ask detailed questions and get in-depth philosophical guidance. Your extended session is active now.`
+        : `🎉 Thank you for your payment! Your consultation session with ${firstName} is now active. Feel free to ask detailed questions and get expert advice.`,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, systemMessage]);
   };
 
   // Handle user sign in
