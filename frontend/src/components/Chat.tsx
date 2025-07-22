@@ -91,7 +91,7 @@ export const Chat: React.FC<ChatProps> = ({
       
       if (historyData.sessions && historyData.sessions.length > 0) {
         // Collect ALL messages from ALL sessions for this expert
-        const allMessages: Message[] = [];
+        const allMessages: (Message & { created_at: string; session_id: string })[] = [];
         
         historyData.sessions.forEach((session: any, sessionIndex: number) => {
           console.log(`🔍 Processing session ${sessionIndex}: ${session.session_id?.substring(0,8)}`);
@@ -100,19 +100,31 @@ export const Chat: React.FC<ChatProps> = ({
             session.messages.forEach((msg: any, msgIndex: number) => {
               const messageObj = {
                 role: msg.role as 'user' | 'assistant',
-                content: msg.content
+                content: msg.content,
+                created_at: msg.created_at, // Include timestamp for sorting
+                session_id: session.session_id
               };
               allMessages.push(messageObj);
-              console.log(`  Added message ${allMessages.length}: ${msg.role} - "${msg.content.substring(0, 30)}..."`);
+              console.log(`  Added message ${allMessages.length}: ${msg.role} - "${msg.content.substring(0, 30)}..." (${msg.created_at})`);
             });
           } else {
             console.log(`  Session has no messages or messages not an array:`, session.messages);
           }
         });
         
+        // Sort messages chronologically across ALL sessions
+        allMessages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        console.log('🔥 SORTED MESSAGES CHRONOLOGICALLY');
+        
+        // Remove timestamp and session_id from final messages (only needed for sorting)
+        const sortedMessages = allMessages.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+        
         console.log(`🔥 FINAL allMessages array length: ${allMessages.length}`);
         
-        console.log('💬 Setting all messages:', allMessages);
+        console.log('💬 Setting sorted messages:', sortedMessages);
         console.log('🔍 SESSION BREAKDOWN:');
         historyData.sessions.forEach((session: any, index: number) => {
           console.log(`Session ${index}: ID=${session.session_id?.substring(0,8)}, messages=${session.messages?.length || 0}, started=${session.started_at}, status=${session.status}`);
@@ -123,12 +135,12 @@ export const Chat: React.FC<ChatProps> = ({
           }
         });
         
-        console.log('🔥 TOTAL MESSAGES TO SET:', allMessages.length);
-        setMessages(allMessages);
+        console.log('🔥 TOTAL MESSAGES TO SET:', sortedMessages.length);
+        setMessages(sortedMessages);
         
         // Force a re-render check
         setTimeout(() => {
-          console.log('🔥 MESSAGES AFTER SET:', allMessages.length);
+          console.log('🔥 MESSAGES AFTER SET:', sortedMessages.length);
         }, 100);
         
         // Sort sessions by creation date (most recent first)
