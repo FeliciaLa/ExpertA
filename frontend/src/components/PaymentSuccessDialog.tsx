@@ -23,7 +23,6 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
         <div className="p-6 text-center">
           <div className="mb-6">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
             <div className="flex items-center justify-between mb-2">
               <div></div>
               <h2 className="text-2xl font-bold text-gray-900">
@@ -69,16 +68,10 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
 
           <div className="space-y-3 text-sm text-gray-600">
             <p>
-              ✨ <strong>You can now ask detailed questions</strong> and get comprehensive expert advice
-            </p>
-            <p>
               {expertName === 'The Stoic Mentor' 
                 ? '💬 Your 20 message credits are now available'
                 : '🕒 Your session timer will start with your next message'
               }
-            </p>
-            <p>
-              📧 A receipt has been sent to your email address
             </p>
           </div>
         </div>
