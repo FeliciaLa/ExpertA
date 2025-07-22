@@ -211,8 +211,14 @@ export const Chat: React.FC<ChatProps> = ({
   const shouldBlockMessage = () => {
     if (!features.payments) return false; // Payments disabled, unlimited chat
     if (!monetizationEnabled) return false; // Free expert, unlimited chat
-    if (sessionStats.hasActivePaidSession) return false; // User has paid for this session
-    return sessionStats.freeMessagesRemaining <= 0; // Used up free messages
+    
+    // For paid sessions, check if they have messages remaining
+    if (sessionStats.hasActivePaidSession) {
+      return sessionStats.freeMessagesRemaining <= 0; // Paid credits exhausted
+    }
+    
+    // For free sessions, check if free messages are exhausted
+    return sessionStats.freeMessagesRemaining <= 0; // Free messages exhausted
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
