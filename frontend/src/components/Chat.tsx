@@ -105,6 +105,15 @@ export const Chat: React.FC<ChatProps> = ({
         });
         
         console.log('💬 Setting all messages:', allMessages);
+        console.log('🔍 SESSION BREAKDOWN:');
+        historyData.sessions.forEach((session: any, index: number) => {
+          console.log(`Session ${index}: ID=${session.id?.substring(0,8)}, messages=${session.messages?.length || 0}, started=${session.started_at}`);
+          if (session.messages) {
+            session.messages.forEach((msg: any, msgIndex: number) => {
+              console.log(`  Message ${msgIndex}: ${msg.role} - "${msg.content.substring(0, 50)}..."`);
+            });
+          }
+        });
         setMessages(allMessages);
         
         // Sort sessions by creation date (most recent first)
@@ -361,7 +370,7 @@ export const Chat: React.FC<ChatProps> = ({
                 />
                 <Typography variant="body2" color="text.secondary">
                   {expertName === 'The Stoic Mentor' 
-                    ? "30 additional messages available"
+                    ? `${sessionStats.freeMessagesRemaining} additional messages available`
                     : "Unlimited questions until session expires"
                   }
                 </Typography>
