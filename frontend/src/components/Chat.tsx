@@ -107,7 +107,7 @@ export const Chat: React.FC<ChatProps> = ({
         console.log('💬 Setting all messages:', allMessages);
         console.log('🔍 SESSION BREAKDOWN:');
         historyData.sessions.forEach((session: any, index: number) => {
-          console.log(`Session ${index}: ID=${session.id?.substring(0,8)}, messages=${session.messages?.length || 0}, started=${session.started_at}`);
+          console.log(`Session ${index}: ID=${session.session_id?.substring(0,8)}, messages=${session.messages?.length || 0}, started=${session.started_at}, status=${session.status}`);
           if (session.messages) {
             session.messages.forEach((msg: any, msgIndex: number) => {
               console.log(`  Message ${msgIndex}: ${msg.role} - "${msg.content.substring(0, 50)}..."`);
@@ -128,9 +128,16 @@ export const Chat: React.FC<ChatProps> = ({
         
         // Check if there's an active PAID session
         // Logic: If there are multiple sessions, the most recent active session is likely the paid session
+        console.log('🔍 PAID SESSION DETECTION:');
+        console.log(`  Total sessions: ${sortedSessions.length}`);
+        console.log(`  First session status: ${sortedSessions[0]?.status}`);
+        console.log(`  Condition: ${sortedSessions.length > 1} && ${sortedSessions[0]?.status === 'active'}`);
+        
         const activePaidSession = sortedSessions.length > 1 && sortedSessions[0].status === 'active' 
           ? sortedSessions[0] 
           : null;
+          
+        console.log('🔍 SELECTED PAID SESSION:', activePaidSession?.session_id || 'null');
         
         if (activePaidSession) {
           // User has paid - count messages ONLY within the paid session
@@ -142,7 +149,7 @@ export const Chat: React.FC<ChatProps> = ({
             freeMessagesRemaining: Math.max(0, 30 - Math.floor(paidSessionMessages / 2))
           }));
           console.log('💳 Active paid session found:', {
-            sessionId: activePaidSession.id,
+            sessionId: activePaidSession.session_id,
             paidMessages: paidSessionMessages,
             creditsRemaining: Math.max(0, 30 - Math.floor(paidSessionMessages / 2))
           });
