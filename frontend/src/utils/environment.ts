@@ -17,7 +17,8 @@ export const getEnvironment = () => {
 export const API_URL = import.meta.env.VITE_API_URL || 'https://experta-backend-d64920064058.herokuapp.com/api/';
 
 // Stripe configuration
-export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51RXIAbRpY4U21STtgQXyGy0DyClPih7SYhbD4Q2fLKCbIdwSxCqfRjedFs0G7H4mKSIsS3lEWgcvLkN36dg2wJbP00uTRgBLRp';
+// Stripe configuration - should be set as VITE_STRIPE_PUBLISHABLE_KEY environment variable in Vercel
+export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51RXIAQRpcM4BibkQIXnQLc7fn54KwyRSoBlDymXnTNkgxFBx8vmrkFYlekLunyWoE3EIBfIEeBuoUKV71wgGabi300wtZf3UDk';
 
 // Feature flags
 export const features = {
