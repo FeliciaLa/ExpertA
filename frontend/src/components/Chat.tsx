@@ -327,7 +327,7 @@ export const Chat: React.FC<ChatProps> = ({
     setSessionStats(prev => ({
       ...prev,
       hasActivePaidSession: true,
-      freeMessagesRemaining: expertName === 'The Stoic Mentor' ? 30 : 0 // 30 messages for Stoic Mentor
+      freeMessagesRemaining: expertName === 'The Stoic Mentor' ? 2 : 0 // 2 messages for testing
     }));
     
     setShowPaymentDialog(false);
@@ -404,7 +404,7 @@ export const Chat: React.FC<ChatProps> = ({
             {sessionStats.hasActivePaidSession ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Chip 
-                  label={expertName === 'The Stoic Mentor' ? "30 Messages Active" : "15-Min Session Active"}
+                  label={expertName === 'The Stoic Mentor' ? "2 Messages Active" : "15-Min Session Active"}
                   color="success" 
                   size="small" 
                 />
