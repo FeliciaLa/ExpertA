@@ -12,7 +12,8 @@ import {
   DialogContent,
   DialogActions,
   Chip,
-  Divider
+  Divider,
+  Avatar
 } from '@mui/material';
 import { Payment } from '@mui/icons-material';
 import { chatService } from '../services/api';
@@ -32,13 +33,15 @@ interface ChatProps {
   expertName?: string;
   expertPrice?: number;
   monetizationEnabled?: boolean;
+  expertProfileImage?: string;
 }
 
 export const Chat: React.FC<ChatProps> = ({ 
   expertId, 
   expertName = 'Expert', 
   expertPrice = 5,
-  monetizationEnabled = false 
+  monetizationEnabled = false,
+  expertProfileImage 
 }) => {
   // Ensure expertPrice is a valid number (handle both number and string inputs)
   const validExpertPrice = (() => {
@@ -300,7 +303,7 @@ export const Chat: React.FC<ChatProps> = ({
               newRemaining: newRemaining
             });
             return {
-              ...prev,
+        ...prev,
               messageCount: response.total_messages,
               freeMessagesRemaining: newRemaining
             };
@@ -436,12 +439,12 @@ export const Chat: React.FC<ChatProps> = ({
                     color={sessionStats.freeMessagesRemaining > 0 ? "primary" : "warning"}
                     size="small" 
                   />
-                              <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary">
               {expertName === 'The Stoic Mentor'
                 ? 'Then £1.99 for 20 messages'
                 : `Then £${(validExpertPrice * 1.2).toFixed(2)} for 15-min session`
               }
-            </Typography>
+                  </Typography>
                 </Box>
               </Box>
             )}
@@ -466,8 +469,30 @@ export const Chat: React.FC<ChatProps> = ({
               sx={{
                 alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
                 maxWidth: '70%',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 1,
+                flexDirection: message.role === 'user' ? 'row-reverse' : 'row'
               }}
             >
+              {/* Show expert avatar only for assistant messages */}
+              {message.role === 'assistant' && (
+                <Avatar
+                  src={expertProfileImage}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    fontSize: '1rem',
+                    bgcolor: expertName === 'The Stoic Mentor' ? '#d4af37' : 'primary.main',
+                    color: expertName === 'The Stoic Mentor' ? '#2c3e50' : 'white',
+                    mt: 0.5,
+                    flexShrink: 0
+                  }}
+                >
+                  {expertName === 'The Stoic Mentor' ? '🏛️' : expertName[0]}
+                </Avatar>
+              )}
+              
               <Paper
                 elevation={1}
                 sx={{

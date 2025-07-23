@@ -219,6 +219,7 @@ export const ExpertDetailPage: React.FC = () => {
               expertName={expert.name}
               monetizationEnabled={expert.name === 'The Stoic Mentor' ? true : false}
               expertPrice={expert.name === 'The Stoic Mentor' ? 1.99 : 5}
+              expertProfileImage={getProfileImageUrl()}
             />
       );
     }
@@ -253,8 +254,30 @@ export const ExpertDetailPage: React.FC = () => {
               sx={{
                 alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
                 maxWidth: '70%',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 1,
+                flexDirection: message.role === 'user' ? 'row-reverse' : 'row'
               }}
             >
+              {/* Show expert avatar only for assistant messages */}
+              {message.role === 'assistant' && (
+                <Avatar
+                  src={getProfileImageUrl()}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    fontSize: '1rem',
+                    bgcolor: expert.name === 'The Stoic Mentor' ? '#d4af37' : 'primary.main',
+                    color: expert.name === 'The Stoic Mentor' ? '#2c3e50' : 'white',
+                    mt: 0.5,
+                    flexShrink: 0
+                  }}
+                >
+                  {expert.name === 'The Stoic Mentor' ? '🏛️' : expert.name[0]}
+                </Avatar>
+              )}
+              
               <Paper
                 elevation={1}
                 sx={{
