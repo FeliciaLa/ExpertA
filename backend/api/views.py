@@ -3102,12 +3102,12 @@ def create_payment_intent(request):
             
         else:
             # Original consultation payment logic for The Stoic Mentor
-            expert_id = request.data.get('expert_id')
-            if not expert_id:
-                return Response({'error': 'Expert ID is required'}, status=400)
+        expert_id = request.data.get('expert_id')
+        if not expert_id:
+            return Response({'error': 'Expert ID is required'}, status=400)
         
-            # Get expert and pricing info
-            try:
+        # Get expert and pricing info
+        try:
                 expert = User.objects.get(id=expert_id)
             except User.DoesNotExist:
                 return Response({'error': 'Expert not found'}, status=404)
@@ -3210,13 +3210,13 @@ def create_payment_intent(request):
                 print(f"Client secret exists: {'client_secret' in intent_data}")
                 
                 if 'client_secret' in intent_data:
-                    return Response({
+        return Response({
                         'client_secret': intent_data['client_secret'],
                         'payment_intent_id': intent_data['id'],
-                        'amount': total_amount,
-                        'expert_amount': expert_amount,
-                        'platform_amount': platform_amount
-                    })
+            'amount': total_amount,
+            'expert_amount': expert_amount,
+            'platform_amount': platform_amount
+        })
                 else:
                     print(f"❌ No client_secret in response: {intent_data}")
                     return Response({'error': 'Payment intent missing client_secret'}, status=500)
@@ -3311,8 +3311,8 @@ def confirm_payment(request):
             
             # Create a special consultation session to track activation payment
             # This serves as both payment record and activation flag
-            session = ConsultationSession.objects.create(
-                user=request.user,
+        session = ConsultationSession.objects.create(
+            user=request.user,
                 expert=expert,
                 expert_name=expert.name,
                 expert_industry="ACTIVATION",  # Special marker for activation payments

@@ -57,9 +57,6 @@ interface StepData {
   years_of_experience: number;
   background: string;
   key_skills: string[];
-  typical_problems: string;
-  tools_technologies: string;
-  certifications: string;
   bio: string;
   completion: string;
 }
@@ -109,27 +106,12 @@ const stepSections = [
   },
   {
     title: 'Skills & Knowledge',
-    description: 'Share your skills and what problems you solve',
+    description: 'Tell us about your skills and techniques',
     steps: [
       {
-        label: 'Key Skills',
-        description: 'What are your main skills and competencies?',
+        label: 'Key Skills and Techniques',
+        description: 'What are your main skills, competencies, and techniques you use?',
         field: 'key_skills'
-      },
-      {
-        label: 'Techniques & Tools',
-        description: 'What techniques, tools and technologies do you work with?',
-        field: 'tools_technologies'
-      },
-      {
-        label: 'Certifications',
-        description: 'Any relevant certifications or qualifications?',
-        field: 'certifications'
-      },
-      {
-        label: 'Typical Problems You Solve',
-        description: 'What types of problems do you typically help clients with?',
-        field: 'typical_problems'
       }
     ]
   },
@@ -177,9 +159,6 @@ const StepByStepOnboarding: React.FC = () => {
     years_of_experience: 1,
     background: '',
     key_skills: [],
-    typical_problems: '',
-    tools_technologies: '',
-    certifications: '',
     bio: '',
     completion: ''
   });
@@ -275,9 +254,6 @@ const StepByStepOnboarding: React.FC = () => {
         years_of_experience: profile.profile?.years_of_experience || 1,
         background: profile.profile?.background || '',
         key_skills: parseArrayField(profile.profile?.key_skills),
-        typical_problems: profile.profile?.typical_problems || '',
-        tools_technologies: profile.profile?.tools_technologies || '',
-        certifications: profile.profile?.certifications || '',
         bio: profile.bio || '',
         completion: ''
       };
@@ -451,9 +427,9 @@ const StepByStepOnboarding: React.FC = () => {
         years_of_experience: stepData.years_of_experience,
         background: stepData.background,
         key_skills: (stepData.key_skills || []).join(', '),
-        typical_problems: stepData.typical_problems || `As a ${stepData.title}, I help clients solve complex challenges in my field.`,
-        certifications: stepData.certifications,
-        tools_technologies: stepData.tools_technologies,
+        typical_problems: '', // No longer collected
+        tools_technologies: '', // No longer collected
+        certifications: '', // No longer collected
         monetization_enabled: false, // Default - expert activation model
         monetization_price: 0 // Not used in new model
       };
