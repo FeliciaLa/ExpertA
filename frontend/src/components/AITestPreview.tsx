@@ -93,8 +93,10 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
       fullWidth
       sx={{
         '& .MuiDialog-paper': {
-          height: '80vh',
-          maxHeight: '800px'
+          height: '85vh',
+          maxHeight: '700px',
+          display: 'flex',
+          flexDirection: 'column'
         }
       }}
     >
@@ -123,71 +125,61 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
         </IconButton>
       </DialogTitle>
       
-      <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                 {/* Preview Warning */}
-         <Alert severity="success" sx={{ m: 2, mb: 0 }}>
-           <strong>Real AI Test:</strong> This is your actual AI expert responding in private test mode. Responses are identical to the live version.
-         </Alert>
+            <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '100%', flex: 1, overflow: 'hidden' }}>
+        {/* Preview Warning */}
+        <Alert severity="success" sx={{ m: 2, mb: 1 }}>
+          <strong>Real AI Test:</strong> Your actual AI expert responding in private test mode.
+        </Alert>
 
         {/* Expert Preview Header */}
-        <Paper sx={{ m: 2, p: 3, bgcolor: 'grey.50' }}>
-          <Box display="flex" alignItems="center" gap={3}>
+        <Paper sx={{ m: 2, mt: 0, p: 2, bgcolor: 'grey.50' }}>
+          <Box display="flex" alignItems="center" gap={2}>
             <Avatar 
               sx={{ 
-                width: 60, 
-                height: 60, 
+                width: 40, 
+                height: 40, 
                 bgcolor: 'primary.main',
-                fontSize: '1.5rem',
+                fontSize: '1.2rem',
                 fontWeight: 'bold'
               }}
             >
               {expert?.name?.charAt(0) || 'E'}
             </Avatar>
             <Box>
-              <Typography variant="h5" gutterBottom>
+              <Typography variant="h6" gutterBottom sx={{ mb: 0.5 }}>
                 {expert?.name || 'Expert Name'}
               </Typography>
-              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                {expert?.title || 'Professional Expert'}
+              <Typography variant="body2" color="text.secondary">
+                {expert?.title || 'Professional Expert'} • 🔬 Testing Mode
               </Typography>
-              <Chip 
-                label="🔬 PREVIEW MODE" 
-                color="primary" 
-                size="small"
-                sx={{ fontWeight: 'bold' }}
-              />
             </Box>
           </Box>
-          <Divider sx={{ my: 2 }} />
-          <Typography variant="body2" color="text.secondary">
-            <Visibility sx={{ fontSize: 16, mr: 1, verticalAlign: 'middle' }} />
-            You're testing how users will interact with your AI expert
-          </Typography>
         </Paper>
 
         {/* Chat Interface */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', mx: 2, mb: 2 }}>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', mx: 2, mb: 2, minHeight: 0 }}>
           {/* Messages Area */}
           <Paper 
             sx={{ 
               flex: 1, 
-              p: 2, 
-              mb: 2, 
+              p: 1, 
+              mb: 1, 
               overflow: 'auto',
-              minHeight: 300,
+              minHeight: 200,
+              maxHeight: 300,
               bgcolor: 'background.default'
             }}
           >
-            {messages.length === 0 ? (
-                             <Box textAlign="center" py={4}>
-                 <Chat sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                   Test Your Real AI Expert
-                 </Typography>
-                 <Typography variant="body2" color="text.secondary">
-                   This connects to your actual AI - responses are identical to the live version
-                 </Typography>
-               </Box>
+                          {messages.length === 0 ? (
+                <Box textAlign="center" py={2}>
+                  <Chat sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    Test Your Real AI Expert
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    This connects to your actual AI - responses are identical to the live version
+                  </Typography>
+                </Box>
             ) : (
               <Box>
                 {messages.map((message) => (
@@ -196,12 +188,12 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
                     sx={{
                       display: 'flex',
                       justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                      mb: 2
+                      mb: 1
                     }}
                   >
                     <Paper
                       sx={{
-                        p: 2,
+                        p: 1.5,
                         maxWidth: '70%',
                         bgcolor: message.sender === 'user' ? 'primary.main' : 'grey.100',
                         color: message.sender === 'user' ? 'white' : 'text.primary'
@@ -214,8 +206,8 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
                   </Box>
                 ))}
                 {isLoading && (
-                  <Box display="flex" justifyContent="flex-start" mb={2}>
-                    <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
+                  <Box display="flex" justifyContent="flex-start" mb={1}>
+                    <Paper sx={{ p: 1.5, bgcolor: 'grey.100' }}>
                       <Typography variant="body2" color="text.secondary">
                         🤖 AI is thinking...
                       </Typography>
@@ -248,9 +240,9 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
             </Button>
           </Box>
 
-                     <Typography variant="caption" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
-             💡 You're chatting with your real AI expert! Responses are identical to the live version - this is just private testing.
-           </Typography>
+                               <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, textAlign: 'center', fontSize: '0.7rem' }}>
+            💡 Real AI responses - Private testing mode
+          </Typography>
         </Box>
       </DialogContent>
     </Dialog>
