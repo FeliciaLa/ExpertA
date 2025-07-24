@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
 import { CircularProgress, Box } from '@mui/material';
+import { features } from './utils/environment';
 
 // Pages and components
 import LandingPage from './pages/LandingPage';
@@ -59,7 +60,12 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Layout><LandingPage /></Layout>} />
-      <Route path="/experts" element={<Layout><ExpertList /></Layout>} />
+      {/* Browse Experts functionality - conditionally enabled */}
+      {features.browseExperts ? (
+        <Route path="/experts" element={<Layout><ExpertList /></Layout>} />
+      ) : (
+        <Route path="/experts" element={<Navigate to="/" replace />} />
+      )}
       <Route path="/experts/:expertId" element={<Layout><ExpertDetailPage /></Layout>} />
       <Route path="/verify-email/:token" element={<Layout><VerifyEmailPage /></Layout>} />
       <Route path="/verify-email-change/:token" element={<Layout><EmailVerificationPage /></Layout>} />

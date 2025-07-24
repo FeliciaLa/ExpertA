@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthDialog from '../components/AuthDialog';
+import { features } from '../utils/environment';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -41,7 +42,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       if (isExpert) {
         navigate('/expert');
       } else {
-        navigate('/experts');
+        // Navigate to experts if feature is enabled, otherwise to home
+        navigate(features.browseExperts ? '/experts' : '/');
       }
     } else {
       // Open auth dialog for login/registration
@@ -56,7 +58,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         if (isExpertLogin) {
           navigate('/expert');
         } else {
-          navigate('/experts');
+          // Navigate to experts if feature is enabled, otherwise to home
+          navigate(features.browseExperts ? '/experts' : '/');
         }
       }
       return result;
@@ -79,7 +82,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         if (isExpertRegistration) {
           navigate('/expert');
         } else {
-          navigate('/experts');
+          // Navigate to experts if feature is enabled, otherwise to home
+          navigate(features.browseExperts ? '/experts' : '/');
         }
       }
       return result;
@@ -139,8 +143,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Button>
             )}
             
-            {/* Browse Experts button - only visible for authenticated non-experts */}
-            {isAuthenticated && !isExpert && (
+            {/* Browse Experts button - only visible for authenticated non-experts and when feature is enabled */}
+            {features.browseExperts && isAuthenticated && !isExpert && (
               <Button
                 data-tour="browse-experts"
                 color="primary"
