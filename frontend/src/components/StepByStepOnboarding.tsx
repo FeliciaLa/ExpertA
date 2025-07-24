@@ -147,7 +147,7 @@ const stepSections = [
   },
   {
     title: 'Activate Your AI Expert',
-    description: 'Pay £9.99 to start training your AI',
+    description: 'Pay £9.99 to unlock AI training capabilities, build your AI duplicate and receive your sharable link.',
     steps: [
       {
         label: 'Activate Your AI',
