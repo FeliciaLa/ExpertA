@@ -174,7 +174,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
             }
             label={
               <Typography variant="body2">
-                I acknowledge that this chatbot is AI-powered and may produce errors or content that is not a substitute for professional judgment
+                I acknowledge this chatbot is AI-powered and may generate errors or content not intended as professional advice
               </Typography>
             }
           />
