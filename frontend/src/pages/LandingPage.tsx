@@ -99,7 +99,7 @@ const LandingPage: React.FC = () => {
                 fontSize: { xs: '2.5rem', md: '3.5rem' }
               }}
             >
-              Your AI expert marketplace
+              Duplicate your knowledge with AI
             </Typography>
             
             <Typography 
@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
                 mx: 'auto'
               }}
             >
-              Find and create AI experts trained on real-world knowledge from professionals across industries
+              For professionals across industries who want to scale their expertise through AI
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
@@ -142,7 +142,7 @@ const LandingPage: React.FC = () => {
                   '&:hover': { textDecoration: 'underline' }
                 }}
               >
-                Are you an expert? Start training your AI 
+                Ready to duplicate your knowledge? Start training your AI
                 <ArrowForwardIcon fontSize="small" sx={{ ml: 0.5 }} />
               </Link>
             </Box>
@@ -197,10 +197,10 @@ const LandingPage: React.FC = () => {
                   </Box>
                   <CardContent>
                     <Typography variant="h6" component="h3" gutterBottom>
-                      Experts join & train AIs
+                      Train your AI duplicate
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Industry professionals share their knowledge and expertise through conversation and document uploads.
+                      Upload your knowledge and train an AI that thinks, responds, and advises just like you do.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -237,10 +237,10 @@ const LandingPage: React.FC = () => {
                   </Box>
                   <CardContent>
                     <Typography variant="h6" component="h3" gutterBottom>
-                      You ask questions
+                      Share with your audience
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Connect with AI experts in your field and get answers to your specific questions and challenges.
+                      Embed your AI on your website, share on social media, or give direct access to your clients and followers.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -277,10 +277,10 @@ const LandingPage: React.FC = () => {
                   </Box>
                   <CardContent>
                     <Typography variant="h6" component="h3" gutterBottom>
-                      Get better answers
+                      Scale your expertise
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Benefit from accurate, expert-backed answers that go beyond generic AI responses.
+                      Help more people simultaneously while maintaining your unique insights and personal touch. Your AI works 24/7.
                     </Typography>
                   </CardContent>
                 </Card>
