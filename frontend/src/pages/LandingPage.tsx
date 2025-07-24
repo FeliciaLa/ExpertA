@@ -167,7 +167,7 @@ const LandingPage: React.FC = () => {
               background: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
               borderRadius: 4,
-              p: { xs: 3, md: 5 },
+              p: { xs: 4, md: 6 },
               border: '1px solid rgba(255, 255, 255, 0.3)',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
               position: 'relative',
@@ -192,9 +192,9 @@ const LandingPage: React.FC = () => {
               How It Works
             </Typography>
 
-            <Grid container spacing={3} justifyContent="center" sx={{ mt: 2 }}>
+            <Grid container spacing={2} justifyContent="center" sx={{ mt: 2, px: 1 }}>
               {/* Step 1 */}
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={4} sx={{ px: 1 }}>
                 <Card 
                   elevation={0}
                   sx={{
@@ -203,7 +203,7 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: { xs: 2, md: 2.5 },
+                    p: { xs: 1.5, md: 2 },
                     borderRadius: 3,
                     background: 'rgba(255, 255, 255, 0.7)',
                     backdropFilter: 'blur(10px)',
@@ -213,8 +213,7 @@ const LandingPage: React.FC = () => {
                     '&:hover': {
                       transform: 'translateY(-6px)',
                       boxShadow: '0 6px 28px rgba(0, 0, 0, 0.12)'
-                    },
-                    m: 0.5
+                    }
                   }}
                 >
                   <Box 
@@ -245,7 +244,7 @@ const LandingPage: React.FC = () => {
               </Grid>
 
               {/* Step 2 */}
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={4} sx={{ px: 1 }}>
                 <Card 
                   elevation={0}
                   sx={{
@@ -254,7 +253,7 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: { xs: 2, md: 2.5 },
+                    p: { xs: 1.5, md: 2 },
                     borderRadius: 3,
                     background: 'rgba(255, 255, 255, 0.7)',
                     backdropFilter: 'blur(10px)',
@@ -264,8 +263,7 @@ const LandingPage: React.FC = () => {
                     '&:hover': {
                       transform: 'translateY(-6px)',
                       boxShadow: '0 6px 28px rgba(0, 0, 0, 0.12)'
-                    },
-                    m: 0.5
+                    }
                   }}
                 >
                   <Box 
@@ -296,7 +294,7 @@ const LandingPage: React.FC = () => {
               </Grid>
 
               {/* Step 3 */}
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={4} sx={{ px: 1 }}>
                 <Card 
                   elevation={0}
                   sx={{
@@ -305,7 +303,7 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: { xs: 2, md: 2.5 },
+                    p: { xs: 1.5, md: 2 },
                     borderRadius: 3,
                     background: 'rgba(255, 255, 255, 0.7)',
                     backdropFilter: 'blur(10px)',
@@ -315,8 +313,7 @@ const LandingPage: React.FC = () => {
                     '&:hover': {
                       transform: 'translateY(-6px)',
                       boxShadow: '0 6px 28px rgba(0, 0, 0, 0.12)'
-                    },
-                    m: 0.5
+                    }
                   }}
                 >
                   <Box 
