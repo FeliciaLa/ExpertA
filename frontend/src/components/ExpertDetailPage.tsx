@@ -125,35 +125,17 @@ export const ExpertDetailPage: React.FC = () => {
   if (error || !expert) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        {features.browseExperts && (
-          <Button 
-            onClick={() => navigate('/experts')}
-            sx={{ mb: 3 }}
-          >
-            ← Back to Experts
-          </Button>
-        )}
         <Paper sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="h6" color="error" gutterBottom>
             {error || 'Expert not found'}
           </Typography>
-          {features.browseExperts ? (
-            <Button 
-              variant="contained" 
-              onClick={() => navigate('/experts')}
-              sx={{ mt: 2 }}
-            >
-              Browse All Experts
-            </Button>
-          ) : (
-            <Button 
-              variant="contained" 
-              onClick={() => navigate('/')}
-              sx={{ mt: 2 }}
-            >
-              Go to Home
-            </Button>
-          )}
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/')}
+            sx={{ mt: 2 }}
+          >
+            Go to Home
+          </Button>
         </Paper>
       </Container>
     );
@@ -676,14 +658,6 @@ export const ExpertDetailPage: React.FC = () => {
   // Default layout for all other experts
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {features.browseExperts && (
-        <Button 
-          onClick={() => navigate('/experts')}
-          sx={{ mb: 3 }}
-        >
-          ← Back to Experts
-        </Button>
-      )}
       
       <Grid container spacing={4}>
         {/* Expert Profile Section */}
