@@ -107,14 +107,16 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
     setError(null);
 
     try {
-      // Create payment intent
-      const response = await api.post('expert/activate/', {
-        amount: Math.round(activationPrice * 100), // Convert to pence
+      // Use existing payment system - create payment intent for expert activation  
+      const response = await api.post('payment/create-intent/', {
+        expert_id: expert?.id || user?.id, // Use expert's own ID for activation
+        activation_payment: true, // Flag to indicate this is an activation payment
+        amount: activationPrice // £9.99 for activation
       });
 
       const { client_secret, payment_intent_id } = response.data;
 
-      // Confirm payment with Stripe
+      // Confirm payment with Stripe using existing flow
       const { error, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
         payment_method: {
           card: cardElement,
@@ -130,9 +132,11 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
       }
 
       if (paymentIntent.status === 'succeeded') {
-        // Confirm activation on backend
-        await api.post('expert/activate/confirm/', {
-          payment_intent_id: paymentIntent.id
+        // Use existing confirmation endpoint
+        await api.post('payment/confirm/', {
+          payment_intent_id: payment_intent_id,
+          expert_id: expert?.id || user?.id,
+          activation_payment: true
         });
 
         setShowPaymentDialog(false);

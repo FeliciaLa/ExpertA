@@ -3063,17 +3063,45 @@ def create_payment_intent(request):
         # Check if user is authenticated
         if not request.user or not request.user.is_authenticated:
             return Response({'error': 'Authentication required'}, status=401)
-        expert_id = request.data.get('expert_id')
-        if not expert_id:
-            return Response({'error': 'Expert ID is required'}, status=400)
         
-        # Get expert and pricing info
-        try:
-            expert = User.objects.get(id=expert_id)
+        # Check if this is an expert activation payment
+        activation_payment = request.data.get('activation_payment', False)
+        
+        if activation_payment:
+            # Expert activation payment - £9.99 to activate expert profile
+            expert_id = request.data.get('expert_id')
+            activation_amount = float(request.data.get('amount', 9.99))
             
-            # Only allow payments for The Stoic Mentor
-            if expert.name != 'The Stoic Mentor':
-                return Response({'error': 'Payments are only available for The Stoic Mentor'}, status=400)
+            if not expert_id:
+                return Response({'error': 'Expert ID is required'}, status=400)
+            
+            try:
+                expert = User.objects.get(id=expert_id)
+                # Verify the user is trying to activate their own expert profile
+                if expert.id != request.user.id:
+                    return Response({'error': 'You can only activate your own expert profile'}, status=403)
+            except User.DoesNotExist:
+                return Response({'error': 'Expert not found'}, status=404)
+            
+            total_amount = activation_amount  # £9.99 activation fee
+            expert_amount = 0  # Platform keeps activation fee
+            platform_amount = total_amount
+            
+        else:
+            # Original consultation payment logic for The Stoic Mentor
+            expert_id = request.data.get('expert_id')
+            if not expert_id:
+                return Response({'error': 'Expert ID is required'}, status=400)
+            
+            # Get expert and pricing info
+            try:
+                expert = User.objects.get(id=expert_id)
+                
+                # Only allow payments for The Stoic Mentor
+                if expert.name != 'The Stoic Mentor':
+                    return Response({'error': 'Payments are only available for The Stoic Mentor'}, status=400)
+            except User.DoesNotExist:
+                return Response({'error': 'Expert not found'}, status=404)
             
             expert_profile, created = ExpertProfile.objects.get_or_create(
                 expert_id=expert_id,
@@ -3087,14 +3115,11 @@ def create_payment_intent(request):
             
             # Fixed pricing for The Stoic Mentor
             expert_price = 1.99
-                
-        except User.DoesNotExist:
-            return Response({'error': 'Expert not found'}, status=404)
-        
-        # Direct payment to platform for The Stoic Mentor only
-        total_amount = expert_price  # £1.99
-        expert_amount = 0  # Platform keeps all for now
-        platform_amount = total_amount
+            
+            # Direct payment to platform for The Stoic Mentor only
+            total_amount = expert_price  # £1.99
+            expert_amount = 0  # Platform keeps all for now
+            platform_amount = total_amount
         
         # Create simple Payment Intent without Stripe Connect
         print(f"Creating payment intent for £{total_amount} with user {request.user.id}")
@@ -3222,6 +3247,7 @@ def confirm_payment(request):
             
         payment_intent_id = request.data.get('payment_intent_id')
         expert_id = request.data.get('expert_id')
+        activation_payment = request.data.get('activation_payment', False)
         
         if not payment_intent_id or not expert_id:
             return Response({'error': 'Payment intent ID and expert ID are required'}, status=400)
@@ -3267,6 +3293,38 @@ def confirm_payment(request):
             expert = User.objects.get(id=expert_id)
         except User.DoesNotExist:
             return Response({'error': 'Expert not found'}, status=404)
+        
+        # Handle expert activation payments differently
+        if activation_payment:
+            # Verify the user is activating their own expert profile
+            if expert.id != request.user.id:
+                return Response({'error': 'You can only activate your own expert profile'}, status=403)
+            
+            # Create a special consultation session to track activation payment
+            # This serves as both payment record and activation flag
+            session = ConsultationSession.objects.create(
+                user=request.user,
+                expert=expert,
+                expert_name=expert.name,
+                expert_industry="ACTIVATION",  # Special marker for activation payments
+                expert_specialty=f"ACTIVATION_PAYMENT_{payment_intent_id}",  # Store payment ID
+                status=ConsultationSession.Status.ACTIVE,
+                total_messages=0,  # Track usage against 200 limit
+            )
+            
+            payment_amount = float(payment_data.get('amount', 0)) / 100  # Convert from pence to pounds
+            print(f"✅ Expert activated: {expert.name} with payment £{payment_amount}")
+            
+            return Response({
+                'success': True,
+                'expert_activated': True,
+                'expert_name': expert.name,
+                'amount_paid': payment_amount,
+                'interaction_limit': 200,
+                'session_id': str(session.id)
+            })
+        
+        # Original consultation payment logic below
         
         # Create a consultation session for the payment
         session = ConsultationSession.objects.create(
