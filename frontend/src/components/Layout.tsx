@@ -139,8 +139,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Button>
             )}
             
-            {/* Browse Experts button - only visible when authenticated */}
-            {isAuthenticated && (
+            {/* Browse Experts button - only visible for authenticated non-experts */}
+            {isAuthenticated && !isExpert && (
               <Button
                 data-tour="browse-experts"
                 color="primary"
