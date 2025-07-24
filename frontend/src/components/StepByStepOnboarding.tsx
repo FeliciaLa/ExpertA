@@ -61,92 +61,54 @@ interface StepData {
   completion: string;
 }
 
-const stepSections = [
+// Simplified steps without sections - just a linear progression
+const steps = [
   {
-    title: 'Basic Info',
-    description: 'Let\'s start with the basics',
-    steps: [
-      {
-        label: 'Your Name',
-        description: 'Let us know what to call you',
-        field: 'name'
-      },
-      {
-        label: 'Professional Title',
-        description: 'What is your current role or expertise?',
-        field: 'title'
-      },
-      {
-        label: 'Industry',
-        description: 'Which industry do you work in?',
-        field: 'industry'
-      }
-    ]
+    label: 'Your Name',
+    description: 'Let us know what to call you',
+    field: 'name'
   },
   {
-    title: 'Experience Info',
-    description: 'Tell us about your expertise and experience',
-    steps: [
-      {
-        label: 'Describe Your Expertise',
-        description: 'What do you specialize in? What\'s your core area of expertise?',
-        field: 'expertise'
-      },
-      {
-        label: 'Experience Level',
-        description: 'How many years of experience do you have?',
-        field: 'years_of_experience'
-      },
-      {
-        label: 'Professional Background',
-        description: 'Tell us about your professional journey - how did you develop your expertise?',
-        field: 'background'
-      }
-    ]
+    label: 'Professional Title',
+    description: 'What is your current role or expertise?',
+    field: 'title'
   },
   {
-    title: 'Skills & Knowledge',
-    description: 'Tell us about your skills and techniques',
-    steps: [
-      {
-        label: 'Key Skills and Techniques',
-        description: 'What are your main skills, competencies, and techniques you use?',
-        field: 'key_skills'
-      }
-    ]
+    label: 'Industry',
+    description: 'Which industry do you work in?',
+    field: 'industry'
   },
   {
-    title: 'Professional Profile',
-    description: 'Complete your professional profile',
-    steps: [
-      {
-        label: 'Professional Bio',
-        description: 'Write your professional bio which will be visible to clients',
-        field: 'bio'
-      }
-    ]
+    label: 'Describe Your Expertise',
+    description: 'What do you specialize in? What\'s your core area of expertise?',
+    field: 'expertise'
   },
-
   {
-    title: 'Finish Setup',
-    description: 'Complete your setup',
-    steps: [
-      {
-        label: 'Complete Setup',
-        description: 'Final step to complete your profile',
-        field: 'disclaimer'
-      }
-    ]
+    label: 'Experience Level',
+    description: 'How many years of experience do you have?',
+    field: 'years_of_experience'
+  },
+  {
+    label: 'Professional Background',
+    description: 'Tell us about your professional journey - how did you develop your expertise?',
+    field: 'background'
+  },
+  {
+    label: 'Key Skills and Techniques',
+    description: 'What are your main skills, competencies, and techniques you use?',
+    field: 'key_skills'
+  },
+  {
+    label: 'Professional Bio',
+    description: 'Write your professional bio which will be visible to clients',
+    field: 'bio'
+  },
+  {
+    label: 'Complete Setup',
+    description: 'Final step to complete your profile',
+    field: 'disclaimer'
   }
 ];
-
-// Filter out monetization section if payments are disabled
-const filteredStepSections = features.payments 
-  ? stepSections 
-  : stepSections.filter(section => section.title !== 'Monetization');
-
-// Flatten steps for compatibility with existing code
-const steps = filteredStepSections.flatMap(section => section.steps);
 
 const StepByStepOnboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -173,25 +135,6 @@ const StepByStepOnboarding: React.FC = () => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   
   const { expert, refreshExpert } = useAuth();
-
-
-
-  // Helper functions for section management
-  const getCurrentSection = () => {
-    let stepCount = 0;
-    for (let i = 0; i < stepSections.length; i++) {
-      if (activeStep < stepCount + stepSections[i].steps.length) {
-        return { 
-          section: stepSections[i], 
-          sectionIndex: i, 
-          stepInSection: activeStep - stepCount,
-          totalInSection: stepSections[i].steps.length 
-        };
-      }
-      stepCount += stepSections[i].steps.length;
-    }
-    return { section: stepSections[0], sectionIndex: 0, stepInSection: 0, totalInSection: stepSections[0].steps.length };
-  };
 
   // Load existing profile data on mount
   useEffect(() => {
@@ -812,8 +755,6 @@ const StepByStepOnboarding: React.FC = () => {
     );
   }
 
-  const currentSectionInfo = getCurrentSection();
-
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
       <Paper sx={{ p: 4 }}>
@@ -840,7 +781,7 @@ const StepByStepOnboarding: React.FC = () => {
         {/* Section Header */}
         <Box sx={{ mb: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="body1" color="primary" sx={{ fontWeight: 500 }}>
-            {currentSectionInfo.section.title}
+            {steps[activeStep].label}
           </Typography>
         </Box>
 
