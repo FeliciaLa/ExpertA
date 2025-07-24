@@ -160,18 +160,19 @@ const LandingPage: React.FC = () => {
         </Container>
 
         {/* How It Works Section */}
-        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, px: { xs: 2, md: 3 } }}>
           <Paper
             elevation={0}
             sx={{
               background: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
               borderRadius: 4,
-              p: { xs: 4, md: 6 },
+              p: { xs: 3, md: 5 },
               border: '1px solid rgba(255, 255, 255, 0.3)',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
               position: 'relative',
-              zIndex: 1
+              zIndex: 1,
+              overflow: 'hidden'
             }}
           >
             <Typography 
@@ -191,7 +192,7 @@ const LandingPage: React.FC = () => {
               How It Works
             </Typography>
 
-            <Grid container spacing={4} justifyContent="center">
+            <Grid container spacing={3} justifyContent="center" sx={{ mt: 2 }}>
               {/* Step 1 */}
               <Grid item xs={12} md={4}>
                 <Card 
@@ -202,7 +203,7 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: 3,
+                    p: { xs: 2, md: 2.5 },
                     borderRadius: 3,
                     background: 'rgba(255, 255, 255, 0.7)',
                     backdropFilter: 'blur(10px)',
@@ -210,9 +211,10 @@ const LandingPage: React.FC = () => {
                     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
-                    }
+                      transform: 'translateY(-6px)',
+                      boxShadow: '0 6px 28px rgba(0, 0, 0, 0.12)'
+                    },
+                    m: 0.5
                   }}
                 >
                   <Box 
@@ -220,16 +222,16 @@ const LandingPage: React.FC = () => {
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
                       color: 'white',
                       borderRadius: '50%',
-                      width: 80,
-                      height: 80,
+                      width: { xs: 60, md: 70 },
+                      height: { xs: 60, md: 70 },
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      mb: 2,
+                      mb: { xs: 1.5, md: 2 },
                       boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
                     }}
                   >
-                    <PersonIcon fontSize="large" />
+                    <PersonIcon fontSize="medium" />
                   </Box>
                   <CardContent>
                     <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
@@ -252,7 +254,7 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: 3,
+                    p: { xs: 2, md: 2.5 },
                     borderRadius: 3,
                     background: 'rgba(255, 255, 255, 0.7)',
                     backdropFilter: 'blur(10px)',
@@ -260,9 +262,10 @@ const LandingPage: React.FC = () => {
                     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
-                    }
+                      transform: 'translateY(-6px)',
+                      boxShadow: '0 6px 28px rgba(0, 0, 0, 0.12)'
+                    },
+                    m: 0.5
                   }}
                 >
                   <Box 
@@ -270,16 +273,16 @@ const LandingPage: React.FC = () => {
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
                       color: 'white',
                       borderRadius: '50%',
-                      width: 80,
-                      height: 80,
+                      width: { xs: 60, md: 70 },
+                      height: { xs: 60, md: 70 },
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      mb: 2,
+                      mb: { xs: 1.5, md: 2 },
                       boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
                     }}
                   >
-                    <QuestionAnswerIcon fontSize="large" />
+                    <QuestionAnswerIcon fontSize="medium" />
                   </Box>
                   <CardContent>
                     <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
@@ -302,7 +305,7 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: 3,
+                    p: { xs: 2, md: 2.5 },
                     borderRadius: 3,
                     background: 'rgba(255, 255, 255, 0.7)',
                     backdropFilter: 'blur(10px)',
@@ -310,9 +313,10 @@ const LandingPage: React.FC = () => {
                     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
-                    }
+                      transform: 'translateY(-6px)',
+                      boxShadow: '0 6px 28px rgba(0, 0, 0, 0.12)'
+                    },
+                    m: 0.5
                   }}
                 >
                   <Box 
@@ -320,16 +324,16 @@ const LandingPage: React.FC = () => {
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
                       color: 'white',
                       borderRadius: '50%',
-                      width: 80,
-                      height: 80,
+                      width: { xs: 60, md: 70 },
+                      height: { xs: 60, md: 70 },
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      mb: 2,
+                      mb: { xs: 1.5, md: 2 },
                       boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
                     }}
                   >
-                    <PsychologyIcon fontSize="large" />
+                    <PsychologyIcon fontSize="medium" />
                   </Box>
                   <CardContent>
                     <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>

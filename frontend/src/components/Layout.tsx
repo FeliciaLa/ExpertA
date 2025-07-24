@@ -114,10 +114,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               variant="h6" 
               component="div" 
               sx={{ 
-                color: 'primary.main',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
                 cursor: 'pointer',
                 fontSize: isExpertPage ? '1.1rem' : '1.25rem',
-                fontWeight: isExpertPage ? 500 : 600,
+                fontWeight: isExpertPage ? 600 : 700,
                 display: 'flex',
                 alignItems: 'center'
               }}
