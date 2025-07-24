@@ -50,8 +50,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
     terms: false,
     privacy: false,
     aiDisclaimer: false,
-    ageConfirmed: false,
-    marketing: false
+    ageConfirmed: false
   });
 
   const handleConsentChange = (field: keyof typeof consents) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,7 +77,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
         privacy_accepted: consents.privacy,
         ai_disclaimer_accepted: consents.aiDisclaimer,
         age_confirmed: consents.ageConfirmed,
-        marketing_consent: consents.marketing,
+        marketing_consent: false,
         consent_version: '1.0',
         expert_name: expertName,
         timestamp: new Date().toISOString(),
@@ -216,34 +215,12 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
           />
         </Box>
 
-        <Divider sx={{ my: 2 }} />
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Optional
-          </Typography>
-          
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={consents.marketing}
-                onChange={handleConsentChange('marketing')}
-                color="primary"
-              />
-            }
-            label={
-              <Typography variant="body2">
-                I'd like to receive updates about new AI experts and features (optional)
-              </Typography>
-            }
-          />
-        </Box>
 
         <Alert severity="info" sx={{ mt: 2 }}>
           <Typography variant="body2">
             <strong>Your Privacy:</strong> Chat messages are processed to provide AI responses. 
-            We collect minimal data (IP address, timestamp) for legal compliance. 
-            You can delete this data by contacting us.
+            We collect minimal data (IP address, timestamp) for legal compliance.
           </Typography>
         </Alert>
       </DialogContent>
