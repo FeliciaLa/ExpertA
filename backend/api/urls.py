@@ -30,8 +30,8 @@ from .views import (
     ConsultationSessionView,
     ChatHistoryView,
     SavedPaymentMethodsView,
-    ConsentSubmissionView,
-    ConsentCheckView,
+    # ConsentSubmissionView,
+    # ConsentCheckView,
     create_stripe_connect_url,
     stripe_connect_callback,
     disconnect_stripe_account,
@@ -235,9 +235,9 @@ urlpatterns = [
     path('payment/confirm/', confirm_payment, name='confirm-payment'),
     path('payment/saved-methods/', SavedPaymentMethodsView.as_view(), name='saved-payment-methods'),
     
-    # Consent endpoints for legal compliance
-    path('consent/submit/', ConsentSubmissionView.as_view(), name='consent-submit'),
-    path('consent/check/<str:identifier>/', ConsentCheckView.as_view(), name='consent-check'),
+    # Consent endpoints for legal compliance - TEMPORARILY DISABLED
+    # path('consent/submit/', ConsentSubmissionView.as_view(), name='consent-submit'),
+    # path('consent/check/<str:identifier>/', ConsentCheckView.as_view(), name='consent-check'),
     
     # CORS test endpoint
     path('cors-test/', cors_test, name='cors-test'),

@@ -18,7 +18,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import ModelSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile, ConsultationSession, ChatMessage, ConsentRecord
+from .models import TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile, ConsultationSession, ChatMessage  # ConsentRecord
 from .serializers import ExpertSerializer, ExpertProfileSerializer, UserSerializer, UserRegistrationSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -3552,24 +3552,25 @@ class ConsentSubmissionView(APIView):
             # Get IP address
             ip_address = data.get('ip_address') or self.get_client_ip(request)
             
-            # Create consent record
-            consent_record = ConsentRecord.objects.create(
-                user=user,
-                terms_accepted=bool(data['terms_accepted']),
-                privacy_accepted=bool(data['privacy_accepted']),
-                ai_disclaimer_accepted=bool(data['ai_disclaimer_accepted']),
-                age_confirmed=bool(data['age_confirmed']),
-                marketing_consent=bool(data.get('marketing_consent', False)),
-                consent_version=data.get('consent_version', '1.0'),
-                expert_name=data['expert_name'],
-                timestamp=timestamp,
-                ip_address=ip_address,
-                user_agent=data.get('user_agent', request.META.get('HTTP_USER_AGENT', '')),
-                referrer=data.get('referrer', ''),
-                page_url=data.get('page_url', '')
-            )
+            # Create consent record - TEMPORARILY DISABLED
+            # consent_record = ConsentRecord.objects.create(
+            #     user=user,
+            #     terms_accepted=bool(data['terms_accepted']),
+            #     privacy_accepted=bool(data['privacy_accepted']),
+            #     ai_disclaimer_accepted=bool(data['ai_disclaimer_accepted']),
+            #     age_confirmed=bool(data['age_confirmed']),
+            #     marketing_consent=bool(data.get('marketing_consent', False)),
+            #     consent_version=data.get('consent_version', '1.0'),
+            #     expert_name=data['expert_name'],
+            #     timestamp=timestamp,
+            #     ip_address=ip_address,
+            #     user_agent=data.get('user_agent', request.META.get('HTTP_USER_AGENT', '')),
+            #     referrer=data.get('referrer', ''),
+            #     page_url=data.get('page_url', '')
+            # )
             
-            logger.info(f"Consent recorded: {consent_record.id} for {ip_address} - {data['expert_name']}")
+            # logger.info(f"Consent recorded: {consent_record.id} for {ip_address} - {data['expert_name']}")
+            logger.info(f"Consent received (temporarily not stored): {ip_address} - {data['expert_name']}")
             
             return Response({
                 'success': True,
@@ -3602,16 +3603,18 @@ class ConsentCheckView(APIView):
         try:
             ip_address = self.get_client_ip(request)
             
-            # Check by user if authenticated
+            # Check by user if authenticated - TEMPORARILY DISABLED
             if hasattr(request, 'user') and request.user.is_authenticated:
-                consent_exists = ConsentRecord.objects.filter(
-                    user=request.user
-                ).exists()
+                # consent_exists = ConsentRecord.objects.filter(
+                #     user=request.user
+                # ).exists()
+                consent_exists = False  # Temporary
             else:
-                # Check by IP address for anonymous users
-                consent_exists = ConsentRecord.objects.filter(
-                    ip_address=ip_address
-                ).exists()
+                # Check by IP address for anonymous users - TEMPORARILY DISABLED
+                # consent_exists = ConsentRecord.objects.filter(
+                #     ip_address=ip_address
+                # ).exists()
+                consent_exists = False  # Temporary
             
             return Response({
                 'has_consent': consent_exists
