@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { expertApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { features } from '../utils/environment';
+import ExpertActivationPayment from './ExpertSubscriptionPayment';
 
 const INDUSTRIES = [
   'Technology & Software',
@@ -60,8 +61,7 @@ interface StepData {
   tools_technologies: string;
   certifications: string;
   bio: string;
-  monetization_enabled: boolean;
-  monetization_price: number;
+  subscription_completed: boolean;
   completion: string;
 }
 
@@ -146,18 +146,13 @@ const stepSections = [
     ]
   },
   {
-    title: 'Monetization',
-    description: 'Set up how you want to charge for your expertise',
+    title: 'Activate Your AI Expert',
+    description: 'Subscribe to make your AI expert live',
     steps: [
       {
-        label: 'Monetization Option',
-        description: 'Do you want to monetize your AI expert consultations?',
-        field: 'monetization_enabled'
-      },
-      {
-        label: 'Set Your Price',
-        description: '',
-        field: 'monetization_price'
+        label: 'Choose Your Plan',
+        description: 'Select a subscription plan to activate your AI expert',
+        field: 'subscription'
       }
     ]
   },
@@ -197,8 +192,7 @@ const StepByStepOnboarding: React.FC = () => {
     tools_technologies: '',
     certifications: '',
     bio: '',
-    monetization_enabled: false,
-    monetization_price: 5,
+    subscription_completed: false,
     completion: ''
   });
   
@@ -241,12 +235,7 @@ const StepByStepOnboarding: React.FC = () => {
   useEffect(() => {
     const currentField = steps[activeStep]?.field;
     if (currentField && stepData) {
-      if (currentField === 'monetization_price') {
-        // For monetization price, show the current stepData value
-        setCurrentValue(stepData.monetization_price?.toString() || '5');
-      } else {
-        setCurrentValue(stepData[currentField as keyof StepData]?.toString() || '');
-      }
+      setCurrentValue(stepData[currentField as keyof StepData]?.toString() || '');
     }
   }, [activeStep, stepData]);
 
@@ -302,8 +291,7 @@ const StepByStepOnboarding: React.FC = () => {
         tools_technologies: profile.profile?.tools_technologies || '',
         certifications: profile.profile?.certifications || '',
         bio: profile.bio || '',
-        monetization_enabled: profile.profile?.monetization_enabled || false,
-        monetization_price: profile.profile?.monetization_price || 5,
+        subscription_completed: false, // Will be updated after payment
         completion: ''
       };
       setStepData(existingData);
@@ -371,11 +359,9 @@ const StepByStepOnboarding: React.FC = () => {
         setError('Please select your experience level');
         return false;
       }
-    } else if (currentField === 'monetization_enabled') {
-      // No validation needed - boolean field
-    } else if (currentField === 'monetization_price') {
-      if (stepData.monetization_enabled && (!currentValue || parseFloat(currentValue) < 1)) {
-        setError('Please set a price of at least £1');
+    } else if (currentField === 'subscription') {
+      if (!stepData.subscription_completed) {
+        setError('Please complete your subscription to continue');
         return false;
       }
     } else if (!currentValue.trim()) {
@@ -411,16 +397,9 @@ const StepByStepOnboarding: React.FC = () => {
         } else if (currentField === 'industry') {
           // Ensure we always save as comma-separated string, never JSON
           fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
-        } else if (currentField === 'monetization_enabled') {
-          fieldValue = stepData.monetization_enabled;
-        } else if (currentField === 'monetization_price') {
-          // For monetization price, use the current input value if valid, otherwise use stepData value
-          if (stepData.monetization_enabled) {
-            const priceValue = parseFloat(currentValue);
-            fieldValue = !isNaN(priceValue) && priceValue > 0 ? priceValue : stepData.monetization_price;
-          } else {
-            fieldValue = stepData.monetization_price; // Keep existing value even if disabled
-          }
+        } else if (currentField === 'subscription') {
+          // Skip saving subscription field - handled by payment component
+          return;
         } else {
           fieldValue = currentValue;
         }
@@ -462,16 +441,9 @@ const StepByStepOnboarding: React.FC = () => {
         } else if (currentField === 'industry') {
           // Ensure we always save as comma-separated string, never JSON
           fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
-        } else if (currentField === 'monetization_enabled') {
-          fieldValue = stepData.monetization_enabled;
-        } else if (currentField === 'monetization_price') {
-          // For monetization price, use the current input value if valid, otherwise use stepData value
-          if (stepData.monetization_enabled) {
-            const priceValue = parseFloat(currentValue);
-            fieldValue = !isNaN(priceValue) && priceValue > 0 ? priceValue : stepData.monetization_price;
-          } else {
-            fieldValue = stepData.monetization_price; // Keep existing value even if disabled
-          }
+        } else if (currentField === 'subscription') {
+          // Skip saving subscription field - handled by payment component
+          return;
         } else {
           fieldValue = currentValue;
         }
@@ -506,8 +478,8 @@ const StepByStepOnboarding: React.FC = () => {
         typical_problems: stepData.typical_problems || `As a ${stepData.title}, I help clients solve complex challenges in my field.`,
         certifications: stepData.certifications,
         tools_technologies: stepData.tools_technologies,
-        monetization_enabled: Boolean(stepData.monetization_enabled), // Ensure it's a boolean
-        monetization_price: stepData.monetization_price
+        monetization_enabled: false, // Default - expert activation model
+        monetization_price: 0 // Not used in new model
       };
 
       await expertApi.completeOnboarding(onboardingData);
@@ -814,57 +786,19 @@ const StepByStepOnboarding: React.FC = () => {
           />
         );
         
-      case 'monetization_enabled':
+      case 'subscription':
         return (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Do you want to monetize your AI expert consultations?
-            </Typography>
-            <Box sx={{ mt: 3 }}>
-              <Button
-                variant={stepData.monetization_enabled ? "outlined" : "contained"}
-                onClick={() => {
-                  setStepData(prev => ({ ...prev, monetization_enabled: false }));
-                  setCurrentValue('false');
-                }}
-                sx={{ mr: 2, mb: 2, minWidth: 120 }}
-              >
-                No - Keep it FREE
-              </Button>
-              <Button
-                variant={stepData.monetization_enabled ? "contained" : "outlined"}
-                onClick={() => {
-                  setStepData(prev => ({ ...prev, monetization_enabled: true }));
-                  setCurrentValue('true');
-                }}
-                sx={{ mb: 2, minWidth: 120 }}
-              >
-                Yes - Charge for consultations
-              </Button>
-            </Box>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-              {stepData.monetization_enabled ? 
-                "Great! You'll be able to charge for focused 15-minute consultations." :
-                "Your AI expert will be completely free for anyone to use. You can change this later."
-              }
-            </Typography>
-          </Box>
+          <ExpertActivationPayment
+            onPaymentSuccess={() => {
+              setStepData(prev => ({ ...prev, subscription_completed: true }));
+              setCurrentValue('completed');
+              setError(null);
+            }}
+            onClose={() => {
+              setError('Payment required to activate your AI expert');
+            }}
+          />
         );
-        
-      case 'monetization_price':
-        if (!stepData.monetization_enabled) {
-          // Skip this step if monetization is disabled
-          return (
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Typography variant="h6" color="textSecondary">
-                Your AI expert will be free to use
-              </Typography>
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                You can enable monetization later from your profile settings.
-              </Typography>
-            </Box>
-          );
-        }
         
         return (
           <Box sx={{ mt: 2 }}>
