@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
                 mx: 'auto'
               }}
             >
-              For professionals across industries who want to scale their expertise through AI
+              Turn your expertise into a shareable, intelligent chatbot and scale your reach
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
