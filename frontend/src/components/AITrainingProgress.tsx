@@ -61,16 +61,16 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const checkActivationStatus = async () => {
     try {
       // Check if expert has any consultation sessions with ACTIVATION marker
-      const response = await api.get(`/consultations/user/${expert?.id}/`);
-      const sessions = response.data;
+      const response = await api.get(`/user/profile/direct/${expert?.id}/`);
+      const consultations = response.data.consultations?.sessions || [];
       
       // Look for activation payment session
-      const hasActivation = sessions.some((session: any) => 
+      const hasActivation = consultations.some((session: any) => 
         session.expert_industry === 'ACTIVATION'
       );
       
       setIsActivated(hasActivation);
-      console.log('Expert activation status:', hasActivation);
+      console.log('Expert activation status:', hasActivation, 'from', consultations.length, 'sessions');
     } catch (error) {
       console.error('Failed to check activation status:', error);
       // Default to not activated if check fails
