@@ -132,7 +132,7 @@ const StepByStepOnboarding: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
   
   const { expert, refreshExpert } = useAuth();
 
@@ -225,9 +225,9 @@ const StepByStepOnboarding: React.FC = () => {
     await saveCurrentField();
 
     if (activeStep === steps.length - 1) {
-      // Last step - complete onboarding and show modal
+      // Last step - complete onboarding and show training walkthrough
       await completeOnboarding();
-      setShowCompletionModal(true);
+      setShowTrainingWalkthrough(true);
     } else {
       setActiveStep(prev => prev + 1);
     }
@@ -826,11 +826,11 @@ const StepByStepOnboarding: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Completion Modal */}
+      {/* Training Walkthrough Modal */}
       <Modal
-        open={showCompletionModal}
+        open={showTrainingWalkthrough}
         onClose={() => {
-          setShowCompletionModal(false);
+          setShowTrainingWalkthrough(false);
           navigate('/train');
         }}
       >
@@ -839,35 +839,93 @@ const StepByStepOnboarding: React.FC = () => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 400,
+          width: 500,
           bgcolor: 'background.paper',
           borderRadius: 2,
           boxShadow: 24,
-          p: 4,
-          textAlign: 'center'
+          p: 4
         }}>
-          <CheckCircle sx={{ fontSize: 100, color: 'success.main', mb: 3 }} />
-          <Typography variant="h4" gutterBottom color="primary">
-            🎉 Profile Complete!
+          <Box sx={{ textAlign: 'center', mb: 3 }}>
+            <CheckCircle sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
+            <Typography variant="h4" gutterBottom color="primary">
+              🎉 Profile Complete!
+            </Typography>
+            <Typography variant="h6" color="textSecondary">
+              Now Let's Train Your AI
+            </Typography>
+          </Box>
+
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            Your AI needs to learn from you before it can help users. Here's how:
           </Typography>
-          <Typography variant="h6" color="textSecondary" sx={{ mb: 3 }}>
-            Congratulations! Your expert profile is ready
-          </Typography>
-          <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
-            You've successfully set up your expert profile with all your skills, experience, and expertise. 
-            Now it's time to train your AI assistant.
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setShowCompletionModal(false);
-              navigate('/train');
-            }}
-            fullWidth
-            size="large"
-          >
-            Start Training Your AI
-          </Button>
+
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+              <Typography variant="h6" sx={{ mr: 2, color: 'primary.main' }}>📚</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 1: Chat Training (15-30 minutes)
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Your AI will ask you questions about real scenarios<br/>
+                  • Answer like you're talking to a client<br/>
+                  • The more detailed your answers, the smarter your AI becomes
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+              <Typography variant="h6" sx={{ mr: 2, color: 'primary.main' }}>📄</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 2: Upload Knowledge
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Add documents, case studies, or guides you've written<br/>
+                  • Your AI will learn from your actual work examples<br/>
+                  • This helps your AI give more accurate, detailed responses
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+              <Typography variant="h6" sx={{ mr: 2, color: 'primary.main' }}>✅</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 3: Test & Share
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Test your AI to make sure it sounds like you<br/>
+                  • Activate for £9.99 to share with unlimited users<br/>
+                  • Start getting consultations through your AI
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setShowTrainingWalkthrough(false);
+                // Stay on current page or go to a help page
+              }}
+              sx={{ flex: 1 }}
+            >
+              Learn More
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setShowTrainingWalkthrough(false);
+                navigate('/train');
+              }}
+              sx={{ flex: 1 }}
+              size="large"
+            >
+              Start Training Now
+            </Button>
+          </Box>
         </Box>
       </Modal>
     </Box>
