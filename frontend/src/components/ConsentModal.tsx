@@ -178,20 +178,11 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
             }
             label={
               <Typography variant="body2">
-                I understand this is an AI assistant and responses are not professional advice
+                I acknowledge that this chatbot is AI-powered and may produce errors or content that is not a substitute for professional judgment
               </Typography>
             }
           />
         </Box>
-
-
-
-        <Alert severity="info" sx={{ mt: 2 }}>
-          <Typography variant="body2">
-            <strong>Your Privacy:</strong> Chat messages are processed to provide AI responses. 
-            We collect minimal data (IP address, timestamp) for legal compliance.
-          </Typography>
-        </Alert>
       </DialogContent>
 
       <DialogActions sx={{ p: 3, pt: 1 }}>
