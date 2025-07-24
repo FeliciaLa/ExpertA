@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import type { ConsentData } from '../components/ConsentModal';
 
 // Read API URL from environment variable in production, or use production backend as default
 const baseUrl = import.meta.env.VITE_API_URL || 'https://experta-backend-d64920064058.herokuapp.com';
@@ -344,6 +345,51 @@ export const paymentService = {
     } catch (error) {
       console.error('Create payment intent error:', error);
       throw error;
+    }
+  }
+};
+
+export const consentService = {
+  submitConsent: async (consentData: ConsentData) => {
+    try {
+      // Get user's IP address from a service (optional, can be handled server-side)
+      let ipAddress = '';
+      try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        ipAddress = ipData.ip;
+      } catch (ipError) {
+        console.warn('Could not get IP address:', ipError);
+        // Server can get IP from request headers instead
+      }
+
+      const payload = {
+        ...consentData,
+        ip_address: ipAddress || 'unknown',
+        timestamp: new Date().toISOString(),
+        user_agent: navigator.userAgent,
+        referrer: document.referrer || 'direct',
+        page_url: window.location.href
+      };
+
+      console.log('Submitting consent:', payload);
+      
+      const response = await api.post('consent/submit/', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Consent submission error:', error);
+      throw error;
+    }
+  },
+
+  checkExistingConsent: async (identifier: string) => {
+    try {
+      // Check if consent exists for this browser/session
+      const response = await api.get(`consent/check/${identifier}/`);
+      return response.data;
+    } catch (error) {
+      console.error('Consent check error:', error);
+      return { has_consent: false };
     }
   }
 };

@@ -321,6 +321,45 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Check if user has admin role"""
         return self.role == self.Role.ADMIN
 
+class ConsentRecord(models.Model):
+    """Model to store user consent records for legal compliance"""
+    # User identification (nullable for anonymous users)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='consent_records')
+    
+    # Consent details
+    terms_accepted = models.BooleanField()
+    privacy_accepted = models.BooleanField()
+    ai_disclaimer_accepted = models.BooleanField()
+    age_confirmed = models.BooleanField()
+    marketing_consent = models.BooleanField(default=False)
+    
+    # Metadata
+    consent_version = models.CharField(max_length=10, default='1.0')
+    expert_name = models.CharField(max_length=255)  # Which expert they consented to chat with
+    timestamp = models.DateTimeField()
+    
+    # Technical details for legal compliance
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.TextField()
+    referrer = models.URLField(blank=True, null=True)
+    page_url = models.URLField()
+    
+    # Tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'consent_records'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['ip_address', 'created_at']),
+            models.Index(fields=['expert_name', 'created_at']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+    
+    def __str__(self):
+        user_identifier = self.user.email if self.user else self.ip_address
+        return f"Consent by {user_identifier} for {self.expert_name} at {self.timestamp}"
+
 class ConsultationSession(models.Model):
     """Model to track consultation sessions between users and experts"""
     class Status(models.TextChoices):

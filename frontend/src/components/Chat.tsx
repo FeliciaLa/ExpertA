@@ -16,11 +16,12 @@ import {
   Avatar
 } from '@mui/material';
 import { Payment } from '@mui/icons-material';
-import { chatService } from '../services/api';
+import { chatService, consentService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import UserAuthDialog from './UserAuthDialog';
 import PaymentSection from './PaymentSection';
 import PaymentSuccessDialog from './PaymentSuccessDialog';
+import ConsentModal, { ConsentData } from './ConsentModal';
 import { features } from '../utils/environment';
 
 interface Message {
@@ -55,6 +56,8 @@ export const Chat: React.FC<ChatProps> = ({
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [hasUserConsent, setHasUserConsent] = useState(false);
   const [sessionStats, setSessionStats] = useState({
     messageCount: 0,
     hasActivePaidSession: false,
@@ -68,6 +71,35 @@ export const Chat: React.FC<ChatProps> = ({
   // Use full name instead of just first name
   const firstName = expertName;
   
+  // Check for existing consent on component load
+  useEffect(() => {
+    const checkConsent = () => {
+      const storedConsent = localStorage.getItem('consent_accepted');
+      if (storedConsent) {
+        try {
+          const consentData = JSON.parse(storedConsent);
+          // Check if consent is still valid (not older than 90 days)
+          const consentAge = Date.now() - consentData.timestamp;
+          const maxAge = 90 * 24 * 60 * 60 * 1000; // 90 days in milliseconds
+          
+          if (consentAge < maxAge) {
+            setHasUserConsent(true);
+          } else {
+            // Consent expired, remove it
+            localStorage.removeItem('consent_accepted');
+            setHasUserConsent(false);
+          }
+        } catch (error) {
+          console.error('Error parsing consent data:', error);
+          localStorage.removeItem('consent_accepted');
+          setHasUserConsent(false);
+        }
+      }
+    };
+
+    checkConsent();
+  }, []);
+
   // Load chat history when user is authenticated
   useEffect(() => {
     console.log('Chat component loaded:', { 
@@ -76,14 +108,15 @@ export const Chat: React.FC<ChatProps> = ({
       isExpert, 
       expertId,
       monetizationEnabled,
-      validExpertPrice
+      validExpertPrice,
+      hasUserConsent
     });
 
     // Load chat history if user is authenticated
     if (isAuthenticated && expertId) {
       loadChatHistory();
     }
-  }, [isAuthenticated, expertId]);
+  }, [isAuthenticated, expertId, hasUserConsent]);
 
   const loadChatHistory = async () => {
     if (!isAuthenticated || !expertId) return;
@@ -237,12 +270,19 @@ export const Chat: React.FC<ChatProps> = ({
     e.preventDefault();
     if (loading) return;
     
-    console.log('Submit pressed - auth state:', { isAuthenticated, isExpert, isUser });
+    console.log('Submit pressed - auth state:', { isAuthenticated, isExpert, isUser, hasUserConsent });
 
     // Only require authentication for The Stoic Mentor (monetized expert)
     if (!isAuthenticated && expertName === 'The Stoic Mentor') {
       console.log('Not authenticated, showing login dialog');
       setIsAuthDialogOpen(true);
+      return;
+    }
+
+    // For non-authenticated users, require consent before allowing chat
+    if (!isAuthenticated && !hasUserConsent) {
+      console.log('User needs to accept consent');
+      setShowConsentModal(true);
       return;
     }
 
@@ -380,7 +420,27 @@ export const Chat: React.FC<ChatProps> = ({
     }
   };
 
-
+  // Handle consent submission
+  const handleConsentSubmission = async (consentData: ConsentData) => {
+    try {
+      console.log('Submitting consent to server:', consentData);
+      
+      // Submit consent to server for legal record
+      await consentService.submitConsent(consentData);
+      
+      // Update local state
+      setHasUserConsent(true);
+      setShowConsentModal(false);
+      
+      console.log('Consent successfully submitted and stored');
+    } catch (error) {
+      console.error('Failed to submit consent:', error);
+      // Still allow local consent to avoid blocking user, but log the issue
+      setHasUserConsent(true);
+      setShowConsentModal(false);
+      throw error; // Re-throw to show error in modal
+    }
+  };
 
   // Create login prompt or chat based on authentication status
   const renderChatOrPrompt = () => {
@@ -605,6 +665,14 @@ export const Chat: React.FC<ChatProps> = ({
           onRegister={handleUserRegister}
         />
       )}
+
+      {/* Consent Modal for non-authenticated users */}
+      <ConsentModal
+        open={showConsentModal}
+        onConsent={handleConsentSubmission}
+        expertName={expertName}
+        onClose={() => setShowConsentModal(false)}
+      />
 
       {features.payments && showPaymentDialog && (
         <PaymentSection

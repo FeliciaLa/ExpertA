@@ -18,7 +18,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import ModelSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile, ConsultationSession, ChatMessage
+from .models import TrainingSession, TrainingAnswer, ExpertKnowledgeBase, User, ExpertProfile, ConsultationSession, ChatMessage, ConsentRecord
 from .serializers import ExpertSerializer, ExpertProfileSerializer, UserSerializer, UserRegistrationSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -36,6 +36,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 from rest_framework.decorators import api_view, permission_classes
+from django.utils.dateparse import parse_datetime
+from django.http import HttpRequest
 
 logger = logging.getLogger(__name__)
 
@@ -3443,4 +3445,127 @@ class ChatHistoryView(APIView):
             print(f"Error retrieving chat history: {str(e)}")
             return Response({
                 'error': 'Failed to retrieve chat history'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ConsentSubmissionView(APIView):
+    """API view to handle consent submission for legal compliance"""
+    permission_classes = [AllowAny]  # Allow anonymous users
+    
+    def get_client_ip(self, request):
+        """Get the real IP address from request headers"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
+    def post(self, request):
+        """Submit consent record"""
+        try:
+            data = request.data
+            
+            # Validate required fields
+            required_fields = [
+                'terms_accepted', 'privacy_accepted', 'ai_disclaimer_accepted', 
+                'age_confirmed', 'expert_name', 'timestamp'
+            ]
+            
+            for field in required_fields:
+                if field not in data:
+                    return Response({
+                        'error': f'Missing required field: {field}'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Parse timestamp
+            try:
+                timestamp = parse_datetime(data['timestamp'])
+                if not timestamp:
+                    return Response({
+                        'error': 'Invalid timestamp format'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({
+                    'error': f'Invalid timestamp: {str(e)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get user if authenticated
+            user = None
+            if hasattr(request, 'user') and request.user.is_authenticated:
+                user = request.user
+            
+            # Get IP address
+            ip_address = data.get('ip_address') or self.get_client_ip(request)
+            
+            # Create consent record
+            consent_record = ConsentRecord.objects.create(
+                user=user,
+                terms_accepted=bool(data['terms_accepted']),
+                privacy_accepted=bool(data['privacy_accepted']),
+                ai_disclaimer_accepted=bool(data['ai_disclaimer_accepted']),
+                age_confirmed=bool(data['age_confirmed']),
+                marketing_consent=bool(data.get('marketing_consent', False)),
+                consent_version=data.get('consent_version', '1.0'),
+                expert_name=data['expert_name'],
+                timestamp=timestamp,
+                ip_address=ip_address,
+                user_agent=data.get('user_agent', request.META.get('HTTP_USER_AGENT', '')),
+                referrer=data.get('referrer', ''),
+                page_url=data.get('page_url', '')
+            )
+            
+            logger.info(f"Consent recorded: {consent_record.id} for {ip_address} - {data['expert_name']}")
+            
+            return Response({
+                'success': True,
+                'consent_id': str(consent_record.id),
+                'message': 'Consent recorded successfully'
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            logger.error(f"Error recording consent: {str(e)}")
+            return Response({
+                'error': 'Failed to record consent'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ConsentCheckView(APIView):
+    """API view to check if consent exists for a user/IP"""
+    permission_classes = [AllowAny]
+    
+    def get_client_ip(self, request):
+        """Get the real IP address from request headers"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
+    def get(self, request, identifier):
+        """Check if consent exists for given identifier (IP or user ID)"""
+        try:
+            ip_address = self.get_client_ip(request)
+            
+            # Check by user if authenticated
+            if hasattr(request, 'user') and request.user.is_authenticated:
+                consent_exists = ConsentRecord.objects.filter(
+                    user=request.user
+                ).exists()
+            else:
+                # Check by IP address for anonymous users
+                consent_exists = ConsentRecord.objects.filter(
+                    ip_address=ip_address
+                ).exists()
+            
+            return Response({
+                'has_consent': consent_exists
+            })
+            
+        except Exception as e:
+            logger.error(f"Error checking consent: {str(e)}")
+            return Response({
+                'has_consent': False,
+                'error': 'Failed to check consent'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
