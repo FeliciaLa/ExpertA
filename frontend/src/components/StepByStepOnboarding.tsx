@@ -147,11 +147,11 @@ const stepSections = [
   },
   {
     title: 'Activate Your AI Expert',
-    description: 'Subscribe to make your AI expert live',
+    description: 'Pay £9.99 to start training your AI',
     steps: [
       {
-        label: 'Choose Your Plan',
-        description: 'Select a subscription plan to activate your AI expert',
+        label: 'Activate Your AI',
+        description: 'One-time payment of £9.99 to unlock AI training and get 200 user interactions',
         field: 'subscription'
       }
     ]

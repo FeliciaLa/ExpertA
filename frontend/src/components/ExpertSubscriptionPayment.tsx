@@ -200,7 +200,7 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
           </Typography>
           
           <Typography variant="body2" color="success.main" sx={{ mt: 1, mb: 3 }}>
-            Includes 200 user interactions • No monthly fees
+            Start training your AI • 200 user interactions • No monthly fees
           </Typography>
 
           <Divider sx={{ my: 3 }} />
@@ -232,7 +232,7 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
             }
           }}
         >
-          Activate for £{activationPrice}
+          Start Training AI - £{activationPrice}
         </Button>
         
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
