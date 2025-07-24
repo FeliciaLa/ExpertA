@@ -16,7 +16,8 @@ import {
   DialogActions,
   TextField,
   IconButton,
-  Divider
+  Divider,
+  Modal
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -31,6 +32,7 @@ import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import ExpertActivationPayment from './ExpertSubscriptionPayment';
 import AITestPreview from './AITestPreview';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 
 interface TrainingStats {
   documentsUploaded: number;
@@ -55,6 +57,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const [shareSuccess, setShareSuccess] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [showActivationPayment, setShowActivationPayment] = useState(false);
+  const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
   const [isActivated, setIsActivated] = useState(false);
   const [showTestPreview, setShowTestPreview] = useState(false);
   const [interactionStats, setInteractionStats] = useState({
@@ -364,6 +367,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
               onClick={handleShareAI}
               sx={{ 
                 mb: 1,
+                mr: 1,
                 color: isActivated ? 'primary.main' : 'warning.main',
                 borderColor: isActivated ? 'primary.main' : 'warning.main',
                 '&:hover': { 
@@ -373,6 +377,24 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
               }}
             >
               {isActivated ? 'Share your AI' : 'Activate & Share'}
+            </Button>
+            
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<InfoOutlined />}
+              onClick={() => setShowTrainingWalkthrough(true)}
+              sx={{ 
+                mb: 1,
+                color: 'info.main',
+                borderColor: 'info.main',
+                '&:hover': { 
+                  bgcolor: 'info.light',
+                  borderColor: 'info.dark'
+                }
+              }}
+            >
+              Training Guide
             </Button>
             
             <Button
@@ -531,6 +553,79 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
           onClose={() => setShowTestPreview(false)}
         />
       )}
+
+      {/* Training Walkthrough Modal */}
+      <Dialog
+        open={showTrainingWalkthrough}
+        onClose={() => setShowTrainingWalkthrough(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ textAlign: 'center', pb: 2 }}>
+          <Typography variant="h5" color="primary" gutterBottom>
+            🎯 How Training Works
+          </Typography>
+          <Typography variant="body1" color="textSecondary">
+            Your AI needs to learn from you before it can help users
+          </Typography>
+        </DialogTitle>
+        
+        <DialogContent>
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+              <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>📚</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 1: Chat Training (15-30 minutes)
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Your AI will ask you questions about real scenarios<br/>
+                  • Answer like you're talking to a client<br/>
+                  • The more detailed your answers, the smarter your AI becomes
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+              <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>📄</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 2: Upload Knowledge
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Add documents, case studies, or guides you've written<br/>
+                  • Your AI will learn from your actual work examples<br/>
+                  • This helps your AI give more accurate, detailed responses
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+              <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>✅</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 3: Test & Share
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Test your AI to make sure it sounds like you<br/>
+                  • Activate for £9.99 to share with unlimited users<br/>
+                  • Start getting consultations through your AI
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ justifyContent: 'center', p: 3 }}>
+          <Button
+            variant="contained"
+            onClick={() => setShowTrainingWalkthrough(false)}
+            size="large"
+          >
+            Got It!
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <style>
         {`
