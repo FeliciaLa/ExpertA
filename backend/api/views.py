@@ -3197,13 +3197,13 @@ def create_payment_intent(request):
                 print(f"Client secret exists: {'client_secret' in intent_data}")
                 
                 if 'client_secret' in intent_data:
-        return Response({
+                    return Response({
                         'client_secret': intent_data['client_secret'],
                         'payment_intent_id': intent_data['id'],
-            'amount': total_amount,
-            'expert_amount': expert_amount,
-            'platform_amount': platform_amount
-        })
+                        'amount': total_amount,
+                        'expert_amount': expert_amount,
+                        'platform_amount': platform_amount
+                    })
                 else:
                     print(f"❌ No client_secret in response: {intent_data}")
                     return Response({'error': 'Payment intent missing client_secret'}, status=500)
