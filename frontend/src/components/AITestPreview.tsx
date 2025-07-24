@@ -22,6 +22,7 @@ import {
   Visibility
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { chatService } from '../services/api';
 
 interface AITestPreviewProps {
   open: boolean;
@@ -35,7 +36,7 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendTestMessage = async () => {
-    if (!testMessage.trim()) return;
+    if (!testMessage.trim() || !expert?.id) return;
 
     const userMessage = {
       id: Date.now(),
@@ -44,19 +45,37 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageToSend = testMessage;
     setTestMessage('');
     setIsLoading(true);
 
-    // Simulate AI response (replace with actual API call in production)
-    setTimeout(() => {
+    try {
+      // Use the actual chat API - same as the live expert
+      console.log('Sending test message to AI:', { message: messageToSend, expertId: expert.id });
+      const response = await chatService.sendMessage(messageToSend, expert.id);
+      console.log('AI Test Response:', response);
+      
       const aiResponse = {
         id: Date.now() + 1,
-        text: `Hello! I'm ${expert?.name || 'your AI expert'} in preview mode. In the live version, I would provide detailed expertise based on my training. This is just a test preview - your actual AI will be much more sophisticated after training!`,
+        text: response.answer,
         sender: 'ai' as const
       };
+      
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error: any) {
+      console.error('AI Test Error:', error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.detail || 'Sorry, I\'m having trouble responding right now. Please try again.';
+      
+      const errorResponse = {
+        id: Date.now() + 1,
+        text: `🔬 Test Error: ${errorMessage}`,
+        sender: 'ai' as const
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -90,14 +109,14 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
       >
         <Box display="flex" alignItems="center" gap={2}>
           <Science color="primary" />
-          <Box>
-            <Typography variant="h6" component="div">
-              🔬 AI Test Preview
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Private testing mode - Not shareable
-            </Typography>
-          </Box>
+                     <Box>
+             <Typography variant="h6" component="div">
+               🔬 Real AI Test Mode
+             </Typography>
+             <Typography variant="caption" color="text.secondary">
+               Your actual AI expert - Private testing only
+             </Typography>
+           </Box>
         </Box>
         <IconButton onClick={onClose} size="small">
           <Close />
@@ -105,10 +124,10 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
       </DialogTitle>
       
       <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        {/* Preview Warning */}
-        <Alert severity="info" sx={{ m: 2, mb: 0 }}>
-          <strong>Preview Mode:</strong> This is a basic test interface. Your live AI will be more sophisticated after training and activation.
-        </Alert>
+                 {/* Preview Warning */}
+         <Alert severity="success" sx={{ m: 2, mb: 0 }}>
+           <strong>Real AI Test:</strong> This is your actual AI expert responding in private test mode. Responses are identical to the live version.
+         </Alert>
 
         {/* Expert Preview Header */}
         <Paper sx={{ m: 2, p: 3, bgcolor: 'grey.50' }}>
@@ -160,15 +179,15 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
             }}
           >
             {messages.length === 0 ? (
-              <Box textAlign="center" py={4}>
-                <Chat sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  Test Your AI Expert
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Send a message to see how users will interact with your AI
-                </Typography>
-              </Box>
+                             <Box textAlign="center" py={4}>
+                 <Chat sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                 <Typography variant="h6" color="text.secondary" gutterBottom>
+                   Test Your Real AI Expert
+                 </Typography>
+                 <Typography variant="body2" color="text.secondary">
+                   This connects to your actual AI - responses are identical to the live version
+                 </Typography>
+               </Box>
             ) : (
               <Box>
                 {messages.map((message) => (
@@ -209,16 +228,16 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
 
           {/* Message Input */}
           <Box display="flex" gap={1}>
-            <TextField
-              fullWidth
-              placeholder="Type a test message to your AI..."
-              value={testMessage}
-              onChange={(e) => setTestMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              multiline
-              maxRows={3}
-              disabled={isLoading}
-            />
+                         <TextField
+               fullWidth
+               placeholder="Chat with your real AI expert..."
+               value={testMessage}
+               onChange={(e) => setTestMessage(e.target.value)}
+               onKeyPress={handleKeyPress}
+               multiline
+               maxRows={3}
+               disabled={isLoading}
+             />
             <Button
               variant="contained"
               onClick={handleSendTestMessage}
@@ -229,9 +248,9 @@ const AITestPreview: React.FC<AITestPreviewProps> = ({ open, onClose }) => {
             </Button>
           </Box>
 
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
-            💡 This is a basic preview. Your live AI will learn from training and provide expert responses
-          </Typography>
+                     <Typography variant="caption" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+             💡 You're chatting with your real AI expert! Responses are identical to the live version - this is just private testing.
+           </Typography>
         </Box>
       </DialogContent>
     </Dialog>
