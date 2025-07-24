@@ -354,32 +354,36 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
           </Grid>
         </Grid>
 
-        {/* Interaction Counter - Only shown for activated experts */}
+        {/* Compact Interaction Counter - Only shown for activated experts */}
         {isActivated && (
           <Grid item xs={12}>
             <Box sx={{ 
-              p: 2, 
-              border: '2px solid', 
-              borderColor: interactionStats.percentage > 80 ? 'warning.main' : 'success.main',
-              borderRadius: 2,
-              bgcolor: interactionStats.percentage > 80 ? 'warning.light' : 'success.light',
-              alpha: 0.1
+              p: 1.5, 
+              border: '1px solid', 
+              borderColor: interactionStats.percentage > 80 ? 'warning.main' : 'grey.300',
+              borderRadius: 1,
+              bgcolor: interactionStats.percentage > 80 ? 'warning.light' : 'grey.50',
+              alpha: 0.05,
+              mb: 1
             }}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <Typography variant="subtitle2" fontWeight="bold">
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                   👥 Public User Interactions
                 </Typography>
-                <Typography variant="subtitle2" color={interactionStats.percentage > 80 ? 'warning.main' : 'success.main'}>
-                  {interactionStats.used}/{interactionStats.total}
+                <Typography variant="caption" fontWeight="bold" 
+                  color={interactionStats.percentage > 80 ? 'warning.main' : 'text.secondary'}
+                  sx={{ fontSize: '0.75rem' }}
+                >
+                  {interactionStats.used}/200
                 </Typography>
               </Box>
               
-              <Box sx={{ position: 'relative', mb: 1 }}>
+              <Box sx={{ mt: 0.5 }}>
                 <Box
                   sx={{
-                    height: 8,
-                    borderRadius: 4,
-                    bgcolor: 'grey.300',
+                    height: 4,
+                    borderRadius: 2,
+                    bgcolor: 'grey.200',
                     overflow: 'hidden'
                   }}
                 >
@@ -388,22 +392,11 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
                       height: '100%',
                       width: `${interactionStats.percentage}%`,
                       bgcolor: interactionStats.percentage > 80 ? 'warning.main' : 'success.main',
-                      transition: 'width 0.5s ease-in-out'
+                      transition: 'width 0.3s ease-in-out'
                     }}
                   />
                 </Box>
               </Box>
-              
-              <Typography variant="caption" color="text.secondary">
-                {interactionStats.percentage < 50 
-                  ? '💚 Users can freely chat with your AI'
-                  : interactionStats.percentage < 80 
-                  ? '🟡 Moderate usage from public users'
-                  : interactionStats.percentage < 95
-                  ? '🟠 Almost at user interaction limit'
-                  : '🔴 Very close to user interaction limit'
-                }
-              </Typography>
             </Box>
           </Grid>
         )}
