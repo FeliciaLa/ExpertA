@@ -16,12 +16,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { isAuthenticated, isUser, isExpert, signOut, expert, user, signIn, register } = useAuth();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Check if we're on any expert page or profile page to hide header for standalone experience
-  const isStandaloneExpertPage = location.pathname.toLowerCase().includes('stoic') || 
-                           location.pathname.includes('the-stoic-mentor') ||
-                           location.pathname.includes('stoic-mentor') ||
-                           location.pathname.includes('/user/profile') ||
-                           location.pathname.startsWith('/experts/');
+  // Check if we're on profile pages to hide header  
+  const isProfilePage = location.pathname.includes('/user/profile');
+  
+  // Check if we're on expert pages for minimal header
+  const isExpertPage = location.pathname.startsWith('/experts/') || 
+                      location.pathname.toLowerCase().includes('stoic') || 
+                      location.pathname.includes('the-stoic-mentor') ||
+                      location.pathname.includes('stoic-mentor');
 
   const handleLogout = () => {
     signOut();
@@ -96,93 +98,100 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <>
-      {/* Hide header for standalone expert pages */}
-      {!isStandaloneExpertPage && (
-        <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: 1 }}>
-          <Toolbar>
+      {/* Show different headers based on page type */}
+      {!isProfilePage && (
+        <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: isExpertPage ? 'none' : 1 }}>
+          <Toolbar sx={{ minHeight: isExpertPage ? '56px' : '64px' }}>
             <Typography 
               variant="h6" 
               component="div" 
               sx={{ 
                 flexGrow: 1, 
                 color: 'primary.main',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontSize: isExpertPage ? '1.1rem' : '1.25rem',
+                fontWeight: isExpertPage ? 500 : 400
               }}
               onClick={() => navigate('/')}
             >
               Duplix AI
             </Typography>
             
-            {/* Show Train AI button only for experts */}
-            {isExpert && (
-              <Button
-                data-tour="train-ai"
-                color="primary"
-                onClick={handleTrainAIClick}
-                sx={{ 
-                  color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
-                  mr: 2
-                }}
-              >
-                {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
-              </Button>
-            )}
-            
-            {/* My Profile button - visible for all authenticated users */}
-            {isAuthenticated && (
-              <Button
-                color="primary"
-                onClick={() => isExpert ? navigate('/expert') : navigate('/user/profile')}
-                sx={{ 
-                  color: (isExpert && location.pathname === '/expert') || 
-                        (!isExpert && location.pathname === '/user/profile') 
-                        ? 'primary.main' : 'text.secondary',
-                  mr: 2
-                }}
-              >
-                MY PROFILE
-              </Button>
-            )}
-            
-            {/* Browse Experts button - only visible for authenticated non-experts and when feature is enabled */}
-            {features.browseExperts && isAuthenticated && !isExpert && (
-              <Button
-                data-tour="browse-experts"
-                color="primary"
-                onClick={() => navigate('/experts')}
-                sx={{ 
-                  color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
-                  mr: 2
-                }}
-              >
-                BROWSE EXPERTS
-              </Button>
-            )}
-            
-            {/* Login button - only visible when not authenticated */}
-            {!isAuthenticated && (
-              <Button
-                color="primary"
-                onClick={handleAuthClick}
-                sx={{ 
-                  color: 'text.secondary',
-                  mr: 2
-                }}
-              >
-                LOGIN / SIGN UP
-              </Button>
-            )}
-            
-            {/* Show username and logout when authenticated */}
-            {isAuthenticated && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Button
-                  color="primary"
-                  onClick={handleLogout}
-                >
-                  LOGOUT
-                </Button>
-              </Box>
+            {/* Full navigation for non-expert pages */}
+            {!isExpertPage && (
+              <>
+                {/* Show Train AI button only for experts */}
+                {isExpert && (
+                  <Button
+                    data-tour="train-ai"
+                    color="primary"
+                    onClick={handleTrainAIClick}
+                    sx={{ 
+                      color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
+                      mr: 2
+                    }}
+                  >
+                    {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
+                  </Button>
+                )}
+                
+                {/* My Profile button - visible for all authenticated users */}
+                {isAuthenticated && (
+                  <Button
+                    color="primary"
+                    onClick={() => isExpert ? navigate('/expert') : navigate('/user/profile')}
+                    sx={{ 
+                      color: (isExpert && location.pathname === '/expert') || 
+                            (!isExpert && location.pathname === '/user/profile') 
+                            ? 'primary.main' : 'text.secondary',
+                      mr: 2
+                    }}
+                  >
+                    MY PROFILE
+                  </Button>
+                )}
+                
+                {/* Browse Experts button - only visible for authenticated non-experts and when feature is enabled */}
+                {features.browseExperts && isAuthenticated && !isExpert && (
+                  <Button
+                    data-tour="browse-experts"
+                    color="primary"
+                    onClick={() => navigate('/experts')}
+                    sx={{ 
+                      color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
+                      mr: 2
+                    }}
+                  >
+                    BROWSE EXPERTS
+                  </Button>
+                )}
+                
+                {/* Login button - only visible when not authenticated */}
+                {!isAuthenticated && (
+                  <Button
+                    color="primary"
+                    onClick={handleAuthClick}
+                    sx={{ 
+                      color: 'text.secondary',
+                      mr: 2
+                    }}
+                  >
+                    LOGIN / SIGN UP
+                  </Button>
+                )}
+                
+                {/* Show username and logout when authenticated */}
+                {isAuthenticated && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Button
+                      color="primary"
+                      onClick={handleLogout}
+                    >
+                      LOGOUT
+                    </Button>
+                  </Box>
+                )}
+              </>
             )}
           </Toolbar>
         </AppBar>
@@ -198,7 +207,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         onRegister={(name, email, password, isExpertRegistration, userRole) => handleRegister(name, email, password, isExpertRegistration, userRole)}
       />
       
-      <Container component="main" sx={{ mt: isStandaloneExpertPage ? 0 : 4, mb: 8 }}>
+      <Container component="main" sx={{ mt: (isExpertPage || isProfilePage) ? 0 : 4, mb: 8 }}>
         {children}
       </Container>
       

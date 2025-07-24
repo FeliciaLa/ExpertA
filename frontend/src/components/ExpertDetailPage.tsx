@@ -655,33 +655,65 @@ export const ExpertDetailPage: React.FC = () => {
     );
   }
 
-  // Default layout for all other experts
+  // Default layout for all other experts  
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      
-      <Grid container spacing={4}>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      py: 4
+    }}>
+      <Container maxWidth="lg">
+        <Grid container spacing={4}>
         {/* Expert Profile Section */}
         <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, height: '100%' }}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 4, 
+              height: '100%',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 3,
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <Avatar
                 src={getProfileImageUrl()}
                 sx={{
-                  width: 80,
-                  height: 80,
+                  width: 90,
+                  height: 90,
                   bgcolor: 'primary.main',
-                  fontSize: '2rem',
-                  mr: 2
+                  fontSize: '2.2rem',
+                  mr: 2,
+                  border: '3px solid rgba(255, 255, 255, 0.8)',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
                 }}
               >
                 {expert.name[0]}
               </Avatar>
               <Box>
-                <Typography variant="h5" gutterBottom>
+                <Typography 
+                  variant="h4" 
+                  gutterBottom
+                  sx={{ 
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}
+                >
                   {expert.name}
                 </Typography>
                 {expert.title && (
-                  <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                  <Typography 
+                    variant="h6" 
+                    color="text.secondary" 
+                    gutterBottom
+                    sx={{ fontWeight: 500 }}
+                  >
                     {expert.title}
                   </Typography>
                 )}
@@ -713,47 +745,61 @@ export const ExpertDetailPage: React.FC = () => {
 
         {/* Chat Section */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
-            {/* Always show the title, regardless of authentication state */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-              <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 500 }}>
-                Chat with {expert.name}'s AI
-              </Typography>
-              <Tooltip 
-                title="This chatbot is AI-powered and still in development. Responses may be inaccurate or incomplete."
-                placement="right"
-                arrow
-                slotProps={{
-                  tooltip: {
-                    sx: {
-                      backgroundColor: 'rgba(0, 0, 0, 0.87)',
-                      color: 'white',
-                      fontSize: '0.875rem',
-                      maxWidth: 300,
-                      padding: '8px 16px',
-                      borderRadius: '4px',
-                    }
-                  }
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 0, 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 3,
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Chat Header */}
+            <Box sx={{ 
+              p: 3, 
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+              borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+            }}>
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: '#1976d2',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 2
                 }}
               >
-                <Typography 
-                  component="span" 
-                  sx={{ 
-                    fontSize: '1.2rem',
-                    color: 'text.secondary',
-                    cursor: 'help',
-                    lineHeight: 1,
-                    '&:hover': {
-                      color: 'primary.main',
-                    }
-                  }}
-                >
-                  ℹ️
-                </Typography>
-              </Tooltip>
+                                Chat with {expert.name}'s AI
+                <Box sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  borderRadius: 2, 
+                  px: 1.5,
+                  py: 0.5,
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px'
+                }}>
+                  AI POWERED
+                </Box>
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Get expert insights powered by {expert.name}'s knowledge and experience
+              </Typography>
             </Box>
-            {renderChatSection()}
-          </Paper>
+            
+                         {/* Chat Content */}
+             <Box sx={{ flex: 1, p: 3 }}>
+               {renderChatSection()}
+             </Box>
+           </Paper>
         </Grid>
       </Grid>
 
@@ -765,7 +811,8 @@ export const ExpertDetailPage: React.FC = () => {
           onRegister={handleUserRegister}
         />
       )}
-    </Container>
+      </Container>
+    </Box>
   );
 };
 
