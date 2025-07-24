@@ -22,7 +22,7 @@ export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KE
 
 // Feature flags
 export const features = {
-  payments: true, // Enable payments for The Stoic Mentor
+  payments: false, // Disable payments/monetization in onboarding
   browseExperts: false, // Disable browse experts - using standalone expert pages
   // Add more features here as needed
 }; 
