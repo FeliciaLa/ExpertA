@@ -662,20 +662,23 @@ export const ExpertDetailPage: React.FC = () => {
       background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
       py: 4
     }}>
-      <Container maxWidth="lg">
-        <Grid container spacing={4}>
+      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
+        <Grid container spacing={6}>
         {/* Expert Profile Section */}
         <Grid item xs={12} md={4}>
           <Paper 
             elevation={0}
             sx={{ 
               p: 4, 
-              height: '100%',
-              background: 'rgba(255, 255, 255, 0.9)',
+              height: 'fit-content',
+              minHeight: '400px',
+              background: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
               borderRadius: 3,
               border: '1px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              position: 'relative',
+              zIndex: 1
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -749,15 +752,17 @@ export const ExpertDetailPage: React.FC = () => {
             elevation={0}
             sx={{ 
               p: 0, 
-              height: '100%', 
+              minHeight: '600px', 
               display: 'flex', 
               flexDirection: 'column',
-              background: 'rgba(255, 255, 255, 0.9)',
+              background: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
               borderRadius: 3,
               border: '1px solid rgba(255, 255, 255, 0.3)',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              position: 'relative',
+              zIndex: 1
             }}
           >
             {/* Chat Header */}
