@@ -3089,20 +3089,20 @@ def create_payment_intent(request):
             
         else:
             # Original consultation payment logic for The Stoic Mentor
-            expert_id = request.data.get('expert_id')
-            if not expert_id:
-                return Response({'error': 'Expert ID is required'}, status=400)
-            
-            # Get expert and pricing info
-            try:
+        expert_id = request.data.get('expert_id')
+        if not expert_id:
+            return Response({'error': 'Expert ID is required'}, status=400)
+        
+        # Get expert and pricing info
+        try:
                 expert = User.objects.get(id=expert_id)
                 
                 # Only allow payments for The Stoic Mentor
                 if expert.name != 'The Stoic Mentor':
                     return Response({'error': 'Payments are only available for The Stoic Mentor'}, status=400)
             except User.DoesNotExist:
-                return Response({'error': 'Expert not found'}, status=404)
-            
+            return Response({'error': 'Expert not found'}, status=404)
+        
             expert_profile, created = ExpertProfile.objects.get_or_create(
                 expert_id=expert_id,
                 defaults={'monetization_enabled': True}
@@ -3201,13 +3201,13 @@ def create_payment_intent(request):
                 print(f"Client secret exists: {'client_secret' in intent_data}")
                 
                 if 'client_secret' in intent_data:
-                    return Response({
+        return Response({
                         'client_secret': intent_data['client_secret'],
                         'payment_intent_id': intent_data['id'],
-                        'amount': total_amount,
-                        'expert_amount': expert_amount,
-                        'platform_amount': platform_amount
-                    })
+            'amount': total_amount,
+            'expert_amount': expert_amount,
+            'platform_amount': platform_amount
+        })
                 else:
                     print(f"❌ No client_secret in response: {intent_data}")
                     return Response({'error': 'Payment intent missing client_secret'}, status=500)
@@ -3224,7 +3224,7 @@ def create_payment_intent(request):
             import traceback
             print(f"Full traceback: {traceback.format_exc()}")
             return Response({'error': f'Error creating intent: {str(e)}'}, status=500)
-            
+        
     except Exception as e:
         print(f"Error creating payment intent: {str(e)}")
         return Response({'error': 'Failed to create payment intent'}, status=500)
@@ -3302,8 +3302,8 @@ def confirm_payment(request):
             
             # Create a special consultation session to track activation payment
             # This serves as both payment record and activation flag
-            session = ConsultationSession.objects.create(
-                user=request.user,
+        session = ConsultationSession.objects.create(
+            user=request.user,
                 expert=expert,
                 expert_name=expert.name,
                 expert_industry="ACTIVATION",  # Special marker for activation payments

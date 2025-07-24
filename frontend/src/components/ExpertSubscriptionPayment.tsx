@@ -25,11 +25,11 @@ interface ExpertActivationPaymentProps {
 }
 
 const ACTIVATION_FEATURES = [
+  'Unlock AI training capabilities',
   'Make your AI expert publicly shareable',
   '200 user interactions included',
-  'Analytics dashboard to track engagement', 
-  'Embed anywhere (website, social media)',
-  'Custom shareable link',
+  'Train through Q&A conversations',
+  'Upload documents for training',
   'No monthly fees - one-time payment'
 ];
 
@@ -165,11 +165,11 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
     <Box>
       {/* Activation Overview */}
       <Typography variant="h4" gutterBottom textAlign="center" sx={{ mb: 2 }}>
-        🎉 Your AI Expert is Ready!
+        🚀 Ready to Train Your AI!
       </Typography>
       
       <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-        Your AI expert has been trained and tested. Pay £{activationPrice} to make it live and shareable.
+        Your profile is complete. Pay £{activationPrice} to unlock AI training capabilities and start building your intelligent assistant.
       </Typography>
 
       {/* Activation Card */}
@@ -189,7 +189,7 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
           <Rocket sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
           
           <Typography variant="h5" fontWeight="bold" gutterBottom>
-            Activate Your AI Expert
+            Start Training
           </Typography>
           
           <Typography variant="h2" component="span" fontWeight="bold" color="primary.main">
