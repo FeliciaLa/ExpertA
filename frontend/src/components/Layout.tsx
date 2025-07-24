@@ -16,11 +16,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { isAuthenticated, isUser, isExpert, signOut, expert, user, signIn, register } = useAuth();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Check if we're on The Stoic Mentor's page or profile page to hide header
-  const isStoicMentorPage = location.pathname.toLowerCase().includes('stoic') || 
+  // Check if we're on any expert page or profile page to hide header for standalone experience
+  const isStandaloneExpertPage = location.pathname.toLowerCase().includes('stoic') || 
                            location.pathname.includes('the-stoic-mentor') ||
                            location.pathname.includes('stoic-mentor') ||
-                           location.pathname.includes('/user/profile');
+                           location.pathname.includes('/user/profile') ||
+                           location.pathname.startsWith('/experts/');
 
   const handleLogout = () => {
     signOut();
@@ -95,8 +96,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <>
-      {/* Hide header only for The Stoic Mentor page */}
-      {!isStoicMentorPage && (
+      {/* Hide header for standalone expert pages */}
+      {!isStandaloneExpertPage && (
         <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: 1 }}>
           <Toolbar>
             <Typography 
@@ -197,7 +198,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         onRegister={(name, email, password, isExpertRegistration, userRole) => handleRegister(name, email, password, isExpertRegistration, userRole)}
       />
       
-      <Container component="main" sx={{ mt: isStoicMentorPage ? 0 : 4, mb: 8 }}>
+      <Container component="main" sx={{ mt: isStandaloneExpertPage ? 0 : 4, mb: 8 }}>
         {children}
       </Container>
       
