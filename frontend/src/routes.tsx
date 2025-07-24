@@ -16,6 +16,7 @@ import { ExpertOnboarding } from './components/ExpertOnboarding';
 import ExpertProfile from './components/ExpertProfile';
 import OnboardingReview from './components/OnboardingReview';
 import DocumentUpload from './components/DocumentUpload';
+import ExpertActivationPage from './components/ExpertActivationPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import TrainingPage from './pages/TrainingPage';
@@ -75,6 +76,13 @@ function AppRoutes() {
       <Route path="/contact" element={<Layout><Contact /></Layout>} />
       
       {/* Expert routes */}
+      <Route path="/expert-activation" element={
+        <ProtectedExpertRoute>
+          <Layout>
+            <ExpertActivationPage />
+          </Layout>
+        </ProtectedExpertRoute>
+      } />
       <Route path="/expert/*" element={
         <ProtectedExpertRoute>
           <Layout>

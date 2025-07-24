@@ -270,14 +270,27 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
               <Typography variant="h5" gutterBottom color="success.main">
                 Payment Successful! 🎉
               </Typography>
-              <Typography variant="body1" gutterBottom>
-                Your AI expert has been activated with £{activationPrice} payment.
+              <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
+                Your AI expert is now <strong>LIVE</strong> and publicly accessible!
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                You now have 200 user interactions included.
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Redirecting you to continue...
+              
+              <Box sx={{ textAlign: 'left', mb: 2, maxWidth: 400, mx: 'auto' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  ✅ <strong>Your unique link:</strong> duplixai.co.uk/experts/your-name
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  ✅ <strong>200 user interactions</strong> included (worth £{activationPrice})
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  ✅ <strong>AI training active</strong> - gets smarter with each conversation
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  ✅ <strong>Share anywhere</strong> - social media, website, business cards
+                </Typography>
+              </Box>
+              
+              <Typography variant="body2" color="primary.main" sx={{ mt: 2, fontWeight: 'bold' }}>
+                Redirecting you to your expert dashboard...
               </Typography>
             </Box>
           ) : (

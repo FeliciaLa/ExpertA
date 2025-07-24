@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { expertApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { features } from '../utils/environment';
-import ExpertActivationPayment from './ExpertSubscriptionPayment';
+// import ExpertActivationPayment from './ExpertSubscriptionPayment'; // Moved to separate activation page
 
 const INDUSTRIES = [
   'Technology & Software',
@@ -61,7 +61,6 @@ interface StepData {
   tools_technologies: string;
   certifications: string;
   bio: string;
-  subscription_completed: boolean;
   completion: string;
 }
 
@@ -145,17 +144,7 @@ const stepSections = [
       }
     ]
   },
-  {
-    title: 'Activate Your AI Expert',
-    description: 'Pay £9.99 to unlock AI training capabilities, build your AI duplicate and receive your sharable link.',
-    steps: [
-      {
-        label: 'Payment',
-        description: '',
-        field: 'subscription'
-      }
-    ]
-  },
+
   {
     title: 'Finish Setup',
     description: 'Complete your setup',
@@ -192,7 +181,6 @@ const StepByStepOnboarding: React.FC = () => {
     tools_technologies: '',
     certifications: '',
     bio: '',
-    subscription_completed: false,
     completion: ''
   });
   
@@ -291,7 +279,6 @@ const StepByStepOnboarding: React.FC = () => {
         tools_technologies: profile.profile?.tools_technologies || '',
         certifications: profile.profile?.certifications || '',
         bio: profile.bio || '',
-        subscription_completed: false, // Will be updated after payment
         completion: ''
       };
       setStepData(existingData);
@@ -359,11 +346,6 @@ const StepByStepOnboarding: React.FC = () => {
         setError('Please select your experience level');
         return false;
       }
-    } else if (currentField === 'subscription') {
-      if (!stepData.subscription_completed) {
-        setError('Please complete your subscription to continue');
-        return false;
-      }
     } else if (!currentValue.trim()) {
       setError('This field is required');
       return false;
@@ -397,9 +379,6 @@ const StepByStepOnboarding: React.FC = () => {
         } else if (currentField === 'industry') {
           // Ensure we always save as comma-separated string, never JSON
           fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
-        } else if (currentField === 'subscription') {
-          // Skip saving subscription field - handled by payment component
-          return;
         } else {
           fieldValue = currentValue;
         }
@@ -441,9 +420,6 @@ const StepByStepOnboarding: React.FC = () => {
         } else if (currentField === 'industry') {
           // Ensure we always save as comma-separated string, never JSON
           fieldValue = Array.isArray(stepData.industry) ? stepData.industry.join(', ') : stepData.industry;
-        } else if (currentField === 'subscription') {
-          // Skip saving subscription field - handled by payment component
-          return;
         } else {
           fieldValue = currentValue;
         }
@@ -486,6 +462,9 @@ const StepByStepOnboarding: React.FC = () => {
       
       // Refresh expert data
       await refreshExpert();
+      
+      // Redirect to activation page instead of staying in onboarding
+      navigate('/expert-activation');
       
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
@@ -783,20 +762,6 @@ const StepByStepOnboarding: React.FC = () => {
             placeholder="List any relevant certifications, degrees, or qualifications"
             variant="outlined"
             sx={{ mt: 2 }}
-          />
-        );
-        
-      case 'subscription':
-        return (
-          <ExpertActivationPayment
-            onPaymentSuccess={() => {
-              setStepData(prev => ({ ...prev, subscription_completed: true }));
-              setCurrentValue('completed');
-              setError(null);
-            }}
-            onClose={() => {
-              setError('Payment required to activate your AI expert');
-            }}
           />
         );
         
