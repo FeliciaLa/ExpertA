@@ -354,6 +354,42 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
           </Grid>
         </Grid>
 
+        {/* Action Buttons */}
+        <Grid item xs={12} md={3}>
+          <Box textAlign="center">
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ShareIcon />}
+              onClick={handleShareAI}
+              sx={{ 
+                mb: 1,
+                color: isActivated ? 'primary.main' : 'warning.main',
+                borderColor: isActivated ? 'primary.main' : 'warning.main',
+                '&:hover': { 
+                  bgcolor: isActivated ? 'primary.light' : 'warning.light',
+                  borderColor: isActivated ? 'primary.dark' : 'warning.dark'
+                }
+              }}
+            >
+              {isActivated ? 'Share your AI' : 'Activate & Share'}
+            </Button>
+            
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<TestTubeIcon />}
+              onClick={handleTestAI}
+              sx={{ 
+                bgcolor: 'secondary.main',
+                '&:hover': { bgcolor: 'secondary.dark' }
+              }}
+            >
+              Test Your AI
+            </Button>
+          </Box>
+        </Grid>
+
         {/* Compact Interaction Counter - Only shown for activated experts */}
         {isActivated && (
           <Grid item xs={12}>
@@ -400,42 +436,6 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
             </Box>
           </Grid>
         )}
-
-        {/* AI Message and Test Button */}
-        <Grid item xs={12} md={3}>
-          <Box textAlign="center">
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<ShareIcon />}
-              onClick={handleShareAI}
-              sx={{ 
-                mb: 1,
-                color: isActivated ? 'primary.main' : 'warning.main',
-                borderColor: isActivated ? 'primary.main' : 'warning.main',
-                '&:hover': { 
-                  bgcolor: isActivated ? 'primary.light' : 'warning.light',
-                  borderColor: isActivated ? 'primary.dark' : 'warning.dark'
-                }
-              }}
-            >
-              {isActivated ? 'Share your AI' : 'Activate & Share'}
-            </Button>
-            
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<TestTubeIcon />}
-              onClick={handleTestAI}
-              sx={{ 
-                bgcolor: 'secondary.main',
-                '&:hover': { bgcolor: 'secondary.dark' }
-              }}
-            >
-              Test Your AI
-            </Button>
-          </Box>
-        </Grid>
       </Grid>
 
       {/* Share Modal */}
