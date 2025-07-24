@@ -39,6 +39,7 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
 }) => {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentSucceeded, setPaymentSucceeded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stripe, setStripe] = useState<any>(null);
   const [cardElement, setCardElement] = useState<any>(null);
@@ -133,17 +134,23 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
 
       if (paymentIntent.status === 'succeeded') {
         // Use existing confirmation endpoint
-        await api.post('payment/confirm/', {
+        const confirmResponse = await api.post('payment/confirm/', {
           payment_intent_id: payment_intent_id,
           expert_id: expert?.id || user?.id,
           activation_payment: true
         });
 
-        setShowPaymentDialog(false);
+        // Show success message first
+        setPaymentSucceeded(true);
+        setError(null);
         
-        if (onPaymentSuccess) {
-          onPaymentSuccess();
-        }
+        // Wait a moment for user to see success, then complete
+        setTimeout(() => {
+          setShowPaymentDialog(false);
+          if (onPaymentSuccess) {
+            onPaymentSuccess();
+          }
+        }, 2000);
       }
 
     } catch (err: any) {
@@ -256,65 +263,89 @@ export const ExpertActivationPayment: React.FC<ExpertActivationPaymentProps> = (
         </DialogTitle>
         
         <DialogContent>
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
+          {paymentSucceeded ? (
+            // Success Message
+            <Box textAlign="center" py={4}>
+              <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
+              <Typography variant="h5" gutterBottom color="success.main">
+                Payment Successful! 🎉
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                Your AI expert has been activated with £{activationPrice} payment.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                You now have 200 user interactions included.
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Redirecting you to continue...
+              </Typography>
+            </Box>
+          ) : (
+            // Payment Form
+            <>
+              {error && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {error}
+                </Alert>
+              )}
+
+              {/* Payment Summary */}
+              <Paper sx={{ p: 3, mb: 3, bgcolor: 'grey.50' }}>
+                <Typography variant="h6" gutterBottom>
+                  AI Expert Activation
+                </Typography>
+                <Typography variant="h4" color="primary" gutterBottom>
+                  £{activationPrice}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  One-time payment • 200 interactions included
+                </Typography>
+              </Paper>
+
+              {/* Card Input */}
+              <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                Payment Details
+              </Typography>
+              <Box 
+                ref={cardElementRef}
+                sx={{ 
+                  p: 2, 
+                  border: '1px solid #e0e0e0', 
+                  borderRadius: 1, 
+                  mb: 2,
+                  '&:focus-within': {
+                    borderColor: '#1976d2',
+                    boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)'
+                  }
+                }}
+              />
+
+              <Box display="flex" alignItems="center" gap={1} mt={2}>
+                <Lock sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="body2" color="text.secondary">
+                  Your payment information is encrypted and secure
+                </Typography>
+              </Box>
+            </>
           )}
-
-          {/* Payment Summary */}
-          <Paper sx={{ p: 3, mb: 3, bgcolor: 'grey.50' }}>
-            <Typography variant="h6" gutterBottom>
-              AI Expert Activation
-            </Typography>
-            <Typography variant="h4" color="primary" gutterBottom>
-              £{activationPrice}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              One-time payment • 200 interactions included
-            </Typography>
-          </Paper>
-
-          {/* Card Input */}
-          <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-            Payment Details
-          </Typography>
-          <Box 
-            ref={cardElementRef}
-            sx={{ 
-              p: 2, 
-              border: '1px solid #e0e0e0', 
-              borderRadius: 1, 
-              mb: 2,
-              '&:focus-within': {
-                borderColor: '#1976d2',
-                boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)'
-              }
-            }}
-          />
-
-          <Box display="flex" alignItems="center" gap={1} mt={2}>
-            <Lock sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Typography variant="body2" color="text.secondary">
-              Your payment information is encrypted and secure
-            </Typography>
-          </Box>
         </DialogContent>
 
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={handleClose} disabled={isProcessing}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handlePaymentSubmit}
-            disabled={isProcessing}
-            startIcon={isProcessing ? <CircularProgress size={20} /> : <CreditCard />}
-            sx={{ minWidth: 140 }}
-          >
-            {isProcessing ? 'Processing...' : `Pay £${activationPrice}`}
-          </Button>
-        </DialogActions>
+        {!paymentSucceeded && (
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={handleClose} disabled={isProcessing}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handlePaymentSubmit}
+              disabled={isProcessing}
+              startIcon={isProcessing ? <CircularProgress size={20} /> : <CreditCard />}
+              sx={{ minWidth: 140 }}
+            >
+              {isProcessing ? 'Processing...' : `Pay £${activationPrice}`}
+            </Button>
+          </DialogActions>
+        )}
       </Dialog>
     </Box>
   );
