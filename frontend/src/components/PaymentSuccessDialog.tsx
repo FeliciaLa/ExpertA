@@ -28,12 +28,12 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
               <h2 className="text-2xl font-bold text-gray-900">
                 Payment Successful!
               </h2>
-              <button
-                onClick={onClose}
+          <button
+            onClick={onClose}
                 className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
+          >
+            <X className="w-6 h-6" />
+          </button>
             </div>
             <p className="text-gray-600">
               {expertName === 'The Stoic Mentor' 

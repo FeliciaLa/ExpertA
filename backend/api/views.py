@@ -38,6 +38,7 @@ import json
 from rest_framework.decorators import api_view, permission_classes
 from django.utils.dateparse import parse_datetime
 from django.http import HttpRequest
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -705,6 +706,17 @@ class ChatView(APIView):
                             status=ConsultationSession.Status.ACTIVE
                         )
                         created = True
+                    
+                    # Check if this is an activation session and enforce 200 interaction limit
+                    if session.expert_industry == "ACTIVATION" and session.total_messages >= 400:  # 200 interactions = 400 messages
+                        interactions_used = session.total_messages // 2
+                        return Response({
+                            'error': f'This AI expert has reached its interaction limit ({interactions_used}/200 interactions used). Please contact {expert.name} directly for further assistance.',
+                            'limit_reached': True,
+                            'interactions_used': interactions_used,
+                            'limit': 200,
+                            'expert_contact': expert.email
+                        }, status=status.HTTP_403_FORBIDDEN)
                     
                     print(f"🎯 Using session: {session.id} (created: {created}, messages: {session.total_messages})")
                     

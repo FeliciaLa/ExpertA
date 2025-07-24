@@ -57,6 +57,11 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const [showActivationPayment, setShowActivationPayment] = useState(false);
   const [isActivated, setIsActivated] = useState(false);
   const [showTestPreview, setShowTestPreview] = useState(false);
+  const [interactionStats, setInteractionStats] = useState({
+    used: 0,
+    total: 200,
+    percentage: 0
+  });
 
   const checkActivationStatus = async () => {
     try {
@@ -64,13 +69,41 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
       const response = await api.get(`/user/profile/direct/${expert?.id}/`);
       const consultations = response.data.consultations?.sessions || [];
       
-      // Look for activation payment session
-      const hasActivation = consultations.some((session: any) => 
+      // Look for activation payment session (just to check if activated)
+      const activationSession = consultations.find((session: any) => 
         session.expert_industry === 'ACTIVATION'
       );
       
+      const hasActivation = !!activationSession;
       setIsActivated(hasActivation);
-      console.log('Expert activation status:', hasActivation, 'from', consultations.length, 'sessions');
+      
+      // If activated, calculate user interaction usage from ALL consultation sessions
+      if (hasActivation) {
+        // Sum up total_messages from all consultation sessions (excluding the activation payment session)
+        const userConsultationSessions = consultations.filter((session: any) => 
+          session.expert_industry !== 'ACTIVATION'  // Exclude the activation payment record
+        );
+        
+        const totalUserMessages = userConsultationSessions.reduce((sum: number, session: any) => {
+          return sum + (session.total_messages || 0);
+        }, 0);
+        
+        const interactionsUsed = Math.floor(totalUserMessages / 2); // 2 messages per interaction
+        const percentage = Math.min((interactionsUsed / 200) * 100, 100);
+        
+        setInteractionStats({
+          used: interactionsUsed,
+          total: 200,
+          percentage: percentage
+        });
+        
+        console.log('Expert activation status:', hasActivation);
+        console.log('User consultation sessions:', userConsultationSessions.length);
+        console.log('Total user messages:', totalUserMessages);
+        console.log('User interactions used:', interactionsUsed, '/200');
+      } else {
+        console.log('Expert activation status:', hasActivation, 'from', consultations.length, 'sessions');
+      }
     } catch (error) {
       console.error('Failed to check activation status:', error);
       // Default to not activated if check fails
@@ -320,6 +353,60 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
             </Grid>
           </Grid>
         </Grid>
+
+        {/* Interaction Counter - Only shown for activated experts */}
+        {isActivated && (
+          <Grid item xs={12}>
+            <Box sx={{ 
+              p: 2, 
+              border: '2px solid', 
+              borderColor: interactionStats.percentage > 80 ? 'warning.main' : 'success.main',
+              borderRadius: 2,
+              bgcolor: interactionStats.percentage > 80 ? 'warning.light' : 'success.light',
+              alpha: 0.1
+            }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  👥 Public User Interactions
+                </Typography>
+                <Typography variant="subtitle2" color={interactionStats.percentage > 80 ? 'warning.main' : 'success.main'}>
+                  {interactionStats.used}/{interactionStats.total}
+                </Typography>
+              </Box>
+              
+              <Box sx={{ position: 'relative', mb: 1 }}>
+                <Box
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    bgcolor: 'grey.300',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: '100%',
+                      width: `${interactionStats.percentage}%`,
+                      bgcolor: interactionStats.percentage > 80 ? 'warning.main' : 'success.main',
+                      transition: 'width 0.5s ease-in-out'
+                    }}
+                  />
+                </Box>
+              </Box>
+              
+              <Typography variant="caption" color="text.secondary">
+                {interactionStats.percentage < 50 
+                  ? '💚 Users can freely chat with your AI'
+                  : interactionStats.percentage < 80 
+                  ? '🟡 Moderate usage from public users'
+                  : interactionStats.percentage < 95
+                  ? '🟠 Almost at user interaction limit'
+                  : '🔴 Very close to user interaction limit'
+                }
+              </Typography>
+            </Box>
+          </Grid>
+        )}
 
         {/* AI Message and Test Button */}
         <Grid item xs={12} md={3}>

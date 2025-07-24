@@ -178,26 +178,26 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
       
       if (paymentIntent.status === 'succeeded') {
         console.log('✅ Payment succeeded, confirming with backend...');
-        
-        // Confirm payment on backend
-        const confirmResponse = await api.post('payment/confirm/', {
-          payment_intent_id: paymentData.payment_intent_id,
-          expert_id: expertId
-        });
+      
+      // Confirm payment on backend
+      const confirmResponse = await api.post('payment/confirm/', {
+        payment_intent_id: paymentData.payment_intent_id,
+        expert_id: expertId
+      });
         
         console.log('✅ Backend confirmation successful:', confirmResponse.data);
-        
-        setShowPaymentDialog(false);
+      
+      setShowPaymentDialog(false);
         setStripe(null);
         setElements(null);
         setCardElement(null);
         setSelectedPaymentMethod('new'); // Reset selection
-        
-        if (onPaymentSuccess) {
-          onPaymentSuccess();
-        }
-        
-        alert('Payment successful! Your consultation session is now active.');
+      
+      if (onPaymentSuccess) {
+        onPaymentSuccess();
+      }
+      
+      alert('Payment successful! Your consultation session is now active.');
       } else {
         throw new Error(`Payment not completed. Status: ${paymentIntent.status}`);
       }
@@ -365,8 +365,8 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                     minHeight: '40px',
                     backgroundColor: isProcessing ? '#f5f5f5' : 'white',
                   }}
-                />
-              </Box>
+              />
+            </Box>
             )}
           </Box>
         </DialogContent>

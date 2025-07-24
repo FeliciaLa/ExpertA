@@ -99,7 +99,7 @@ export const Chat: React.FC<ChatProps> = ({
 
     checkConsent();
   }, []);
-
+  
   // Load chat history when user is authenticated
   useEffect(() => {
     console.log('Chat component loaded:', { 
@@ -658,11 +658,11 @@ export const Chat: React.FC<ChatProps> = ({
       </Paper>
 
       {expertName === 'The Stoic Mentor' && (
-        <UserAuthDialog
-          open={isAuthDialogOpen}
-          onClose={() => setIsAuthDialogOpen(false)}
-          onSignIn={handleUserSignIn}
-          onRegister={handleUserRegister}
+      <UserAuthDialog
+        open={isAuthDialogOpen}
+        onClose={() => setIsAuthDialogOpen(false)}
+        onSignIn={handleUserSignIn}
+        onRegister={handleUserRegister}
         />
       )}
 

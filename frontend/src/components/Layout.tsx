@@ -110,10 +110,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               px: { xs: 2, md: 3 }
             }}
           >
-            <Typography 
-              variant="h6" 
-              component="div" 
-              sx={{ 
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
@@ -123,95 +123,95 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 fontWeight: isExpertPage ? 600 : 700,
                 display: 'flex',
                 alignItems: 'center'
-              }}
-              onClick={() => navigate('/')}
-            >
-              Duplix AI
-            </Typography>
-            
+            }}
+            onClick={() => navigate('/')}
+          >
+            Duplix AI
+          </Typography>
+          
             {/* Navigation buttons */}
             {!isExpertPage && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {/* Show Train AI button only for experts */}
-                {isExpert && (
-                  <Button
-                    data-tour="train-ai"
-                    color="primary"
-                    onClick={handleTrainAIClick}
-                    sx={{ 
-                      color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
+          {/* Show Train AI button only for experts */}
+          {isExpert && (
+            <Button
+              data-tour="train-ai"
+              color="primary"
+              onClick={handleTrainAIClick}
+              sx={{ 
+                color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
                       fontWeight: 500
-                    }}
-                  >
-                    {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
-                  </Button>
-                )}
-                
-                {/* My Profile button - visible for all authenticated users */}
-                {isAuthenticated && (
-                  <Button
-                    color="primary"
-                    onClick={() => isExpert ? navigate('/expert') : navigate('/user/profile')}
-                    sx={{ 
-                      color: (isExpert && location.pathname === '/expert') || 
-                            (!isExpert && location.pathname === '/user/profile') 
-                            ? 'primary.main' : 'text.secondary',
+              }}
+            >
+              {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
+            </Button>
+          )}
+          
+          {/* My Profile button - visible for all authenticated users */}
+          {isAuthenticated && (
+            <Button
+              color="primary"
+              onClick={() => isExpert ? navigate('/expert') : navigate('/user/profile')}
+              sx={{ 
+                color: (isExpert && location.pathname === '/expert') || 
+                      (!isExpert && location.pathname === '/user/profile') 
+                      ? 'primary.main' : 'text.secondary',
                       fontWeight: 500
-                    }}
-                  >
-                    MY PROFILE
-                  </Button>
-                )}
-                
+              }}
+            >
+              MY PROFILE
+            </Button>
+          )}
+          
                 {/* Browse Experts button - only visible for authenticated non-experts and when feature is enabled */}
                 {features.browseExperts && isAuthenticated && !isExpert && (
-                  <Button
-                    data-tour="browse-experts"
-                    color="primary"
-                    onClick={() => navigate('/experts')}
-                    sx={{ 
-                      color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
+            <Button
+              data-tour="browse-experts"
+              color="primary"
+              onClick={() => navigate('/experts')}
+              sx={{ 
+                color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
                       fontWeight: 500
-                    }}
-                  >
-                    BROWSE EXPERTS
-                  </Button>
-                )}
-                
-                {/* Login button - only visible when not authenticated */}
-                {!isAuthenticated && (
-                  <Button
-                    color="primary"
-                    onClick={handleAuthClick}
+              }}
+            >
+              BROWSE EXPERTS
+            </Button>
+          )}
+          
+          {/* Login button - only visible when not authenticated */}
+          {!isAuthenticated && (
+            <Button
+              color="primary"
+              onClick={handleAuthClick}
+              sx={{ 
+                color: 'text.secondary',
+                      fontWeight: 500,
+                      px: 2,
+                      py: 1
+              }}
+            >
+              LOGIN / SIGN UP
+            </Button>
+          )}
+          
+          {/* Show username and logout when authenticated */}
+          {isAuthenticated && (
+              <Button
+                color="primary"
+                onClick={handleLogout}
                     sx={{ 
-                      color: 'text.secondary',
                       fontWeight: 500,
                       px: 2,
                       py: 1
                     }}
-                  >
-                    LOGIN / SIGN UP
-                  </Button>
+              >
+                LOGOUT
+              </Button>
                 )}
-                
-                {/* Show username and logout when authenticated */}
-                {isAuthenticated && (
-                  <Button
-                    color="primary"
-                    onClick={handleLogout}
-                    sx={{ 
-                      fontWeight: 500,
-                      px: 2,
-                      py: 1
-                    }}
-                  >
-                    LOGOUT
-                  </Button>
-                )}
-              </Box>
-            )}
-          </Toolbar>
-        </AppBar>
+            </Box>
+          )}
+        </Toolbar>
+      </AppBar>
       )}
       
 

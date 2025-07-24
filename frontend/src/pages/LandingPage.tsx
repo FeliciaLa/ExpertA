@@ -92,16 +92,16 @@ const LandingPage: React.FC = () => {
               zIndex: 1
             }}
           >
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                textAlign: 'center',
-                maxWidth: 800,
-                mx: 'auto'
-              }}
-            >
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              textAlign: 'center',
+              maxWidth: 800,
+              mx: 'auto'
+            }}
+          >
             <Typography 
               variant="h2" 
               component="h1" 
@@ -344,7 +344,7 @@ const LandingPage: React.FC = () => {
               </Grid>
             </Grid>
           </Paper>
-        </Container>
+          </Container>
       </Box>
 
       <AuthDialog

@@ -210,13 +210,13 @@ export const ExpertDetailPage: React.FC = () => {
     // For all other experts, allow direct chat access
     if (isAuthenticated || expert?.name !== 'The Stoic Mentor') {
       return (
-                    <Chat
-              expertId={expert.id}
-              expertName={expert.name}
+        <Chat 
+          expertId={expert.id} 
+          expertName={expert.name}
               monetizationEnabled={expert.name === 'The Stoic Mentor' ? true : false}
               expertPrice={expert.name === 'The Stoic Mentor' ? 1.99 : 5}
               expertProfileImage={getProfileImageUrl()}
-            />
+        />
       );
     }
     
@@ -314,43 +314,43 @@ export const ExpertDetailPage: React.FC = () => {
               </Box>
               {' '} to continue the conversation.
             </Typography>
-          </Box>
+        </Box>
 
           {/* Sign-in field inside the chat preview box */}
-          <Box 
-            component="div" 
-            onClick={() => setIsAuthDialogOpen(true)}
-            sx={{ 
-              width: '100%',
+        <Box 
+          component="div" 
+          onClick={() => setIsAuthDialogOpen(true)}
+          sx={{ 
+            width: '100%',
               borderTop: '1px solid #e0e0e0',
               pt: 2,
+            cursor: 'pointer'
+          }}
+        >
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Sign in to chat with this expert"
+            size="medium"
+            InputProps={{
+              readOnly: true,
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                backgroundColor: '#f8f9fa',
+                cursor: 'pointer'
+              },
+              '&:hover .MuiOutlinedInput-root': {
+                backgroundColor: '#f0f0f0',
+                borderColor: '#1976d2'
+              },
+              '& .MuiInputBase-input': {
+                cursor: 'pointer'
+              },
               cursor: 'pointer'
             }}
-          >
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder="Sign in to chat with this expert"
-              size="medium"
-              InputProps={{
-                readOnly: true,
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  backgroundColor: '#f8f9fa',
-                  cursor: 'pointer'
-                },
-                '&:hover .MuiOutlinedInput-root': {
-                  backgroundColor: '#f0f0f0',
-                  borderColor: '#1976d2'
-                },
-                '& .MuiInputBase-input': {
-                  cursor: 'pointer'
-                },
-                cursor: 'pointer'
-              }}
-            />
+          />
           </Box>
         </Box>
       </>
@@ -797,26 +797,26 @@ export const ExpertDetailPage: React.FC = () => {
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                 Get expert insights powered by {expert.name}'s knowledge and experience
-              </Typography>
+                </Typography>
             </Box>
             
                          {/* Chat Content */}
              <Box sx={{ flex: 1, p: 3 }}>
-               {renderChatSection()}
+            {renderChatSection()}
              </Box>
-           </Paper>
+          </Paper>
         </Grid>
       </Grid>
 
       {expert?.name === 'The Stoic Mentor' && (
-        <UserAuthDialog
-          open={isAuthDialogOpen}
-          onClose={() => setIsAuthDialogOpen(false)}
-          onSignIn={handleUserSignIn}
-          onRegister={handleUserRegister}
-        />
+      <UserAuthDialog
+        open={isAuthDialogOpen}
+        onClose={() => setIsAuthDialogOpen(false)}
+        onSignIn={handleUserSignIn}
+        onRegister={handleUserRegister}
+      />
       )}
-      </Container>
+    </Container>
     </Box>
   );
 };

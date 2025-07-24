@@ -663,14 +663,14 @@ const UserProfilePage: React.FC = () => {
             </Typography>
             {/* Info button hidden for cleaner focused experience */}
             {false && (
-              <Tooltip title="How Duplix AI Works">
-                <IconButton
-                  onClick={() => setIsHowItWorksOpen(true)}
-                  sx={{ ml: 1 }}
-                >
-                  <InfoIcon />
-                </IconButton>
-              </Tooltip>
+                            <Tooltip title="How Duplix AI Works">
+              <IconButton
+                onClick={() => setIsHowItWorksOpen(true)}
+                sx={{ ml: 1 }}
+              >
+                <InfoIcon />
+              </IconButton>
+            </Tooltip>
             )}
           </Box>
           <Box display="flex" alignItems="center" gap={2}>
@@ -868,50 +868,50 @@ const UserProfilePage: React.FC = () => {
 
             {/* Right Side - User Statistics - Hidden for cleaner profile */}
             {false && (
-              <Box sx={{ flex: 1, maxWidth: 400 }}>
-                {(() => {
-                  const stats = calculateUserStats();
-                  return (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                        <Typography variant="body1" color="text.secondary">
-                          Member Since
-                        </Typography>
-                        <Typography variant="body1" fontWeight="medium">
-                          {stats.memberSince}
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                        <Typography variant="body1" color="text.secondary">
-                          Experts Consulted
-                        </Typography>
-                        <Typography variant="body1" fontWeight="medium">
-                          {stats.expertsConsulted}
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
-                        <Typography variant="body1" color="text.secondary">
-                          Total Consultations
-                        </Typography>
-                        <Typography variant="body1" fontWeight="medium">
-                          {stats.totalConsultations}
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
-                        <Typography variant="body1" color="text.secondary">
-                          Most Consulted Industry
-                        </Typography>
-                        <Typography variant="body1" fontWeight="medium">
-                          {stats.mostUsedIndustry}
-                        </Typography>
-                      </Box>
-                    </>
-                  );
-                })()}
-              </Box>
+            <Box sx={{ flex: 1, maxWidth: 400 }}>
+              {(() => {
+                const stats = calculateUserStats();
+                return (
+                  <>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Member Since
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {stats.memberSince}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Experts Consulted
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {stats.expertsConsulted}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, borderBottom: '1px solid #e0e0e0' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Total Consultations
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {stats.totalConsultations}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Most Consulted Industry
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {stats.mostUsedIndustry}
+                      </Typography>
+                    </Box>
+                  </>
+                );
+              })()}
+            </Box>
             )}
           </Box>
 
@@ -950,17 +950,17 @@ const UserProfilePage: React.FC = () => {
               </Typography>
               {/* Browse Experts button hidden for cleaner profile experience */}
               {false && (
-                <Button
-                  variant="contained"
-                  onClick={() => navigate('/experts')}
-                  sx={{ 
-                    py: 1.5,
-                    px: 3,
-                    borderRadius: 2
-                  }}
-                >
-                  Browse Experts Now
-                </Button>
+              <Button
+                variant="contained"
+                onClick={() => navigate('/experts')}
+                sx={{ 
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: 2
+                }}
+              >
+                Browse Experts Now
+              </Button>
               )}
             </Paper>
           ) : (
@@ -1311,8 +1311,8 @@ const UserProfilePage: React.FC = () => {
             </Alert>
           </Snackbar>
         )}
-        </Paper>
-      </Container>
+      </Paper>
+    </Container>
     </Box>
   );
 };
