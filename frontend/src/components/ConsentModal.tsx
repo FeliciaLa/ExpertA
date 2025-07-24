@@ -47,10 +47,8 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   
   const [consents, setConsents] = useState({
-    terms: false,
-    privacy: false,
-    aiDisclaimer: false,
-    ageConfirmed: false
+    termsAndPrivacy: false,
+    aiDisclaimer: false
   });
 
   const handleConsentChange = (field: keyof typeof consents) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +58,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
     }));
   };
 
-  const allRequiredConsentsGiven = consents.terms && consents.privacy && consents.aiDisclaimer && consents.ageConfirmed;
+  const allRequiredConsentsGiven = consents.termsAndPrivacy && consents.aiDisclaimer;
 
   const handleAccept = async () => {
     if (!allRequiredConsentsGiven) {
@@ -73,10 +71,10 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
 
     try {
       const consentData: ConsentData = {
-        terms_accepted: consents.terms,
-        privacy_accepted: consents.privacy,
+        terms_accepted: consents.termsAndPrivacy,
+        privacy_accepted: consents.termsAndPrivacy,
         ai_disclaimer_accepted: consents.aiDisclaimer,
-        age_confirmed: consents.ageConfirmed,
+        age_confirmed: true, // Covered by terms acceptance
         marketing_consent: false,
         consent_version: '1.0',
         expert_name: expertName,
@@ -141,8 +139,8 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
           <FormControlLabel
             control={
               <Checkbox
-                checked={consents.terms}
-                onChange={handleConsentChange('terms')}
+                checked={consents.termsAndPrivacy}
+                onChange={handleConsentChange('termsAndPrivacy')}
                 color="primary"
               />
             }
@@ -157,21 +155,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
                 >
                   Terms of Service
                 </Link>
-              </Typography>
-            }
-          />
-
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={consents.privacy}
-                onChange={handleConsentChange('privacy')}
-                color="primary"
-              />
-            }
-            label={
-              <Typography variant="body2">
-                I agree to the{' '}
+                {' '}and{' '}
                 <Link 
                   href="/privacy" 
                   target="_blank" 
@@ -195,21 +179,6 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
             label={
               <Typography variant="body2">
                 I understand this is an AI assistant and responses are not professional advice
-              </Typography>
-            }
-          />
-
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={consents.ageConfirmed}
-                onChange={handleConsentChange('ageConfirmed')}
-                color="primary"
-              />
-            }
-            label={
-              <Typography variant="body2">
-                I confirm I am at least 13 years old
               </Typography>
             }
           />
