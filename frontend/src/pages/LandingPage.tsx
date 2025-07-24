@@ -71,24 +71,37 @@ const LandingPage: React.FC = () => {
     <>
       <Box 
         sx={{ 
-          backgroundColor: 'white',
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column'
         }}
       >
         {/* Hero Section */}
-        <Container maxWidth="lg" sx={{ mt: { xs: 8, md: 12 }, mb: { xs: 6, md: 10 } }}>
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              textAlign: 'center',
-              maxWidth: 800,
-              mx: 'auto'
+        <Container maxWidth="lg" sx={{ mt: { xs: 6, md: 8 }, mb: { xs: 4, md: 6 } }}>
+          <Paper
+            elevation={0}
+            sx={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              p: { xs: 4, md: 6 },
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              position: 'relative',
+              zIndex: 1
             }}
           >
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                textAlign: 'center',
+                maxWidth: 800,
+                mx: 'auto'
+              }}
+            >
             <Typography 
               variant="h2" 
               component="h1" 
@@ -96,7 +109,11 @@ const LandingPage: React.FC = () => {
               sx={{ 
                 fontWeight: 700,
                 mb: 3,
-                fontSize: { xs: '2.5rem', md: '3.5rem' }
+                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
               }}
             >
               Duplicate your knowledge with AI
@@ -121,22 +138,42 @@ const LandingPage: React.FC = () => {
                 size="large"
                 onClick={handleExpertRegisterClick}
                 sx={{ 
-                  py: 1.5,
-                  px: 4,
-                  fontSize: '1.1rem',
-                  borderRadius: 2,
-                  textTransform: 'none'
+                  py: 2,
+                  px: 5,
+                  fontSize: '1.2rem',
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
+                  '&:hover': {
+                    boxShadow: '0 12px 32px rgba(102, 126, 234, 0.4)',
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.3s ease'
                 }}
               >
                 Start training your AI
               </Button>
             </Box>
           </Box>
+        </Paper>
         </Container>
 
         {/* How It Works Section */}
-        <Box sx={{ backgroundColor: 'grey.50', py: { xs: 6, md: 10 } }}>
-          <Container maxWidth="lg">
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+          <Paper
+            elevation={0}
+            sx={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              p: { xs: 4, md: 6 },
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              position: 'relative',
+              zIndex: 1
+            }}
+          >
             <Typography 
               variant="h4" 
               component="h2" 
@@ -144,7 +181,11 @@ const LandingPage: React.FC = () => {
               gutterBottom
               sx={{ 
                 mb: 6,
-                fontWeight: 600
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
               }}
             >
               How It Works
@@ -161,27 +202,37 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: 2,
-                    borderRadius: 2
+                    p: 3,
+                    borderRadius: 3,
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
+                    }
                   }}
                 >
                   <Box 
                     sx={{ 
-                      backgroundColor: 'primary.light', 
-                      color: 'primary.main',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                      color: 'white',
                       borderRadius: '50%',
                       width: 80,
                       height: 80,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      mb: 2
+                      mb: 2,
+                      boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
                     }}
                   >
                     <PersonIcon fontSize="large" />
                   </Box>
                   <CardContent>
-                    <Typography variant="h6" component="h3" gutterBottom>
+                    <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
                       Train your AI duplicate
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -201,27 +252,37 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: 2,
-                    borderRadius: 2
+                    p: 3,
+                    borderRadius: 3,
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
+                    }
                   }}
                 >
                   <Box 
                     sx={{ 
-                      backgroundColor: 'primary.light', 
-                      color: 'primary.main',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                      color: 'white',
                       borderRadius: '50%',
                       width: 80,
                       height: 80,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      mb: 2
+                      mb: 2,
+                      boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
                     }}
                   >
                     <QuestionAnswerIcon fontSize="large" />
                   </Box>
                   <CardContent>
-                    <Typography variant="h6" component="h3" gutterBottom>
+                    <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
                       Share with your audience
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -241,27 +302,37 @@ const LandingPage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    p: 2,
-                    borderRadius: 2
+                    p: 3,
+                    borderRadius: 3,
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
+                    }
                   }}
                 >
                   <Box 
                     sx={{ 
-                      backgroundColor: 'primary.light', 
-                      color: 'primary.main',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                      color: 'white',
                       borderRadius: '50%',
                       width: 80,
                       height: 80,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      mb: 2
+                      mb: 2,
+                      boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
                     }}
                   >
                     <PsychologyIcon fontSize="large" />
                   </Box>
                   <CardContent>
-                    <Typography variant="h6" component="h3" gutterBottom>
+                    <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 600 }}>
                       Scale your expertise
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -271,8 +342,8 @@ const LandingPage: React.FC = () => {
                 </Card>
               </Grid>
             </Grid>
-          </Container>
-        </Box>
+          </Paper>
+        </Container>
       </Box>
 
       <AuthDialog
