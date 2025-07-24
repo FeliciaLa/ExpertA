@@ -150,8 +150,8 @@ const stepSections = [
     description: 'Pay £9.99 to unlock AI training capabilities, build your AI duplicate and receive your sharable link.',
     steps: [
       {
-        label: 'Activate Your AI',
-        description: 'One-time payment of £9.99 to unlock AI training and get 200 user interactions',
+        label: 'Payment',
+        description: '',
         field: 'subscription'
       }
     ]
