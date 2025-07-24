@@ -116,20 +116,6 @@ const LandingPage: React.FC = () => {
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => navigate('/experts')}
-                sx={{ 
-                  py: 1.5,
-                  px: 4,
-                  fontSize: '1.1rem',
-                  borderRadius: 2
-                }}
-              >
-                Browse Experts
-              </Button>
-              
               <Link
                 component="button"
                 variant="body1"
@@ -139,6 +125,8 @@ const LandingPage: React.FC = () => {
                   alignItems: 'center',
                   color: 'primary.main',
                   textDecoration: 'none',
+                  fontSize: '1.1rem',
+                  fontWeight: 500,
                   '&:hover': { textDecoration: 'underline' }
                 }}
               >
