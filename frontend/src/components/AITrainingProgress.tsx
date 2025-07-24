@@ -27,7 +27,9 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/api';
+import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import ExpertActivationPayment from './ExpertSubscriptionPayment';
 
 interface TrainingStats {
   documentsUploaded: number;
@@ -51,10 +53,39 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
   const [shareSuccess, setShareSuccess] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [showActivationPayment, setShowActivationPayment] = useState(false);
+  const [isActivated, setIsActivated] = useState(false);
+
+  const checkActivationStatus = async () => {
+    try {
+      // Check if expert has any consultation sessions with ACTIVATION marker
+      const response = await api.get(`/consultations/user/${expert?.id}/`);
+      const sessions = response.data;
+      
+      // Look for activation payment session
+      const hasActivation = sessions.some((session: any) => 
+        session.expert_industry === 'ACTIVATION'
+      );
+      
+      setIsActivated(hasActivation);
+      console.log('Expert activation status:', hasActivation);
+    } catch (error) {
+      console.error('Failed to check activation status:', error);
+      // Default to not activated if check fails
+      setIsActivated(false);
+    }
+  };
 
   useEffect(() => {
     loadTrainingStats();
   }, [expert?.id]); // Only refresh when expert changes, not on every data update
+
+  // Check activation status when expert changes
+  useEffect(() => {
+    if (expert?.id) {
+      checkActivationStatus();
+    }
+  }, [expert?.id]);
 
   // Watch for increases in training message count to refresh stats
   useEffect(() => {
@@ -166,7 +197,13 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   };
 
   const handleShareAI = () => {
-    setShareModalOpen(true);
+    if (isActivated) {
+      // Expert is activated, show share modal
+      setShareModalOpen(true);
+    } else {
+      // Expert not activated, show activation payment modal
+      setShowActivationPayment(true);
+    }
   };
 
   const getShareUrl = () => {
@@ -297,15 +334,15 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
               onClick={handleShareAI}
               sx={{ 
                 mb: 1,
-                color: 'primary.main',
-                borderColor: 'primary.main',
+                color: isActivated ? 'primary.main' : 'warning.main',
+                borderColor: isActivated ? 'primary.main' : 'warning.main',
                 '&:hover': { 
-                  bgcolor: 'primary.light',
-                  borderColor: 'primary.dark' 
+                  bgcolor: isActivated ? 'primary.light' : 'warning.light',
+                  borderColor: isActivated ? 'primary.dark' : 'warning.dark'
                 }
               }}
             >
-              Share your AI
+              {isActivated ? 'Share your AI' : 'Activate & Share'}
             </Button>
             
             <Button
@@ -394,6 +431,21 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
           AI link copied to clipboard! Share it with anyone to let them chat with your AI.
         </Alert>
       </Snackbar>
+
+      {/* Activation Payment Modal */}
+      {showActivationPayment && (
+        <ExpertActivationPayment
+          onPaymentSuccess={() => {
+            setShowActivationPayment(false);
+            setIsActivated(true);
+            // Show success and then open share modal
+            setTimeout(() => {
+              setShareModalOpen(true);
+            }, 500);
+          }}
+          onClose={() => setShowActivationPayment(false)}
+        />
+      )}
 
       <style>
         {`

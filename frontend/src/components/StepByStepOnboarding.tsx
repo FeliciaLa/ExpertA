@@ -463,9 +463,6 @@ const StepByStepOnboarding: React.FC = () => {
       // Refresh expert data
       await refreshExpert();
       
-      // Redirect to activation page instead of staying in onboarding
-      navigate('/expert-activation');
-      
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
       setError('Failed to complete setup. Please try again.');
