@@ -51,7 +51,7 @@ function TabPanel(props: TabPanelProps) {
 
 const TrainingPage: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0);
-  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
 
   useEffect(() => {
@@ -71,11 +71,11 @@ const TrainingPage: React.FC = () => {
   };
 
   const handleInfoClick = () => {
-    setShowWelcomeDialog(true);
+    setShowTrainingWalkthrough(true);
   };
 
-  const handleCloseDialog = () => {
-    setShowWelcomeDialog(false);
+  const handleCloseWalkthrough = () => {
+    setShowTrainingWalkthrough(false);
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -103,7 +103,7 @@ const TrainingPage: React.FC = () => {
         </Typography>
         
         {hasSeenWelcome && (
-          <Tooltip title="Show welcome information">
+          <Tooltip title="How training works - Get help">
             <IconButton 
               onClick={handleInfoClick}
               sx={{ 
@@ -141,30 +141,75 @@ const TrainingPage: React.FC = () => {
         </Alert>
       )}
 
-      {/* Welcome Dialog for returning users */}
+      {/* Training Walkthrough Dialog */}
       <Dialog 
-        open={showWelcomeDialog} 
-        onClose={handleCloseDialog}
+        open={showTrainingWalkthrough} 
+        onClose={handleCloseWalkthrough}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>
-          <Box display="flex" alignItems="center">
-            <InfoIcon sx={{ mr: 1, color: 'primary.main' }} />
-            Welcome to AI Training!
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
-            Now that your profile is set up, it's time to train your AI assistant with your expertise. 
-            Start with Q&A Training to teach your AI through conversation, 
-            or upload documents (PDFs, Word docs, etc.) that showcase your knowledge. 
-            The more you train it, the better it becomes at representing your expertise to potential clients.
+        <DialogTitle sx={{ textAlign: 'center', pb: 2 }}>
+          <Typography variant="h5" color="primary" gutterBottom>
+            🎯 How Training Works
           </Typography>
+          <Typography variant="body1" color="textSecondary">
+            Your AI needs to learn from you before it can help users
+          </Typography>
+        </DialogTitle>
+        
+        <DialogContent>
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+              <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>📚</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 1: Chat Training (15-30 minutes)
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Your AI will ask you questions about real scenarios<br/>
+                  • Answer like you're talking to a client<br/>
+                  • The more detailed your answers, the smarter your AI becomes
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+              <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>📄</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 2: Upload Knowledge
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Add documents, case studies, or guides you've written<br/>
+                  • Your AI will learn from your actual work examples<br/>
+                  • This helps your AI give more accurate, detailed responses
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+              <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>✅</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 3: Test & Share
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Test your AI to make sure it sounds like you<br/>
+                  • Activate for £9.99 to share with unlimited users<br/>
+                  • Start getting consultations through your AI
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} variant="contained">
-            Got it
+        
+        <DialogActions sx={{ justifyContent: 'center', p: 3 }}>
+          <Button
+            variant="contained"
+            onClick={handleCloseWalkthrough}
+            size="large"
+          >
+            Got It!
           </Button>
         </DialogActions>
       </Dialog>
