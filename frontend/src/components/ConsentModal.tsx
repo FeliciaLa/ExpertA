@@ -132,10 +132,6 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
         )}
 
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Required Consents
-          </Typography>
-          
           <FormControlLabel
             control={
               <Checkbox
