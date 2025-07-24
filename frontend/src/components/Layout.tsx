@@ -101,25 +101,34 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Show different headers based on page type */}
       {!isProfilePage && (
         <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: isExpertPage ? 'none' : 1 }}>
-          <Toolbar sx={{ minHeight: isExpertPage ? '56px' : '64px' }}>
+          <Toolbar 
+            sx={{ 
+              minHeight: isExpertPage ? '56px' : '64px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: { xs: 2, md: 3 }
+            }}
+          >
             <Typography 
               variant="h6" 
               component="div" 
               sx={{ 
-                flexGrow: 1, 
                 color: 'primary.main',
                 cursor: 'pointer',
                 fontSize: isExpertPage ? '1.1rem' : '1.25rem',
-                fontWeight: isExpertPage ? 500 : 400
+                fontWeight: isExpertPage ? 500 : 600,
+                display: 'flex',
+                alignItems: 'center'
               }}
               onClick={() => navigate('/')}
             >
               Duplix AI
             </Typography>
             
-            {/* Full navigation for non-expert pages */}
+            {/* Navigation buttons */}
             {!isExpertPage && (
-              <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {/* Show Train AI button only for experts */}
                 {isExpert && (
                   <Button
@@ -128,7 +137,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     onClick={handleTrainAIClick}
                     sx={{ 
                       color: location.pathname === '/train' ? 'primary.main' : 'text.secondary',
-                      mr: 2
+                      fontWeight: 500
                     }}
                   >
                     {expert?.onboarding_completed ? 'AI DASHBOARD' : 'SETUP PROFILE'}
@@ -144,7 +153,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       color: (isExpert && location.pathname === '/expert') || 
                             (!isExpert && location.pathname === '/user/profile') 
                             ? 'primary.main' : 'text.secondary',
-                      mr: 2
+                      fontWeight: 500
                     }}
                   >
                     MY PROFILE
@@ -159,7 +168,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     onClick={() => navigate('/experts')}
                     sx={{ 
                       color: location.pathname === '/experts' ? 'primary.main' : 'text.secondary',
-                      mr: 2
+                      fontWeight: 500
                     }}
                   >
                     BROWSE EXPERTS
@@ -173,7 +182,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     onClick={handleAuthClick}
                     sx={{ 
                       color: 'text.secondary',
-                      mr: 2
+                      fontWeight: 500,
+                      px: 2,
+                      py: 1
                     }}
                   >
                     LOGIN / SIGN UP
@@ -182,16 +193,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 
                 {/* Show username and logout when authenticated */}
                 {isAuthenticated && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Button
-                      color="primary"
-                      onClick={handleLogout}
-                    >
-                      LOGOUT
-                    </Button>
-                  </Box>
+                  <Button
+                    color="primary"
+                    onClick={handleLogout}
+                    sx={{ 
+                      fontWeight: 500,
+                      px: 2,
+                      py: 1
+                    }}
+                  >
+                    LOGOUT
+                  </Button>
                 )}
-              </>
+              </Box>
             )}
           </Toolbar>
         </AppBar>
