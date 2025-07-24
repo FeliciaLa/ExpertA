@@ -100,7 +100,7 @@ export const Chat: React.FC<ChatProps> = ({
     checkConsent();
   }, []);
   
-  // Load chat history when user is authenticated
+  // Load chat behavior - every session starts fresh for privacy
   useEffect(() => {
     console.log('Chat component loaded:', { 
       isAuthenticated, 
@@ -112,144 +112,18 @@ export const Chat: React.FC<ChatProps> = ({
       hasUserConsent
     });
 
-    // Load chat history if user is authenticated
-    if (isAuthenticated && expertId) {
-      loadChatHistory();
-    }
+    // No longer load chat history - every session starts fresh
+    // This ensures privacy between different users/sessions
   }, [isAuthenticated, expertId, hasUserConsent]);
-
-  const loadChatHistory = async () => {
-    if (!isAuthenticated || !expertId) return;
-
-    try {
-      const historyData = await chatService.getChatHistory(expertId);
-      console.log('Loading chat history:', historyData);
-      
-      if (historyData.sessions && historyData.sessions.length > 0) {
-        // Collect ALL messages from ALL sessions for this expert
-        const allMessages: (Message & { created_at: string; session_id: string })[] = [];
-        
-        historyData.sessions.forEach((session: any, sessionIndex: number) => {
-          console.log(`🔍 Processing session ${sessionIndex}: ${session.session_id?.substring(0,8)}`);
-          if (session.messages && Array.isArray(session.messages)) {
-            console.log(`  Session has ${session.messages.length} messages`);
-            session.messages.forEach((msg: any, msgIndex: number) => {
-              const messageObj = {
-                role: msg.role as 'user' | 'assistant',
-                content: msg.content,
-                created_at: msg.created_at, // Include timestamp for sorting
-                session_id: session.session_id
-              };
-              allMessages.push(messageObj);
-              console.log(`  Added message ${allMessages.length}: ${msg.role} - "${msg.content.substring(0, 30)}..." (${msg.created_at})`);
-            });
-          } else {
-            console.log(`  Session has no messages or messages not an array:`, session.messages);
-          }
-        });
-        
-        // Sort messages chronologically across ALL sessions
-        allMessages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-        console.log('🔥 SORTED MESSAGES CHRONOLOGICALLY');
-        
-        // Remove timestamp and session_id from final messages (only needed for sorting)
-        const sortedMessages = allMessages.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }));
-        
-        console.log(`🔥 FINAL allMessages array length: ${allMessages.length}`);
-        
-        console.log('💬 Setting sorted messages:', sortedMessages);
-        console.log('🔍 SESSION BREAKDOWN:');
-        historyData.sessions.forEach((session: any, index: number) => {
-          console.log(`Session ${index}: ID=${session.session_id?.substring(0,8)}, messages=${session.messages?.length || 0}, started=${session.started_at}, status=${session.status}`);
-          if (session.messages) {
-            session.messages.forEach((msg: any, msgIndex: number) => {
-              console.log(`  Message ${msgIndex}: ${msg.role} - "${msg.content.substring(0, 50)}..."`);
-            });
-          }
-        });
-        
-        console.log('🔥 TOTAL MESSAGES TO SET:', sortedMessages.length);
-        setMessages(sortedMessages);
-        
-        // Force a re-render check
-        setTimeout(() => {
-          console.log('🔥 MESSAGES AFTER SET:', sortedMessages.length);
-        }, 100);
-        
-        // Sort sessions by creation date (most recent first)
-        const sortedSessions = [...historyData.sessions].sort((a, b) => 
-          new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
-        );
-        
-        // Calculate total messages across ALL sessions (needed for free message counting)
-        const totalMessagesAcrossSessions = historyData.sessions.reduce((total: number, session: any) => {
-          return total + (session.total_messages || 0);
-        }, 0);
-        
-        // Check if there's an active PAID session
-        // Logic: If there are multiple sessions, the most recent active session is likely the paid session
-        console.log('🔍 PAID SESSION DETECTION:');
-        console.log(`  Total sessions: ${sortedSessions.length}`);
-        console.log(`  First session status: ${sortedSessions[0]?.status}`);
-        console.log(`  Condition: ${sortedSessions.length > 1} && ${sortedSessions[0]?.status === 'active'}`);
-        
-        const activePaidSession = sortedSessions.length > 1 && sortedSessions[0].status === 'active' 
-          ? sortedSessions[0] 
-          : null;
-          
-        console.log('🔍 SELECTED PAID SESSION:', activePaidSession?.session_id || 'null');
-        
-        if (activePaidSession) {
-          // User has paid - count messages ONLY within the paid session
-          const paidSessionMessages = activePaidSession.total_messages || 0;
-          const calculation = 20 - Math.floor(paidSessionMessages / 2);
-          const finalRemaining = Math.max(0, calculation);
-          
-          console.log('🔍 PAID SESSION CALCULATION:', {
-            paidSessionMessages,
-            calculation: `20 - Math.floor(${paidSessionMessages} / 2) = 20 - ${Math.floor(paidSessionMessages / 2)} = ${calculation}`,
-            finalRemaining
-          });
-          
-          setSessionStats(prev => ({
-            ...prev,
-            hasActivePaidSession: true,
-            messageCount: paidSessionMessages,
-            freeMessagesRemaining: finalRemaining
-          }));
-          console.log('💳 Active paid session found:', {
-            sessionId: activePaidSession.session_id,
-            paidMessages: paidSessionMessages,
-            creditsRemaining: finalRemaining
-          });
-        } else {
-          // User is still on free messages - count across ALL sessions
-          setSessionStats(prev => ({
-            ...prev,
-            hasActivePaidSession: false,
-            messageCount: totalMessagesAcrossSessions,
-            freeMessagesRemaining: Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(totalMessagesAcrossSessions / 2))
-          }));
-          console.log('🆓 Using free messages - total across all sessions:', totalMessagesAcrossSessions);
-        }
-        
-        console.log('📊 Total messages across all sessions:', totalMessagesAcrossSessions);
-      }
-    } catch (error) {
-      console.error('Failed to load chat history:', error);
-    }
-  };
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [messages]);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
 
   // Check if user should be blocked from sending more messages

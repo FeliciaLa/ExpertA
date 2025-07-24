@@ -39,6 +39,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.utils.dateparse import parse_datetime
 from django.http import HttpRequest
 from django.db import models
+from rest_framework.authentication import TokenAuthentication, JWTAuthentication
 
 logger = logging.getLogger(__name__)
 
