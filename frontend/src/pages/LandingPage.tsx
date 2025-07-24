@@ -116,23 +116,20 @@ const LandingPage: React.FC = () => {
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <Link
-                component="button"
-                variant="body1"
+              <Button
+                variant="contained"
+                size="large"
                 onClick={handleExpertRegisterClick}
                 sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center',
-                  color: 'primary.main',
-                  textDecoration: 'none',
+                  py: 1.5,
+                  px: 4,
                   fontSize: '1.1rem',
-                  fontWeight: 500,
-                  '&:hover': { textDecoration: 'underline' }
+                  borderRadius: 2,
+                  textTransform: 'none'
                 }}
               >
-                Ready to duplicate your knowledge? Start training your AI
-                <ArrowForwardIcon fontSize="small" sx={{ ml: 0.5 }} />
-              </Link>
+                Start training your AI
+              </Button>
             </Box>
           </Box>
         </Container>
