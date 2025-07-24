@@ -4,20 +4,15 @@ import {
   DialogTitle,
   DialogContent,
   Box,
+  TextField,
+  Button,
   Typography,
-  IconButton,
   Tabs,
   Tab,
-  TextField,
-  DialogActions,
-  Button,
-  Link,
-  FormControl,
-  FormLabel,
-  RadioGroup,
+  IconButton,
+  Checkbox,
   FormControlLabel,
-  Radio,
-  Checkbox
+  Link,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ForgotPasswordDialog from './ForgotPasswordDialog';
@@ -77,21 +72,9 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
 
   useEffect(() => {
     if (open) {
-      // If expertRegisterOnly is true, force the register tab and expert role
-      if (expertRegisterOnly) {
-        setTabValue(1);
-        setUserRole('expert');
-      } else {
-        // Otherwise check localStorage for initial tab value
-        const initialTab = localStorage.getItem('authInitialTab');
-        if (initialTab) {
-          setTabValue(parseInt(initialTab, 10));
-          // Clear the value after using it
-          localStorage.removeItem('authInitialTab');
-        }
-        // Default to expert role for general registration
-        setUserRole('expert');
-      }
+      // Always force expert registration and role - no user option on main site
+      setTabValue(expertRegisterOnly ? 1 : 0); // Show registration tab if expertRegisterOnly
+      setUserRole('expert'); // Always default to expert
     } else {
       // Reset form when dialog closes
       resetForm();
@@ -103,7 +86,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     setEmail('');
     setPassword('');
     setConfirmPassword('');
-    setUserRole('expert');
+    setUserRole('expert'); // Always reset to expert
     setError('');
     setIsSubmitting(false);
     setSuccessMessage(null);
@@ -166,9 +149,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
       setIsSubmitting(true);
       setError('');
       setSuccessMessage('');
-      // Use the selected role or expertRegisterOnly prop to determine registration type
-      const isExpertRegistration = expertRegisterOnly || userRole === 'expert';
-      const result = await onRegister(name, email, password, isExpertRegistration, userRole);
+      // Always use expert registration for main site
+      const result = await onRegister(name, email, password, true, 'expert');
       if (result.success) {
         // Instead of closing immediately, show success message
         setName('');
@@ -211,7 +193,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          {expertRegisterOnly ? 'Expert Registration' : 'Account'}
+          Expert Account
           <IconButton edge="end" onClick={onClose} aria-label="close">
             <CloseIcon />
           </IconButton>
@@ -298,37 +280,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
         <TabPanel value={expertRegisterOnly ? 0 : tabValue} index={expertRegisterOnly ? 0 : 1}>
           <form onSubmit={handleRegister}>
             <Box display="flex" flexDirection="column" gap={3}>
-              {!expertRegisterOnly && (
-                <FormControl component="fieldset" sx={{ mb: 1 }}>
-                  <FormLabel component="legend" sx={{ mb: 1 }}>
-                    Register as User:
-                  </FormLabel>
-                  <RadioGroup
-                    row
-                    value={userRole}
-                    onChange={(e) => setUserRole(e.target.value as 'user' | 'expert')}
-                  >
-                    {/* Hidden for now - Expert registration temporarily disabled */}
-                    {false && (
-                      <FormControlLabel 
-                        value="expert" 
-                        control={<Radio disabled={isSubmitting} />} 
-                        label="Expert"
-                        disabled={isSubmitting}
-                      />
-                    )}
-                    <FormControlLabel 
-                      value="user" 
-                      control={<Radio disabled={isSubmitting} />} 
-                      label="User"
-                      disabled={isSubmitting}
-                    />
-                  </RadioGroup>
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    Browse and chat with expert AI assistants to get help with your questions
-                  </Typography>
-                </FormControl>
-              )}
+              {/* User role selection removed - main site is expert-only */}
               
               <TextField
                 label="Full Name"
