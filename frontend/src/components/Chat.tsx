@@ -239,15 +239,15 @@ export const Chat: React.FC<ChatProps> = ({
     
     console.log('Submit pressed - auth state:', { isAuthenticated, isExpert, isUser });
 
-    // If user is not authenticated, show login dialog
-    if (!isAuthenticated) {
+    // Only require authentication for The Stoic Mentor (monetized expert)
+    if (!isAuthenticated && expertName === 'The Stoic Mentor') {
       console.log('Not authenticated, showing login dialog');
       setIsAuthDialogOpen(true);
       return;
     }
 
-    // Check if user should be blocked (for paid experts only)
-    if (shouldBlockMessage()) {
+    // Check if user should be blocked (only for The Stoic Mentor)
+    if (shouldBlockMessage() && expertName === 'The Stoic Mentor') {
       console.log('User needs to pay for more messages');
       setShowPaymentDialog(true);
       return;
@@ -384,8 +384,8 @@ export const Chat: React.FC<ChatProps> = ({
 
   // Create login prompt or chat based on authentication status
   const renderChatOrPrompt = () => {
-    // If user is not authenticated, show login prompt
-    if (!isAuthenticated) {
+    // Only require authentication for The Stoic Mentor (monetized expert)
+    if (!isAuthenticated && expertName === 'The Stoic Mentor') {
       return (
         <Box 
           sx={{ 
@@ -538,14 +538,14 @@ export const Chat: React.FC<ChatProps> = ({
             fullWidth
             variant="outlined"
             placeholder={
-              shouldBlockMessage() 
+              (shouldBlockMessage() && expertName === 'The Stoic Mentor') 
                 ? "Click Upgrade to continue chatting..."
                 : "Type your message..."
             }
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onClick={() => {
-              if (shouldBlockMessage()) {
+              if (shouldBlockMessage() && expertName === 'The Stoic Mentor') {
                 setShowPaymentDialog(true);
               }
             }}
@@ -554,15 +554,15 @@ export const Chat: React.FC<ChatProps> = ({
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
-                backgroundColor: shouldBlockMessage() ? '#f5f5f5' : '#f8f9fa',
-                cursor: shouldBlockMessage() ? 'pointer' : 'text',
+                backgroundColor: (shouldBlockMessage() && expertName === 'The Stoic Mentor') ? '#f5f5f5' : '#f8f9fa',
+                cursor: (shouldBlockMessage() && expertName === 'The Stoic Mentor') ? 'pointer' : 'text',
               }
             }}
           />
           <Button
             type="submit"
             variant="contained"
-            disabled={loading || (!shouldBlockMessage() && !input.trim())}
+            disabled={loading || (!(shouldBlockMessage() && expertName === 'The Stoic Mentor') && !input.trim())}
             sx={{
               px: 4,
               borderRadius: 2,
@@ -573,7 +573,7 @@ export const Chat: React.FC<ChatProps> = ({
               }
             }}
           >
-            {shouldBlockMessage() ? 'Upgrade' : 'Send'}
+            {(shouldBlockMessage() && expertName === 'The Stoic Mentor') ? 'Upgrade' : 'Send'}
           </Button>
         </Box>
       </>
@@ -597,12 +597,14 @@ export const Chat: React.FC<ChatProps> = ({
         {renderChatOrPrompt()}
       </Paper>
 
-      <UserAuthDialog
-        open={isAuthDialogOpen}
-        onClose={() => setIsAuthDialogOpen(false)}
-        onSignIn={handleUserSignIn}
-        onRegister={handleUserRegister}
-      />
+      {expertName === 'The Stoic Mentor' && (
+        <UserAuthDialog
+          open={isAuthDialogOpen}
+          onClose={() => setIsAuthDialogOpen(false)}
+          onSignIn={handleUserSignIn}
+          onRegister={handleUserRegister}
+        />
+      )}
 
       {features.payments && showPaymentDialog && (
         <PaymentSection

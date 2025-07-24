@@ -211,8 +211,9 @@ export const ExpertDetailPage: React.FC = () => {
 
   // Render chat or login prompt based on authentication
   const renderChatSection = () => {
-    // Simple check: if authenticated (user OR expert), allow chat with ANY AI
-    if (isAuthenticated) {
+    // For The Stoic Mentor, require authentication (monetized expert)
+    // For all other experts, allow direct chat access
+    if (isAuthenticated || expert?.name !== 'The Stoic Mentor') {
       return (
                     <Chat
               expertId={expert.id}
@@ -644,12 +645,14 @@ export const ExpertDetailPage: React.FC = () => {
           </Grid>
         </Grid>
 
-        <UserAuthDialog
-          open={isAuthDialogOpen}
-          onClose={() => setIsAuthDialogOpen(false)}
-          onSignIn={handleUserSignIn}
-          onRegister={handleUserRegister}
-        />
+        {expert?.name === 'The Stoic Mentor' && (
+          <UserAuthDialog
+            open={isAuthDialogOpen}
+            onClose={() => setIsAuthDialogOpen(false)}
+            onSignIn={handleUserSignIn}
+            onRegister={handleUserRegister}
+          />
+        )}
 
 
         </Container>
@@ -765,12 +768,14 @@ export const ExpertDetailPage: React.FC = () => {
         </Grid>
       </Grid>
 
-      <UserAuthDialog
-        open={isAuthDialogOpen}
-        onClose={() => setIsAuthDialogOpen(false)}
-        onSignIn={handleUserSignIn}
-        onRegister={handleUserRegister}
-      />
+      {expert?.name === 'The Stoic Mentor' && (
+        <UserAuthDialog
+          open={isAuthDialogOpen}
+          onClose={() => setIsAuthDialogOpen(false)}
+          onSignIn={handleUserSignIn}
+          onRegister={handleUserRegister}
+        />
+      )}
     </Container>
   );
 };
