@@ -3089,19 +3089,19 @@ def create_payment_intent(request):
             
         else:
             # Original consultation payment logic for The Stoic Mentor
-        expert_id = request.data.get('expert_id')
-        if not expert_id:
-            return Response({'error': 'Expert ID is required'}, status=400)
+            expert_id = request.data.get('expert_id')
+            if not expert_id:
+                return Response({'error': 'Expert ID is required'}, status=400)
         
-        # Get expert and pricing info
-        try:
+            # Get expert and pricing info
+            try:
                 expert = User.objects.get(id=expert_id)
                 
                 # Only allow payments for The Stoic Mentor
                 if expert.name != 'The Stoic Mentor':
                     return Response({'error': 'Payments are only available for The Stoic Mentor'}, status=400)
             except User.DoesNotExist:
-            return Response({'error': 'Expert not found'}, status=404)
+                return Response({'error': 'Expert not found'}, status=404)
         
             expert_profile, created = ExpertProfile.objects.get_or_create(
                 expert_id=expert_id,
