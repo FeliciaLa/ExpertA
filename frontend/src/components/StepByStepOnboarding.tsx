@@ -359,6 +359,7 @@ const StepByStepOnboarding: React.FC = () => {
   const completeOnboarding = async () => {
     try {
       setCompleting(true);
+      console.log('Starting onboarding completion...');
       
       // Prepare final onboarding data
       const onboardingData = {
@@ -377,10 +378,24 @@ const StepByStepOnboarding: React.FC = () => {
         monetization_price: 0 // Not used in new model
       };
 
-      await expertApi.completeOnboarding(onboardingData);
+      console.log('Calling completeOnboarding API...');
+      const onboardingPromise = expertApi.completeOnboarding(onboardingData);
+      const onboardingTimeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Onboarding API timeout')), 10000)
+      );
+      await Promise.race([onboardingPromise, onboardingTimeout]);
+      console.log('Onboarding API completed successfully');
       
-      // Refresh expert data
-      await refreshExpert();
+      console.log('Refreshing expert data...');
+      const refreshPromise = refreshExpert();
+      const refreshTimeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Refresh expert timeout')), 5000)
+      );
+      await Promise.race([refreshPromise, refreshTimeout]);
+      console.log('Expert data refreshed successfully');
+      
+      // Force completion state to false to show the "Setup Complete!" view
+      setCompleting(false);
       
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
