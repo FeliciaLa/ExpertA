@@ -728,18 +728,18 @@ const ExpertProfile: React.FC = () => {
             </TextField>
           </Grid>
 
-          {/* Key Skills */}
+          {/* Key Skills and Techniques */}
           <Grid item xs={12}>
             <Box>
               <TextField
                 fullWidth
-                label="Key Skills"
+                label="Key Skills and Techniques"
                 value={profileData.key_skills.join(', ')}
                 disabled={true}
                 multiline
                 minRows={1}
                 maxRows={3}
-                helperText={`${profileData.key_skills.length} skill${profileData.key_skills.length !== 1 ? 's' : ''} added`}
+                helperText={`${profileData.key_skills.length} skill${profileData.key_skills.length !== 1 ? 's' : ''} and technique${profileData.key_skills.length !== 1 ? 's' : ''} added`}
                 InputProps={{
                   readOnly: true,
                 }}
@@ -751,11 +751,11 @@ const ExpertProfile: React.FC = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="Add a skill"
+                      label="Add a skill or technique"
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                      placeholder="e.g., Project Management, Python, SEO"
+                      placeholder="e.g., Project Management, Python, SEO, Design Thinking"
                     />
                     <Button variant="outlined" onClick={addSkill} size="small">
                       Add
@@ -798,56 +798,6 @@ const ExpertProfile: React.FC = () => {
               rows={4}
               placeholder="Detailed description of your professional background, education, and career journey..."
               helperText="This helps the AI understand your expertise depth and experience"
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Typical Problems You Solve"
-              value={profileData.typical_problems}
-              onChange={(e) => setProfileData(prev => ({ ...prev, typical_problems: e.target.value }))}
-              disabled={!isEditing}
-              multiline
-              rows={3}
-              placeholder="Describe the types of challenges and problems you typically help clients solve..."
-              helperText="This helps the AI understand what kinds of questions to expect"
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Methodologies & Frameworks"
-              value={profileData.methodologies}
-              onChange={(e) => setProfileData(prev => ({ ...prev, methodologies: e.target.value }))}
-              disabled={!isEditing}
-              placeholder="e.g., Agile, Design Thinking, LEAN"
-              helperText="Approaches and frameworks you use"
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Tools & Technologies"
-              value={profileData.tools_technologies}
-              onChange={(e) => setProfileData(prev => ({ ...prev, tools_technologies: e.target.value }))}
-              disabled={!isEditing}
-              placeholder="e.g., Salesforce, Adobe Creative Suite, Python"
-              helperText="Tools and technologies you work with"
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Certifications"
-              value={profileData.certifications}
-              onChange={(e) => setProfileData(prev => ({ ...prev, certifications: e.target.value }))}
-              disabled={!isEditing}
-              placeholder="List your relevant professional certifications..."
-              helperText="Professional certifications and credentials"
             />
           </Grid>
         </Grid>
