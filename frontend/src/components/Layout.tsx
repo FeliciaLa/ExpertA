@@ -160,6 +160,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   userInLocalStorage: localStorage.getItem('user'),
                   expertInLocalStorage: localStorage.getItem('expert')
                 });
+                
+                // Temporary debug: inspect localStorage user data
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                  const userData = JSON.parse(storedUser);
+                  console.log('Stored user data:', userData);
+                  console.log('User role in storage:', userData.role);
+                  console.log('User is_expert flag:', userData.is_expert);
+                }
+                
                 isExpert ? navigate('/expert') : navigate('/user/profile');
               }}
               sx={{ 
