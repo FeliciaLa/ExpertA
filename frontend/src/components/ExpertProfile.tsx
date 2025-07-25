@@ -126,7 +126,7 @@ const ExpertProfile: React.FC = () => {
   console.log('ExpertProfile component mounted/rendered', { expert: expert?.email, onboarding: expert?.onboarding_completed });
   
   // State
-  // Removed tab functionality - now single unified profile
+  const [activeTab, setActiveTab] = useState(0); // Basic Info tab active by default
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
