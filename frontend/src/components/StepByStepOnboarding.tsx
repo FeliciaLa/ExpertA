@@ -134,7 +134,7 @@ const StepByStepOnboarding: React.FC = () => {
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
   
-  const { expert, refreshExpert } = useAuth();
+  const { expert, user, refreshExpert } = useAuth();
 
   // Load existing profile data on mount
   useEffect(() => {
@@ -725,7 +725,9 @@ const StepByStepOnboarding: React.FC = () => {
     }
   };
 
-  if (expert?.onboarding_completed) {
+  // Use the unified user model instead of the legacy expert model
+  const currentUser = user || expert;
+  if (currentUser?.onboarding_completed) {
     return (
       <Box sx={{ textAlign: 'center', p: 4 }}>
         <CheckCircle sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
