@@ -168,9 +168,6 @@ const StepByStepOnboarding: React.FC = () => {
   }, [currentValue, activeStep]);
 
   const loadExistingData = async () => {
-    // Clear completion flag for fresh onboarding
-    localStorage.removeItem('onboardingCompletionSeen');
-    
     try {
       const profile = await expertApi.getProfile();
       
@@ -761,11 +758,7 @@ const StepByStepOnboarding: React.FC = () => {
         <Button
           variant="contained"
           size="large"
-          onClick={() => {
-            // Mark that user has seen the completion screen
-            window.dispatchEvent(new Event('onboardingCompletionSeen'));
-            navigate('/train');
-          }}
+          onClick={() => navigate('/train')}
           sx={{ mt: 2 }}
         >
           Start Training AI
