@@ -169,6 +169,9 @@ const StepByStepOnboarding: React.FC = () => {
   }, [currentValue, activeStep]);
 
   const loadExistingData = async () => {
+    // Clear onboarding flow flag for fresh onboarding
+    localStorage.removeItem('hasCompletedOnboardingFlow');
+    
     try {
       const profile = await expertApi.getProfile();
       
@@ -255,21 +258,19 @@ const StepByStepOnboarding: React.FC = () => {
         };
 
         await expertApi.completeOnboarding(onboardingData);
-        // Refresh both expert and user data to ensure consistency
-        await refreshExpert();
-        await refreshUser();
-        
-        console.log('📊 Data refreshed, checking state...');
-        // Small delay to let state update
-        setTimeout(() => {
-          console.log('Current state after refresh:', {
-            expertOnboarding: expert?.onboarding_completed,
-            userOnboarding: user?.onboarding_completed
-          });
-        }, 100);
         
         setCompleting(false);
         setShowCongratulations(true);
+        
+        // Delay data refresh to allow congratulations screen to show first
+        setTimeout(async () => {
+          // Refresh both expert and user data to ensure consistency
+          await refreshExpert();
+          await refreshUser();
+          
+          console.log('📊 Data refreshed after congratulations shown');
+        }, 500);
+        
         // Component will now re-render and show "Setup Complete!" screen
       } catch (error) {
         console.error('Failed to complete onboarding:', error);
@@ -746,8 +747,8 @@ const StepByStepOnboarding: React.FC = () => {
   // For experts, prioritize expert data over user data to avoid inconsistencies
   const currentUser = expert || user;
 
-  // Show congratulations screen only if just completed (not when navigating from elsewhere)
-  if (currentUser?.onboarding_completed && showCongratulations) {
+  // Show congratulations screen if just completed onboarding
+  if (showCongratulations) {
     return (
       <Box sx={{ textAlign: 'center', p: 4 }}>
         <CheckCircle sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
@@ -760,7 +761,10 @@ const StepByStepOnboarding: React.FC = () => {
         <Button
           variant="contained"
           size="large"
-          onClick={() => navigate('/train')}
+          onClick={() => {
+            localStorage.setItem('hasCompletedOnboardingFlow', 'true');
+            navigate('/train');
+          }}
           sx={{ mt: 2 }}
         >
           Start Training AI
@@ -771,7 +775,7 @@ const StepByStepOnboarding: React.FC = () => {
 
   // If onboarding is completed and we're not showing congratulations, don't render anything
   // (ExpertPage will show the profile instead)
-  if (currentUser?.onboarding_completed && !showCongratulations) {
+  if (currentUser?.onboarding_completed) {
     return null;
   }
 
