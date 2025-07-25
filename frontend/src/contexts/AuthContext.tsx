@@ -318,18 +318,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (name: string, email: string, password: string, isExpertRegistration = false, userRole?: 'user' | 'expert') => {
     setIsLoading(true);
     try {
+      console.log('🔄 AuthContext.register called with:', { name, email, isExpertRegistration, userRole });
+      
       // Pass the isExpertRegistration parameter to determine the correct endpoint
       const response = await authApi.register(name, email, password, isExpertRegistration, userRole);
+      
+      console.log('✅ AuthContext.register response:', { 
+        hasMessage: !!response.message, 
+        message: response.message,
+        hasUser: !!response.user,
+        hasTokens: !!response.tokens
+      });
       
       // For successful registration with email verification, we don't log in automatically
       // Only treat as success if we actually got a positive response AND a verify message
       if (response.message && response.message.includes("verify") && response.user) {
+        console.log('✅ Treating as successful registration with verification');
         // Email verification flow - don't set user as authenticated
         return { 
           success: true, 
           message: response.message 
         };
       }
+      
+      console.log('🤔 Not treating as verification success, continuing...');
       
       // Only continue with authentication if tokens were returned
       if (response.tokens && response.tokens.access) {
