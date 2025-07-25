@@ -132,6 +132,7 @@ const StepByStepOnboarding: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
 
   
   const { expert, user, refreshExpert, refreshUser } = useAuth();
@@ -268,8 +269,8 @@ const StepByStepOnboarding: React.FC = () => {
         }, 100);
         
         setCompleting(false);
-        // Component will now re-render and show "Setup Complete!" 
-        // because onboarding_completed will be true
+        setShowCongratulations(true);
+        // Component will now re-render and show "Setup Complete!" screen
       } catch (error) {
         console.error('Failed to complete onboarding:', error);
         setError('Failed to complete setup. Please try again.');
@@ -745,7 +746,8 @@ const StepByStepOnboarding: React.FC = () => {
   // For experts, prioritize expert data over user data to avoid inconsistencies
   const currentUser = expert || user;
 
-  if (currentUser?.onboarding_completed) {
+  // Show congratulations screen only if just completed (not when navigating from elsewhere)
+  if (currentUser?.onboarding_completed && showCongratulations) {
     return (
       <Box sx={{ textAlign: 'center', p: 4 }}>
         <CheckCircle sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
@@ -765,6 +767,12 @@ const StepByStepOnboarding: React.FC = () => {
         </Button>
       </Box>
     );
+  }
+
+  // If onboarding is completed and we're not showing congratulations, don't render anything
+  // (ExpertPage will show the profile instead)
+  if (currentUser?.onboarding_completed && !showCongratulations) {
+    return null;
   }
 
   if (completing) {
