@@ -15,21 +15,7 @@ const ExpertPage: React.FC = () => {
   const showingOnboarding = !currentUser?.onboarding_completed;
   console.log(showingOnboarding ? 'ExpertPage - Showing StepByStepOnboarding' : 'ExpertPage - Showing ExpertProfile');
 
-  // If we detect a potential state inconsistency (user just completed onboarding), 
-  // force a profile refresh
-  React.useEffect(() => {
-    const handleFreshOnboarding = async () => {
-      // Check if we just came from onboarding completion
-      const justCompleted = localStorage.getItem('onboardingJustCompleted');
-      if (justCompleted && refreshExpert) {
-        console.log('Detected fresh onboarding completion, refreshing expert data...');
-        localStorage.removeItem('onboardingJustCompleted');
-        await refreshExpert();
-      }
-    };
-    
-    handleFreshOnboarding();
-  }, [refreshExpert]);
+
 
   return (
     <Container maxWidth="lg">
