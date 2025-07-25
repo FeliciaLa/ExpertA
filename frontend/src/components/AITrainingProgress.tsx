@@ -229,11 +229,11 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
 
   const handleShareAI = () => {
     if (isActivated) {
-      // Expert is activated, show share modal
-      setShareModalOpen(true);
+      // Expert is activated, toggle share modal
+      setShareModalOpen(prev => !prev);
     } else {
-      // Expert not activated, show activation payment modal
-      setShowActivationPayment(true);
+      // Expert not activated, toggle activation payment modal
+      setShowActivationPayment(prev => !prev);
     }
   };
 
