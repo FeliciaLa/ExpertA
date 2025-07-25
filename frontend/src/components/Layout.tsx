@@ -151,7 +151,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           {isAuthenticated && (
             <Button
               color="primary"
-              onClick={() => isExpert ? navigate('/expert') : navigate('/user/profile')}
+              onClick={() => {
+                console.log('MY PROFILE clicked - Auth state:', {
+                  isAuthenticated,
+                  isExpert,
+                  isUser,
+                  userRole: user?.role,
+                  userInLocalStorage: localStorage.getItem('user'),
+                  expertInLocalStorage: localStorage.getItem('expert')
+                });
+                isExpert ? navigate('/expert') : navigate('/user/profile');
+              }}
               sx={{ 
                 color: (isExpert && location.pathname === '/expert') || 
                       (!isExpert && location.pathname === '/user/profile') 

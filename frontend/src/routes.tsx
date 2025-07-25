@@ -36,9 +36,15 @@ const ProtectedExpertRoute = ({ children }: { children: ReactNode }) => {
   const { isExpert, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
+  console.log('ProtectedExpertRoute check:', { isExpert, isAuthenticated, isLoading, pathname: location.pathname });
+
   // While checking authentication, show loading
   if (isLoading) {
     return <LoadingFallback />;
+  }
+  
+  if (!isExpert) {
+    console.log('ProtectedExpertRoute: Redirecting to / because isExpert is false');
   }
   
   return isExpert ? <>{children}</> : <Navigate to="/" state={{ from: location }} replace />;
@@ -49,9 +55,15 @@ const ProtectedUserRoute = ({ children }: { children: ReactNode }) => {
   const { isUser, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
+  console.log('ProtectedUserRoute check:', { isUser, isAuthenticated, isLoading, pathname: location.pathname });
+
   // While checking authentication, show loading
   if (isLoading) {
     return <LoadingFallback />;
+  }
+  
+  if (!isUser) {
+    console.log('ProtectedUserRoute: Redirecting to / because isUser is false');
   }
   
   return isUser ? <>{children}</> : <Navigate to="/" state={{ from: location }} replace />;

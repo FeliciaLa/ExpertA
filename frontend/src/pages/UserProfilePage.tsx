@@ -33,6 +33,17 @@ import { features } from '../utils/environment';
 const UserProfilePage: React.FC = () => {
   const { user, setUser, isUser, isExpert } = useAuth();
   const navigate = useNavigate();
+  
+  // Debug logging
+  console.log('UserProfilePage loaded - Auth state:', {
+    user: user?.email,
+    isUser,
+    isExpert,
+    userRole: user?.role,
+    localStorageUser: localStorage.getItem('user'),
+    localStorageTokens: localStorage.getItem('tokens')
+  });
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

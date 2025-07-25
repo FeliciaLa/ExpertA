@@ -158,6 +158,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // User auth flow with role check
           try {
             const userData = JSON.parse(savedUser);
+            console.log('Auth check - parsed user data:', userData);
             console.log('Auth flow - role:', userData.role);
             
             setUser(userData);
@@ -169,9 +170,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               setIsUser(false);
               // For backward compatibility
               setExpert(userData);
+              console.log('Setting as EXPERT based on role');
             } else {
               setIsExpert(false);
               setIsUser(true);
+              console.log('Setting as USER based on role');
             }
             
             // Refresh user data in the background
