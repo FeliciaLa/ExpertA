@@ -357,33 +357,61 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
 
         {/* Action Buttons */}
         <Grid item xs={12} md={3}>
-          <Box textAlign="center">
+          <Box textAlign="center" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {/* Primary Revenue Button - Big & Prominent */}
             <Button
-              variant="outlined"
-              size="small"
+              variant="contained"
+              size="large"
               startIcon={<ShareIcon />}
               onClick={handleShareAI}
               sx={{ 
-                mb: 1,
-                color: isActivated ? 'primary.main' : 'warning.main',
-                borderColor: isActivated ? 'primary.main' : 'warning.main',
+                minWidth: '220px',
+                py: 2,
+                px: 4,
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                borderRadius: 3,
+                background: isActivated 
+                  ? 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 50%, #81C784 100%)'
+                  : 'linear-gradient(135deg, #FF7043 0%, #FF8A65 50%, #FFAB91 100%)',
+                boxShadow: isActivated 
+                  ? '0 6px 25px rgba(76, 175, 80, 0.35)'
+                  : '0 6px 25px rgba(255, 112, 67, 0.35)',
+                border: isActivated ? '2px solid #4CAF50' : '2px solid #FF7043',
                 '&:hover': { 
-                  bgcolor: isActivated ? 'primary.light' : 'warning.light',
-                  borderColor: isActivated ? 'primary.dark' : 'warning.dark'
-                }
+                  transform: 'translateY(-3px)',
+                  boxShadow: isActivated 
+                    ? '0 8px 30px rgba(76, 175, 80, 0.45)'
+                    : '0 8px 30px rgba(255, 112, 67, 0.45)',
+                  background: isActivated 
+                    ? 'linear-gradient(135deg, #388E3C 0%, #4CAF50 50%, #66BB6A 100%)'
+                    : 'linear-gradient(135deg, #F4511E 0%, #FF7043 50%, #FF8A65 100%)',
+                },
+                transition: 'all 0.3s ease-in-out',
+                textTransform: 'none'
               }}
             >
-              {isActivated ? 'Share your AI' : 'Activate & Share'}
+              {isActivated ? '🚀 SHARE YOUR AI' : '💰 ACTIVATE & SHARE'}
             </Button>
             
+            {/* Secondary Test Button - Smaller */}
             <Button
-              variant="contained"
+              variant="outlined"
               size="small"
               startIcon={<TestTubeIcon />}
               onClick={handleTestAI}
               sx={{ 
-                bgcolor: 'secondary.main',
-                '&:hover': { bgcolor: 'secondary.dark' }
+                minWidth: '140px',
+                py: 0.75,
+                fontSize: '0.875rem',
+                color: 'secondary.main',
+                borderColor: 'secondary.main',
+                borderRadius: 2,
+                '&:hover': { 
+                  bgcolor: 'secondary.light',
+                  borderColor: 'secondary.dark'
+                },
+                textTransform: 'none'
               }}
             >
               Test Your AI
