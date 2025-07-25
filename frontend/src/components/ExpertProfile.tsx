@@ -126,7 +126,7 @@ const ExpertProfile: React.FC = () => {
   console.log('ExpertProfile component mounted/rendered', { expert: expert?.email, onboarding: expert?.onboarding_completed });
   
   // State
-  const [activeTab, setActiveTab] = useState(0); // Basic Info tab active by default
+  // Removed tab functionality - now single unified profile
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -148,10 +148,6 @@ const ExpertProfile: React.FC = () => {
     years_of_experience: 0,
     key_skills: [],
     background: '',
-    typical_problems: '',
-    methodologies: '',
-    tools_technologies: '',
-    certifications: '',
     monetization_enabled: false,
     monetization_price: 5,
     stripe_account_id: '',
@@ -779,13 +775,7 @@ const ExpertProfile: React.FC = () => {
             </Box>
           </Grid>
 
-          {/* Professional Details */}
-          <Grid item xs={12}>
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" gutterBottom>
-              Professional Details
-            </Typography>
-          </Grid>
+
 
           <Grid item xs={12}>
             <TextField
