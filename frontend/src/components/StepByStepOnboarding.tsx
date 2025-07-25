@@ -379,8 +379,14 @@ const StepByStepOnboarding: React.FC = () => {
 
       await expertApi.completeOnboarding(onboardingData);
       
-      // Refresh expert data
+      // Refresh expert data and ensure state is updated
       await refreshExpert();
+      
+      // Mark that onboarding was just completed to help with state sync
+      localStorage.setItem('onboardingJustCompleted', 'true');
+      
+      // Small delay to ensure state is fully updated in React
+      await new Promise(resolve => setTimeout(resolve, 100));
       
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
