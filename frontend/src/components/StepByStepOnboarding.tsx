@@ -225,9 +225,8 @@ const StepByStepOnboarding: React.FC = () => {
     await saveCurrentField();
 
     if (activeStep === steps.length - 1) {
-      // Last step - complete onboarding and show training walkthrough
+      // Last step - complete onboarding
       await completeOnboarding();
-      setShowTrainingWalkthrough(true);
     } else {
       setActiveStep(prev => prev + 1);
     }
@@ -394,8 +393,8 @@ const StepByStepOnboarding: React.FC = () => {
       await Promise.race([refreshPromise, refreshTimeout]);
       console.log('Expert data refreshed successfully');
       
-      // Force completion state to false to show the "Setup Complete!" view
-      setCompleting(false);
+      // After refreshExpert, the component should automatically show "Setup Complete!" 
+      // because currentUser?.onboarding_completed will be true
       
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
@@ -736,6 +735,22 @@ const StepByStepOnboarding: React.FC = () => {
 
   // Use the unified user model instead of the legacy expert model
   const currentUser = user || expert;
+  
+  // Check if completing first, but allow onboarding_completed to override it
+  if (completing && !currentUser?.onboarding_completed) {
+    return (
+      <Box sx={{ textAlign: 'center', p: 4 }}>
+        <CircularProgress size={60} sx={{ mb: 2 }} />
+        <Typography variant="h5" gutterBottom>
+          Completing Your Setup...
+        </Typography>
+        <Typography variant="body1" color="textSecondary">
+          We're finalizing your profile and setting up your AI assistant.
+        </Typography>
+      </Box>
+    );
+  }
+
   if (currentUser?.onboarding_completed) {
     return (
       <Box sx={{ textAlign: 'center', p: 4 }}>
@@ -754,20 +769,6 @@ const StepByStepOnboarding: React.FC = () => {
         >
           Start Training AI
         </Button>
-      </Box>
-    );
-  }
-
-  if (completing) {
-    return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
-        <CircularProgress size={60} sx={{ mb: 2 }} />
-        <Typography variant="h5" gutterBottom>
-          Completing Your Setup...
-        </Typography>
-        <Typography variant="body1" color="textSecondary">
-          We're finalizing your profile and setting up your AI assistant.
-        </Typography>
       </Box>
     );
   }
