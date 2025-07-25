@@ -22,49 +22,53 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { signIn, register, isAuthenticated } = useAuth();
-  const [isExpertAuthOpen, setIsExpertAuthOpen] = useState(false);
-  const [isExpertRegistration, setIsExpertRegistration] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const theme = useTheme();
 
   const handleExpertClick = () => {
     if (isAuthenticated) {
       navigate('/expert');
     } else {
-      setIsExpertAuthOpen(true);
+      setIsAuthOpen(true);
     }
   };
 
-  const handleSignIn = async (email: string, password: string, isExpertLogin: boolean): Promise<{ success: boolean; message?: string }> => {
+  // Use the same auth handlers as Layout component for consistency
+  const handleSignIn = async (email: string, password: string, isExpertLogin: boolean) => {
     try {
-      await signIn(email, password);
-      navigate('/expert');
-      return { success: true };
+      const result = await signIn(email, password, isExpertLogin);
+      if (result.success) {
+        if (isExpertLogin) {
+          navigate('/expert');
+        } else {
+          navigate('/');
+        }
+      }
+      return result;
     } catch (error) {
-      // Error is handled by the dialog
-      return { success: false, message: error instanceof Error ? error.message : 'Login failed' };
+      throw error;
     }
   };
 
-  const handleRegister = async (name: string, email: string, password: string, isExpertRegistration: boolean, userRole?: 'user' | 'expert'): Promise<{ success: boolean; message?: string }> => {
+  const handleRegister = async (name: string, email: string, password: string, isExpertRegistration: boolean, userRole?: 'user' | 'expert') => {
     try {
-      await register(name, email, password, isExpertRegistration, userRole);
-      return { success: true };
+      const result = await register(name, email, password, isExpertRegistration, userRole);
+      if (result.success) {
+        // If there's a verification message, don't navigate
+        if (result.message && result.message.includes("verify")) {
+          return result;
+        }
+        // Only navigate if auto-login is performed
+        if (isExpertRegistration) {
+          navigate('/expert');
+        } else {
+          navigate('/');
+        }
+      }
+      return result;
     } catch (error) {
-      // Error is handled by the dialog
-      return { success: false, message: error instanceof Error ? error.message : 'Registration failed' };
+      throw error;
     }
-  };
-
-  // Function to handle expert auth button click - let users choose login or signup
-  const handleExpertRegisterClick = () => {
-    setIsExpertAuthOpen(true);
-    // Don't force registration mode - let users choose login or signup
-  };
-
-  // Function to handle auth dialog close
-  const handleAuthDialogClose = () => {
-    setIsExpertAuthOpen(false);
-    setIsExpertRegistration(false); // Reset registration state
   };
 
   return (
@@ -136,7 +140,7 @@ const LandingPage: React.FC = () => {
               <Button
                 variant="contained"
                 size="large"
-                onClick={handleExpertRegisterClick}
+                onClick={handleExpertClick}
                 sx={{ 
                   py: 2,
                   px: 5,
@@ -348,11 +352,10 @@ const LandingPage: React.FC = () => {
       </Box>
 
       <AuthDialog
-        open={isExpertAuthOpen}
-        onClose={handleAuthDialogClose}
+        open={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
         onSignIn={handleSignIn}
         onRegister={handleRegister}
-        expertRegisterOnly={isExpertRegistration}
       />
     </>
   );
