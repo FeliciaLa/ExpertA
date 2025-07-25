@@ -358,40 +358,26 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
         {/* Action Buttons */}
         <Grid item xs={12} md={3}>
           <Box textAlign="center" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            {/* Primary Revenue Button - Big & Prominent */}
+            {/* Primary Revenue Button - Prominent but Clean */}
             <Button
               variant="contained"
               size="large"
               startIcon={<ShareIcon />}
               onClick={handleShareAI}
               sx={{ 
-                minWidth: '220px',
-                py: 2,
-                px: 4,
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-                borderRadius: 3,
-                background: isActivated 
-                  ? 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 50%, #81C784 100%)'
-                  : 'linear-gradient(135deg, #FF7043 0%, #FF8A65 50%, #FFAB91 100%)',
-                boxShadow: isActivated 
-                  ? '0 6px 25px rgba(76, 175, 80, 0.35)'
-                  : '0 6px 25px rgba(255, 112, 67, 0.35)',
-                border: isActivated ? '2px solid #4CAF50' : '2px solid #FF7043',
+                minWidth: '180px',
+                py: 1.5,
+                px: 3,
+                fontSize: '1rem',
+                fontWeight: '600',
+                bgcolor: isActivated ? 'success.main' : 'warning.main',
                 '&:hover': { 
-                  transform: 'translateY(-3px)',
-                  boxShadow: isActivated 
-                    ? '0 8px 30px rgba(76, 175, 80, 0.45)'
-                    : '0 8px 30px rgba(255, 112, 67, 0.45)',
-                  background: isActivated 
-                    ? 'linear-gradient(135deg, #388E3C 0%, #4CAF50 50%, #66BB6A 100%)'
-                    : 'linear-gradient(135deg, #F4511E 0%, #FF7043 50%, #FF8A65 100%)',
+                  bgcolor: isActivated ? 'success.dark' : 'warning.dark',
                 },
-                transition: 'all 0.3s ease-in-out',
                 textTransform: 'none'
               }}
             >
-              {isActivated ? '🚀 SHARE YOUR AI' : '💰 ACTIVATE & SHARE'}
+              {isActivated ? 'Share your AI' : 'Activate & Share'}
             </Button>
             
             {/* Secondary Test Button - Smaller */}
@@ -406,7 +392,6 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
                 fontSize: '0.875rem',
                 color: 'secondary.main',
                 borderColor: 'secondary.main',
-                borderRadius: 2,
                 '&:hover': { 
                   bgcolor: 'secondary.light',
                   borderColor: 'secondary.dark'
