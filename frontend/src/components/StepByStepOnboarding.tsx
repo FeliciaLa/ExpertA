@@ -132,7 +132,7 @@ const StepByStepOnboarding: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
+
   
   const { expert, user, refreshExpert } = useAuth();
 
@@ -221,14 +221,45 @@ const StepByStepOnboarding: React.FC = () => {
                      currentField === 'industry' ? prev.industry : currentValue
     }));
 
-    // Save to backend
-    await saveCurrentField();
-
     if (activeStep === steps.length - 1) {
       // Last step - complete onboarding
-      await completeOnboarding();
+      setCompleting(true);
+      try {
+        // Prepare final onboarding data
+        const onboardingData = {
+          name: stepData.name,
+          title: stepData.title,
+          bio: stepData.bio,
+          industry: (stepData.industry || []).join(', '),
+          years_of_experience: stepData.years_of_experience,
+          background: stepData.background,
+          key_skills: (stepData.key_skills || []).join(', '),
+          typical_problems: '',
+          tools_technologies: '',
+          certifications: '',
+          monetization_enabled: false,
+          monetization_price: 0
+        };
+
+        await expertApi.completeOnboarding(onboardingData);
+        await refreshExpert();
+        setCompleting(false);
+        // Component will now re-render and show "Setup Complete!" 
+        // because onboarding_completed will be true
+      } catch (error) {
+        console.error('Failed to complete onboarding:', error);
+        setError('Failed to complete setup. Please try again.');
+        setCompleting(false);
+      }
     } else {
-      setActiveStep(prev => prev + 1);
+      // Save to backend and move to next step
+      try {
+        await saveCurrentField();
+        setActiveStep(prev => prev + 1);
+      } catch (error) {
+        console.error('Failed to save field:', error);
+        setError('Failed to save. Please try again.');
+      }
     }
   };
 
@@ -355,53 +386,7 @@ const StepByStepOnboarding: React.FC = () => {
     }
   };
 
-  const completeOnboarding = async () => {
-    try {
-      setCompleting(true);
-      console.log('Starting onboarding completion...');
-      
-      // Prepare final onboarding data
-      const onboardingData = {
-        name: stepData.name,
-        title: stepData.title,
-        bio: stepData.bio,
-        // expertise: stepData.expertise,
-        industry: (stepData.industry || []).join(', '),
-        years_of_experience: stepData.years_of_experience,
-        background: stepData.background,
-        key_skills: (stepData.key_skills || []).join(', '),
-        typical_problems: '', // No longer collected
-        tools_technologies: '', // No longer collected
-        certifications: '', // No longer collected
-        monetization_enabled: false, // Default - expert activation model
-        monetization_price: 0 // Not used in new model
-      };
 
-      console.log('Calling completeOnboarding API...');
-      const onboardingPromise = expertApi.completeOnboarding(onboardingData);
-      const onboardingTimeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Onboarding API timeout')), 10000)
-      );
-      await Promise.race([onboardingPromise, onboardingTimeout]);
-      console.log('Onboarding API completed successfully');
-      
-      console.log('Refreshing expert data...');
-      const refreshPromise = refreshExpert();
-      const refreshTimeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Refresh expert timeout')), 5000)
-      );
-      await Promise.race([refreshPromise, refreshTimeout]);
-      console.log('Expert data refreshed successfully');
-      
-      // Reset completing state so the component can show "Setup Complete!"
-      setCompleting(false);
-      
-    } catch (error) {
-      console.error('Failed to complete onboarding:', error);
-      setError('Failed to complete setup. Please try again.');
-      setCompleting(false);
-    }
-  };
 
   const addSkill = () => {
     if (newSkill.trim() && !(stepData.key_skills || []).includes(newSkill.trim())) {
@@ -836,108 +821,7 @@ const StepByStepOnboarding: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Training Walkthrough Modal */}
-      <Modal
-        open={showTrainingWalkthrough}
-        onClose={() => {
-          setShowTrainingWalkthrough(false);
-          navigate('/train');
-        }}
-      >
-        <Box sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 500,
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 4
-        }}>
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <CheckCircle sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
-            <Typography variant="h4" gutterBottom color="primary">
-              🎉 Profile Complete!
-            </Typography>
-            <Typography variant="h6" color="textSecondary">
-              Now Let's Train Your AI
-            </Typography>
-          </Box>
 
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            Your AI needs to learn from you before it can help users. Here's how:
-          </Typography>
-
-          <Box sx={{ mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-              <Typography variant="h6" sx={{ mr: 2, color: 'primary.main' }}>📚</Typography>
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  STEP 1: Chat Training (15-30 minutes)
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  • Your AI will ask you questions about real scenarios<br/>
-                  • Answer like you're talking to a client<br/>
-                  • The more detailed your answers, the smarter your AI becomes
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-              <Typography variant="h6" sx={{ mr: 2, color: 'primary.main' }}>📄</Typography>
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  STEP 2: Upload Knowledge
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  • Add documents, case studies, or guides you've written<br/>
-                  • Your AI will learn from your actual work examples<br/>
-                  • This helps your AI give more accurate, detailed responses
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-              <Typography variant="h6" sx={{ mr: 2, color: 'primary.main' }}>✅</Typography>
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  STEP 3: Test & Share
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  • Test your AI to make sure it sounds like you<br/>
-                  • Activate for £9.99 to share with unlimited users<br/>
-                  • Start getting consultations through your AI
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                setShowTrainingWalkthrough(false);
-                // Stay on current page or go to a help page
-              }}
-              sx={{ flex: 1 }}
-            >
-              Learn More
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => {
-                setShowTrainingWalkthrough(false);
-                navigate('/train');
-              }}
-              sx={{ flex: 1 }}
-              size="large"
-            >
-              Start Training Now
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
     </Box>
   );
 };
