@@ -10,8 +10,8 @@ const ExpertPage: React.FC = () => {
   console.log('ExpertPage - expert data:', { email: expert?.email, onboarding_completed: expert?.onboarding_completed });
   console.log('ExpertPage - user data:', { email: user?.email, onboarding_completed: user?.onboarding_completed, role: user?.role });
 
-  // Use the unified user model instead of the legacy expert model
-  const currentUser = user || expert;
+  // For experts, prioritize expert data over user data to avoid inconsistencies
+  const currentUser = expert || user;
   const showingOnboarding = !currentUser?.onboarding_completed;
   console.log(showingOnboarding ? 'ExpertPage - Showing StepByStepOnboarding' : 'ExpertPage - Showing ExpertProfile');
 

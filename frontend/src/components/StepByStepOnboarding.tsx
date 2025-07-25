@@ -134,7 +134,7 @@ const StepByStepOnboarding: React.FC = () => {
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   
-  const { expert, user, refreshExpert } = useAuth();
+  const { expert, user, refreshExpert, refreshUser } = useAuth();
 
   // Load existing profile data on mount
   useEffect(() => {
@@ -209,10 +209,21 @@ const StepByStepOnboarding: React.FC = () => {
   const handleNext = async () => {
     const currentField = steps[activeStep].field;
     
+    console.log('🔄 COMPLETE SETUP clicked:', { 
+      currentField, 
+      activeStep, 
+      stepsLength: steps.length, 
+      disclaimerAccepted,
+      isLastStep: activeStep === steps.length - 1
+    });
+    
     // Validate current field
     if (!validateCurrentField()) {
+      console.log('❌ Validation failed');
       return;
     }
+    
+    console.log('✅ Validation passed');
 
     // Save current field value
     setStepData(prev => ({
@@ -222,6 +233,7 @@ const StepByStepOnboarding: React.FC = () => {
     }));
 
     if (activeStep === steps.length - 1) {
+      console.log('🏁 Last step detected - starting completion process');
       // Last step - complete onboarding
       setCompleting(true);
       try {
@@ -242,7 +254,19 @@ const StepByStepOnboarding: React.FC = () => {
         };
 
         await expertApi.completeOnboarding(onboardingData);
+        // Refresh both expert and user data to ensure consistency
         await refreshExpert();
+        await refreshUser();
+        
+        console.log('📊 Data refreshed, checking state...');
+        // Small delay to let state update
+        setTimeout(() => {
+          console.log('Current state after refresh:', {
+            expertOnboarding: expert?.onboarding_completed,
+            userOnboarding: user?.onboarding_completed
+          });
+        }, 100);
+        
         setCompleting(false);
         // Component will now re-render and show "Setup Complete!" 
         // because onboarding_completed will be true
@@ -718,8 +742,8 @@ const StepByStepOnboarding: React.FC = () => {
     }
   };
 
-  // Use the unified user model instead of the legacy expert model
-  const currentUser = user || expert;
+  // For experts, prioritize expert data over user data to avoid inconsistencies
+  const currentUser = expert || user;
 
   if (currentUser?.onboarding_completed) {
     return (
