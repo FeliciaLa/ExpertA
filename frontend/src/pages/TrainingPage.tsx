@@ -58,8 +58,9 @@ const TrainingPage: React.FC = () => {
     // Check if user has seen the welcome message
     const welcomed = localStorage.getItem('trainingWelcomeSeen');
     if (!welcomed) {
-      // First time visiting training page, show welcome alert
+      // First time visiting training page, show walkthrough modal
       setHasSeenWelcome(false);
+      setShowTrainingWalkthrough(true);
     } else {
       setHasSeenWelcome(true);
     }
@@ -76,6 +77,11 @@ const TrainingPage: React.FC = () => {
 
   const handleCloseWalkthrough = () => {
     setShowTrainingWalkthrough(false);
+    // Mark welcome as seen so walkthrough doesn't show again
+    if (!hasSeenWelcome) {
+      setHasSeenWelcome(true);
+      localStorage.setItem('trainingWelcomeSeen', 'true');
+    }
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
