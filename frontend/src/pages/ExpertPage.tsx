@@ -13,14 +13,18 @@ const ExpertPage: React.FC = () => {
   // For experts, prioritize expert data over user data to avoid inconsistencies
   const currentUser = expert || user;
   
-  // Show profile if onboarding is completed, otherwise show onboarding
-  const showProfile = currentUser?.onboarding_completed;
+  // Show profile only if onboarding is completed AND user has been through the proper flow
+  // This allows the congratulations screen and training navigation to happen first
+  const hasCompletedOnboardingFlow = localStorage.getItem('hasCompletedOnboardingFlow') === 'true';
+  const showProfile = currentUser?.onboarding_completed && hasCompletedOnboardingFlow;
   
   // Debug logging for profile display decision
   console.log('ExpertPage - Profile display decision:', {
     currentUser: currentUser?.email,
     onboarding_completed: currentUser?.onboarding_completed,
-    showProfile
+    hasCompletedOnboardingFlow,
+    showProfile,
+    localStorage_value: localStorage.getItem('hasCompletedOnboardingFlow')
   });
   
   return (

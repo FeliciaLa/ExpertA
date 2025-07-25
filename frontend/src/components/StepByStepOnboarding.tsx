@@ -262,16 +262,9 @@ const StepByStepOnboarding: React.FC = () => {
         setCompleting(false);
         setShowCongratulations(true);
         
-        // Delay data refresh to allow congratulations screen to show first
-        setTimeout(async () => {
-          // Refresh both expert and user data to ensure consistency
-          await refreshExpert();
-          await refreshUser();
-          
-          console.log('📊 Data refreshed after congratulations shown');
-        }, 500);
-        
-        // Component will now re-render and show "Setup Complete!" screen
+        // Don't refresh data immediately - let user see congratulations and navigate manually
+        // The data will be refreshed when they navigate to /train
+        console.log('📊 Onboarding completed - showing congratulations screen');
       } catch (error) {
         console.error('Failed to complete onboarding:', error);
         setError('Failed to complete setup. Please try again.');
@@ -747,7 +740,8 @@ const StepByStepOnboarding: React.FC = () => {
   // For experts, prioritize expert data over user data to avoid inconsistencies
   const currentUser = expert || user;
 
-  // Show congratulations screen if just completed onboarding
+  // ALWAYS show congratulations screen if showCongratulations is true
+  // This takes priority over any other logic
   if (showCongratulations) {
     return (
       <Box sx={{ textAlign: 'center', p: 4 }}>
@@ -773,8 +767,7 @@ const StepByStepOnboarding: React.FC = () => {
     );
   }
 
-  // If onboarding is completed and we're not showing congratulations, don't render anything
-  // (ExpertPage will show the profile instead)
+  // Only check onboarding_completed if we're NOT showing congratulations
   if (currentUser?.onboarding_completed) {
     return null;
   }
