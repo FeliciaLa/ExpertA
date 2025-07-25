@@ -55,16 +55,16 @@ const LandingPage: React.FC = () => {
     }
   };
 
-  // Function to handle expert link click
+  // Function to handle expert auth button click - let users choose login or signup
   const handleExpertRegisterClick = () => {
-    setIsExpertRegistration(true);
     setIsExpertAuthOpen(true);
+    // Don't force registration mode - let users choose login or signup
   };
 
   // Function to handle auth dialog close
   const handleAuthDialogClose = () => {
     setIsExpertAuthOpen(false);
-    setIsExpertRegistration(false);
+    setIsExpertRegistration(false); // Reset registration state
   };
 
   return (

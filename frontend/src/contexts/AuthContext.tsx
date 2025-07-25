@@ -321,9 +321,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Pass the isExpertRegistration parameter to determine the correct endpoint
       const response = await authApi.register(name, email, password, isExpertRegistration, userRole);
       
-      // For registration with email verification, we don't log in automatically
-      // Check message for verification notification
-      if (response.message && response.message.includes("verify")) {
+      // For successful registration with email verification, we don't log in automatically
+      // Only treat as success if we actually got a positive response AND a verify message
+      if (response.message && response.message.includes("verify") && response.user) {
         // Email verification flow - don't set user as authenticated
         return { 
           success: true, 
