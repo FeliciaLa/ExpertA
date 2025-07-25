@@ -356,6 +356,7 @@ const LandingPage: React.FC = () => {
         onClose={() => setIsAuthOpen(false)}
         onSignIn={handleSignIn}
         onRegister={handleRegister}
+        defaultTab={1}
       />
     </>
   );

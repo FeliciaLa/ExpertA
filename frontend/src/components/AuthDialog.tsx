@@ -49,6 +49,7 @@ interface AuthDialogProps {
   onSignIn: (email: string, password: string, isExpertLogin: boolean) => Promise<{ success: boolean; message?: string }>;
   onRegister: (name: string, email: string, password: string, isExpertRegistration: boolean, userRole?: 'user' | 'expert') => Promise<{ success: boolean; message?: string }>;
   expertRegisterOnly?: boolean;
+  defaultTab?: number; // 0 for Sign In, 1 for Register
 }
 
 const AuthDialog: React.FC<AuthDialogProps> = ({
@@ -57,6 +58,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   onSignIn,
   onRegister,
   expertRegisterOnly = false,
+  defaultTab = 0,
 }) => {
   const [tabValue, setTabValue] = useState(0);
   const [name, setName] = useState('');
@@ -73,13 +75,13 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   useEffect(() => {
     if (open) {
       // Always force expert registration and role - no user option on main site
-      setTabValue(expertRegisterOnly ? 1 : 0); // Show registration tab if expertRegisterOnly
+      setTabValue(expertRegisterOnly ? 1 : defaultTab); // Show registration tab if expertRegisterOnly
       setUserRole('expert'); // Always default to expert
     } else {
       // Reset form when dialog closes
       resetForm();
     }
-  }, [open, expertRegisterOnly]);
+  }, [open, expertRegisterOnly, defaultTab]);
 
   const resetForm = () => {
     setName('');
