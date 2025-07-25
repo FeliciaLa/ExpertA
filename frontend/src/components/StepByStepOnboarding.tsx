@@ -393,8 +393,8 @@ const StepByStepOnboarding: React.FC = () => {
       await Promise.race([refreshPromise, refreshTimeout]);
       console.log('Expert data refreshed successfully');
       
-      // After refreshExpert, the component should automatically show "Setup Complete!" 
-      // because currentUser?.onboarding_completed will be true
+      // Reset completing state so the component can show "Setup Complete!"
+      setCompleting(false);
       
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
@@ -735,21 +735,6 @@ const StepByStepOnboarding: React.FC = () => {
 
   // Use the unified user model instead of the legacy expert model
   const currentUser = user || expert;
-  
-  // Check if completing first, but allow onboarding_completed to override it
-  if (completing && !currentUser?.onboarding_completed) {
-    return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
-        <CircularProgress size={60} sx={{ mb: 2 }} />
-        <Typography variant="h5" gutterBottom>
-          Completing Your Setup...
-        </Typography>
-        <Typography variant="body1" color="textSecondary">
-          We're finalizing your profile and setting up your AI assistant.
-        </Typography>
-      </Box>
-    );
-  }
 
   if (currentUser?.onboarding_completed) {
     return (
@@ -769,6 +754,20 @@ const StepByStepOnboarding: React.FC = () => {
         >
           Start Training AI
         </Button>
+      </Box>
+    );
+  }
+
+  if (completing) {
+    return (
+      <Box sx={{ textAlign: 'center', p: 4 }}>
+        <CircularProgress size={60} sx={{ mb: 2 }} />
+        <Typography variant="h5" gutterBottom>
+          Completing Your Setup...
+        </Typography>
+        <Typography variant="body1" color="textSecondary">
+          We're finalizing your profile and setting up your AI assistant.
+        </Typography>
       </Box>
     );
   }
