@@ -13,7 +13,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Tooltip
+  Tooltip,
+  CircularProgress
 } from '@mui/material';
 import { DocumentUpload } from '../components/DocumentUpload';
 import { TrainingChat } from '../components/TrainingChat';
@@ -22,6 +23,8 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import ChatIcon from '@mui/icons-material/Chat';
 import InfoIcon from '@mui/icons-material/Info';
 import CloseIcon from '@mui/icons-material/Close';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -53,6 +56,35 @@ const TrainingPage: React.FC = () => {
   console.log('🎯 TRAINING PAGE COMPONENT RENDERED');
   console.log('Current URL:', window.location.href);
   console.log('Current pathname:', window.location.pathname);
+  
+  const { expert, user, isLoading } = useAuth();
+  const navigate = useNavigate();
+  
+  // Check if onboarding is completed before allowing access
+  useEffect(() => {
+    if (isLoading) return; // Wait for auth to load
+    
+    const currentUser = expert || user;
+    if (!currentUser?.onboarding_completed) {
+      console.log('TrainingPage: Onboarding not completed, redirecting to expert page');
+      navigate('/expert');
+      return;
+    }
+  }, [expert, user, isLoading, navigate]);
+  
+  // Don't render anything while checking auth or if onboarding not completed
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  
+  const currentUser = expert || user;
+  if (!currentUser?.onboarding_completed) {
+    return null; // Will redirect via useEffect
+  }
   
   const [tabIndex, setTabIndex] = useState(0);
   const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
