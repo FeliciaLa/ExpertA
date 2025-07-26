@@ -95,6 +95,13 @@ function AppRoutes() {
           </Layout>
         </ProtectedExpertRoute>
       } />
+      <Route path="/expert/profile" element={
+        <ProtectedExpertRoute>
+          <Layout>
+            <ExpertProfile />
+          </Layout>
+        </ProtectedExpertRoute>
+      } />
       <Route path="/expert/*" element={
         <ProtectedExpertRoute>
           <Layout>

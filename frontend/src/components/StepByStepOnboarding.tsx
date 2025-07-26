@@ -756,7 +756,6 @@ const StepByStepOnboarding: React.FC = () => {
           variant="contained"
           size="large"
           onClick={() => {
-            localStorage.setItem('hasCompletedOnboardingFlow', 'true');
             navigate('/train');
           }}
           sx={{ mt: 2 }}

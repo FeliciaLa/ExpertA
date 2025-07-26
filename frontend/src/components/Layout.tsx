@@ -152,28 +152,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Button
               color="primary"
               onClick={() => {
-                console.log('MY PROFILE clicked - Auth state:', {
-                  isAuthenticated,
-                  isExpert,
-                  isUser,
-                  userRole: user?.role,
-                  userInLocalStorage: localStorage.getItem('user'),
-                  expertInLocalStorage: localStorage.getItem('expert')
-                });
-                
-                // Temporary debug: inspect localStorage user data
-                const storedUser = localStorage.getItem('user');
-                if (storedUser) {
-                  const userData = JSON.parse(storedUser);
-                  console.log('Stored user data:', userData);
-                  console.log('User role in storage:', userData.role);
-                  console.log('User is_expert flag:', userData.is_expert);
-                }
-                
-                isExpert ? navigate('/expert') : navigate('/user/profile');
+                // Route to dedicated profile pages
+                isExpert ? navigate('/expert/profile') : navigate('/user/profile');
               }}
               sx={{ 
-                color: (isExpert && location.pathname === '/expert') || 
+                color: (isExpert && location.pathname === '/expert/profile') || 
                       (!isExpert && location.pathname === '/user/profile') 
                       ? 'primary.main' : 'text.secondary',
                       fontWeight: 500
