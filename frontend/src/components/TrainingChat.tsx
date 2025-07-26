@@ -50,18 +50,12 @@ export const TrainingChat: React.FC = () => {
       return;
     }
     
-    // Be more lenient with onboarding check - use user data as fallback
-    const currentUser = expert || user;
-    if (!currentUser?.onboarding_completed) {
-      console.log('TrainingChat: Onboarding not completed, redirecting to onboarding');
-      navigate('/expert');  // Go to expert page which handles onboarding
-      return;
-    }
-
+    // Remove onboarding check - if user can access /train route, they should be allowed to stay
+    // The route protection in ProtectedExpertRoute handles the main auth check
     console.log('TrainingChat: Auth checks passed, initializing chat');
     // Don't automatically fetch - let user manually start training
     setInitializing(false);
-  }, [isAuthenticated, expert?.onboarding_completed, user?.onboarding_completed, navigate, isLoading]);
+  }, [isAuthenticated, navigate, isLoading]);
 
   useEffect(() => {
     scrollToBottom();
