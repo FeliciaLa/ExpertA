@@ -50,6 +50,10 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const TrainingPage: React.FC = () => {
+  console.log('🎯 TRAINING PAGE COMPONENT RENDERED');
+  console.log('Current URL:', window.location.href);
+  console.log('Current pathname:', window.location.pathname);
+  
   const [tabIndex, setTabIndex] = useState(0);
   const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);

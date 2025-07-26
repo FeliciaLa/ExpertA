@@ -30,7 +30,7 @@ export const TrainingChat: React.FC = () => {
   const [initializing, setInitializing] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { isAuthenticated, expert } = useAuth();
+  const { isAuthenticated, expert, user, isLoading } = useAuth();
 
   // Simple error handling without external dependencies
   const showError = (message: string) => {
@@ -39,19 +39,29 @@ export const TrainingChat: React.FC = () => {
   };
 
   useEffect(() => {
+    // Add loading state check to prevent premature redirects
+    if (isLoading) {
+      return;
+    }
+    
     if (!isAuthenticated) {
+      console.log('TrainingChat: Not authenticated, redirecting to home');
       navigate('/');
       return;
     }
     
-    if (!expert?.onboarding_completed) {
-      navigate('/onboarding');
+    // Be more lenient with onboarding check - use user data as fallback
+    const currentUser = expert || user;
+    if (!currentUser?.onboarding_completed) {
+      console.log('TrainingChat: Onboarding not completed, redirecting to onboarding');
+      navigate('/expert');  // Go to expert page which handles onboarding
       return;
     }
 
+    console.log('TrainingChat: Auth checks passed, initializing chat');
     // Don't automatically fetch - let user manually start training
     setInitializing(false);
-  }, [isAuthenticated, expert?.onboarding_completed, navigate]);
+  }, [isAuthenticated, expert?.onboarding_completed, user?.onboarding_completed, navigate, isLoading]);
 
   useEffect(() => {
     scrollToBottom();
