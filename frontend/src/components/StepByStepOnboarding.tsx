@@ -111,31 +111,26 @@ const steps = [
 ];
 
 const StepByStepOnboarding: React.FC = () => {
+  const { expert, user, refreshExpert, refreshUser, isExpert, isUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // State
   const [activeStep, setActiveStep] = useState(0);
   const [stepData, setStepData] = useState<StepData>({
     name: '',
     title: '',
-    expertise: '',
-    industry: [],
-    years_of_experience: 1,
-    background: '',
-    key_skills: [],
     bio: '',
-    completion: ''
+    industry: [],
+    years_of_experience: 0,
+    background: '',
+    key_skills: []
   });
-  
-  const [currentValue, setCurrentValue] = useState('');
-  const [newSkill, setNewSkill] = useState('');
-  const [newIndustry, setNewIndustry] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
-  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  
-  const { expert, user, refreshExpert, refreshUser } = useAuth();
+  // For experts, prioritize expert data over user data to avoid inconsistencies
+  const currentUser = expert || user;
 
   // Load existing profile data on mount
   useEffect(() => {
@@ -196,12 +191,11 @@ const StepByStepOnboarding: React.FC = () => {
       const existingData = {
         name: profile.name || '',
         title: profile.title || '',
-        expertise: profile.specialties || '',
+        bio: profile.bio || '',
         industry: parseArrayField(profile.profile?.industry),
         years_of_experience: profile.profile?.years_of_experience || 1,
         background: profile.profile?.background || '',
         key_skills: parseArrayField(profile.profile?.key_skills),
-        bio: profile.bio || '',
         completion: ''
       };
       setStepData(existingData);
@@ -737,9 +731,6 @@ const StepByStepOnboarding: React.FC = () => {
     }
   };
 
-  // For experts, prioritize expert data over user data to avoid inconsistencies
-  const currentUser = expert || user;
-
   // ALWAYS show congratulations screen if showCongratulations is true
   // This takes priority over any other logic
   if (showCongratulations) {
@@ -756,6 +747,14 @@ const StepByStepOnboarding: React.FC = () => {
           variant="contained"
           size="large"
           onClick={() => {
+            console.log('Start AI Training clicked - Auth state:', {
+              isExpert,
+              isUser,
+              isAuthenticated,
+              userRole: user?.role,
+              expertRole: expert?.role,
+              currentUser: currentUser?.email
+            });
             navigate('/train');
           }}
           sx={{ mt: 2 }}

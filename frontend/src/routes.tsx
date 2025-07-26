@@ -33,21 +33,39 @@ const LoadingFallback = () => (
 
 // Protected route component that checks auth
 const ProtectedExpertRoute = ({ children }: { children: ReactNode }) => {
-  const { isExpert, isAuthenticated, isLoading } = useAuth();
+  const { isExpert, isAuthenticated, isLoading, user, expert } = useAuth();
   const location = useLocation();
 
-  console.log('ProtectedExpertRoute check:', { isExpert, isAuthenticated, isLoading, pathname: location.pathname });
+  console.log('ProtectedExpertRoute check:', { 
+    isExpert, 
+    isAuthenticated, 
+    isLoading, 
+    pathname: location.pathname,
+    userRole: user?.role,
+    expertExists: !!expert,
+    userExists: !!user,
+    userEmail: user?.email,
+    expertEmail: expert?.email
+  });
 
   // While checking authentication, show loading
   if (isLoading) {
+    console.log('ProtectedExpertRoute: Showing loading because isLoading=true');
     return <LoadingFallback />;
   }
   
   if (!isExpert) {
-    console.log('ProtectedExpertRoute: Redirecting to / because isExpert is false');
+    console.log('ProtectedExpertRoute: Redirecting to / because isExpert is false', {
+      isExpert,
+      isAuthenticated,
+      userRole: user?.role,
+      fullAuthState: { user, expert, isExpert, isAuthenticated }
+    });
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
   
-  return isExpert ? <>{children}</> : <Navigate to="/" state={{ from: location }} replace />;
+  console.log('ProtectedExpertRoute: Access granted - showing children');
+  return <>{children}</>;
 };
 
 // Protected route component for users
