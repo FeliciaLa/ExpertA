@@ -758,15 +758,8 @@ const StepByStepOnboarding: React.FC = () => {
           onClick={() => {
             console.log('🔥 START AI TRAINING BUTTON CLICKED');
             console.log('About to navigate to /train');
-            console.log('Current location:', window.location.href);
             navigate('/train');
             console.log('Navigate call completed');
-            
-            // Check if navigation worked after a brief delay
-            setTimeout(() => {
-              console.log('After navigation - Current location:', window.location.href);
-              console.log('Should be at /train, actually at:', window.location.pathname);
-            }, 100);
           }}
           sx={{ mt: 2 }}
         >
