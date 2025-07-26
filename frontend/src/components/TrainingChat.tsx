@@ -190,17 +190,6 @@ export const TrainingChat: React.FC = () => {
     );
   }
 
-  if (!expert?.onboarding_completed) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography>Please complete your expert onboarding first.</Typography>
-        <Button onClick={() => navigate('/onboarding')} variant="contained" sx={{ mt: 2 }}>
-          Complete Onboarding
-        </Button>
-      </Box>
-    );
-  }
-
   if (initializing) {
     return (
       <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
