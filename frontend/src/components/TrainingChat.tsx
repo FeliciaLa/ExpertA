@@ -29,6 +29,7 @@ export const TrainingChat: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { isAuthenticated, expert, user, isLoading } = useAuth();
 
@@ -111,7 +112,9 @@ export const TrainingChat: React.FC = () => {
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -225,7 +228,10 @@ export const TrainingChat: React.FC = () => {
 
       <Paper sx={{ height: '60vh', display: 'flex', flexDirection: 'column' }}>
         {/* Messages Container */}
-        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+        <Box 
+          ref={messagesContainerRef}
+          sx={{ flex: 1, overflow: 'auto', p: 2 }}
+        >
           <List>
             {messages
               .filter(msg => msg.content !== 'START_TRAINING')
