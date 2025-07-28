@@ -320,6 +320,11 @@ class ExpertChatbot:
     def get_response(self, user_message: str) -> str:
         """Generate a response using the expert's knowledge base"""
         try:
+            # Handle simple conversational messages first
+            simple_greeting = self._handle_simple_messages(user_message)
+            if simple_greeting:
+                return simple_greeting
+            
             # Get the expert's profile and knowledge base (optimized with select_related)
             try:
                 expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
@@ -532,6 +537,130 @@ USER QUESTION: {user_message}
 Answer naturally using only the sources above:"""
         
         return prompt 
+    
+    def _handle_simple_messages(self, user_message: str) -> str:
+        """Handle simple conversational messages like greetings without triggering full knowledge search"""
+        try:
+            # Use AI to classify the intent of the message
+            intent = self._classify_message_intent(user_message)
+            
+            if intent == "greeting":
+                return self._generate_greeting_response()
+            elif intent == "casual":
+                return self._generate_casual_response(user_message)
+            else:
+                # It's a real question - proceed with normal knowledge search
+                return None
+                
+        except Exception as e:
+            # If classification fails, default to normal knowledge search
+            print(f"Intent classification failed: {e}")
+            return None
+    
+    def _classify_message_intent(self, user_message: str) -> str:
+        """Use AI to classify if message is greeting, casual chat, or real question"""
+        try:
+            prompt = f"""Classify this message into one of three categories:
+
+Message: "{user_message}"
+
+Categories:
+- "greeting" = hello, hi, hey, good morning, etc.
+- "casual" = how are you, thanks, bye, yes/no responses, small talk
+- "question" = real questions seeking information or advice
+
+Respond with ONLY the category word: greeting, casual, or question"""
+
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "system", "content": prompt}],
+                temperature=0.1,
+                max_tokens=10
+            )
+            
+            intent = response.choices[0].message.content.strip().lower()
+            
+            # Validate response
+            if intent in ["greeting", "casual", "question"]:
+                return intent
+            else:
+                return "question"  # Default to question if unclear
+                
+        except Exception as e:
+            print(f"Intent classification error: {e}")
+            return "question"  # Safe default
+    
+    def _generate_casual_response(self, user_message: str) -> str:
+        """Generate appropriate casual responses"""
+        try:
+            prompt = f"""The user said: "{user_message}"
+
+Generate a brief, natural response (1 sentence) that:
+- Responds appropriately to their casual message
+- Stays in character as {self.expert.name}
+- Optionally offers to help with questions
+
+Keep it warm, brief, and conversational."""
+
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini", 
+                messages=[{"role": "system", "content": prompt}],
+                temperature=0.7,
+                max_tokens=50
+            )
+            
+            return response.choices[0].message.content.strip()
+            
+        except Exception as e:
+            # Simple fallback responses
+            user_lower = user_message.lower()
+            if any(word in user_lower for word in ['thank', 'thanks']):
+                return "You're welcome! Let me know if you have any other questions."
+            elif any(word in user_lower for word in ['bye', 'goodbye']):
+                return "Goodbye! Feel free to come back anytime."
+            elif any(word in user_lower for word in ['how are you', 'how are']):
+                return "I'm doing well, thank you! What can I help you with?"
+            else:
+                return "Is there anything specific you'd like to know more about?"
+    
+    def _generate_greeting_response(self) -> str:
+        """Generate a contextual greeting response based on expert's profile"""
+        try:
+            # Get expert profile info
+            expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
+            specialties = getattr(self.expert, 'specialties', '')
+            bio = getattr(self.expert, 'bio', '')
+            industry = getattr(expert_profile, 'industry', '') if expert_profile else ''
+            
+            # Create a simple prompt for greeting generation
+            prompt = f"""You are {self.expert.name}, an expert being greeted by someone. Generate a warm, brief greeting response (1-2 sentences) that:
+
+1. Greets them back warmly
+2. Introduces yourself briefly 
+3. Mentions what you can help with based on your expertise
+
+Your expertise:
+- Bio: {bio or 'Not specified'}
+- Specialties: {specialties or 'Not specified'}  
+- Industry: {industry or 'Not specified'}
+
+Example style: "Hello! I'm [name] and I specialize in [area]. Feel free to ask me anything about [specific topics you help with]."
+
+Keep it natural, warm, and concise. Don't use formal lists or bullet points."""
+
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "system", "content": prompt}],
+                temperature=0.7,
+                max_tokens=100
+            )
+            
+            greeting = response.choices[0].message.content.strip()
+            return greeting
+            
+        except Exception as e:
+            # Fallback to simple greeting if AI generation fails
+            return f"Hello! I'm {self.expert.name}. Feel free to ask me anything about {getattr(self.expert, 'specialties', 'my area of expertise')}!"
     
     def _validate_response(self, response: str, knowledge_sources: list, user_message: str) -> str:
         """Validate response doesn't contain hallucinations"""
