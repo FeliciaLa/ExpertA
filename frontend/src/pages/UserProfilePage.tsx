@@ -686,24 +686,19 @@ const UserProfilePage: React.FC = () => {
           </Box>
           <Box display="flex" alignItems="center" gap={2}>
             <Button
-              variant="contained"
-              onClick={() => navigate('/experts/stoicism-expert')}
-              sx={{
-                bgcolor: '#d4af37',
-                color: '#2c3e50',
-                fontFamily: '"Times New Roman", serif',
-                fontWeight: 'bold',
-                px: 3,
-                py: 1,
-                borderRadius: 2,
-                boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
+              variant="outlined"
+              onClick={() => navigate('/experts')}
+              sx={{ 
+                textTransform: 'none',
+                borderColor: '#1976d2',
+                color: '#1976d2',
                 '&:hover': {
-                  bgcolor: '#b8941f',
-                  boxShadow: '0 6px 16px rgba(212, 175, 55, 0.4)'
+                  borderColor: '#1565c0',
+                  backgroundColor: '#f3f4f6'
                 }
               }}
             >
-              ← Back to Chat with The Stoic Mentor
+              ← Back to Experts
             </Button>
             <Tooltip title="Account Settings">
               <IconButton

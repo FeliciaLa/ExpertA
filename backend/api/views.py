@@ -3101,13 +3101,13 @@ def create_payment_intent(request):
             platform_amount = total_amount
             
         else:
-            # Original consultation payment logic for The Stoic Mentor
-        expert_id = request.data.get('expert_id')
-        if not expert_id:
-            return Response({'error': 'Expert ID is required'}, status=400)
+            # Standard consultation payment logic
+            expert_id = request.data.get('expert_id')
+            if not expert_id:
+                return Response({'error': 'Expert ID is required'}, status=400)
         
-        # Get expert and pricing info
-        try:
+            # Get expert and pricing info
+            try:
                 expert = User.objects.get(id=expert_id)
             except User.DoesNotExist:
                 return Response({'error': 'Expert not found'}, status=404)
@@ -3117,16 +3117,16 @@ def create_payment_intent(request):
                 defaults={'monetization_enabled': True}
             )
             
-            # Ensure The Stoic Mentor has monetization enabled
+            # Ensure expert has monetization enabled
             if not expert_profile.monetization_enabled:
                 expert_profile.monetization_enabled = True
                 expert_profile.save()
             
-            # Fixed pricing for The Stoic Mentor
-            expert_price = 1.99
+            # Standard pricing
+            expert_price = float(expert_profile.monetization_price or 5.00)
             
-            # Direct payment to platform for The Stoic Mentor only
-            total_amount = expert_price  # £1.99
+            # Direct payment to platform
+            total_amount = expert_price * 1.2  # 20% platform fee
             expert_amount = 0  # Platform keeps all for now
             platform_amount = total_amount
         
@@ -3346,15 +3346,10 @@ def confirm_payment(request):
             total_messages=0,  # Will be incremented as messages are sent
         )
         
-        # For The Stoic Mentor, this represents 30 message credits
-        # For other experts, this represents a 15-minute session
-        if expert.name == 'The Stoic Mentor':
-            # Note: We'll track message usage in the chat system
-            print(f"✅ Created paid session for The Stoic Mentor: 30 message credits")
-        else:
-            session.duration_minutes = 15
-            session.save()
-            print(f"✅ Created paid session for {expert.name}: 15 minutes")
+        # This represents a 15-minute consultation session
+        session.duration_minutes = 15
+        session.save()
+        print(f"✅ Created paid session for {expert.name}: 15 minutes")
         
         # Store payment info in session metadata or create a separate payment record
         payment_amount = float(payment_data.get('amount', 0)) / 100  # Convert from pence to pounds
@@ -3366,8 +3361,8 @@ def confirm_payment(request):
             'success': True,
             'session_id': str(session.id),
             'expert_name': expert.name,
-            'message_credits': 30 if expert.name == 'The Stoic Mentor' else 0,
-            'duration_minutes': 15 if expert.name != 'The Stoic Mentor' else 0,
+            'message_credits': 0,
+            'duration_minutes': 15,
             'amount_paid': payment_amount
         })
         

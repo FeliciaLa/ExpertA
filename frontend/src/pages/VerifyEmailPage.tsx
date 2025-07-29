@@ -63,14 +63,20 @@ const VerifyEmailPage: React.FC = () => {
     }
   }, [token, setUser, setIsAuthenticated, setIsUser, setIsExpert]);
 
-  // Auto-redirect users to The Stoic Mentor after successful verification
+  // Auto-redirect after successful verification
   useEffect(() => {
-    if (isVerified && userRole === 'user') {
+    if (isVerified) {
       const countdownInterval = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(countdownInterval);
-            navigate('/experts/stoicism-expert');
+            // Auto-redirect based on user role
+            if (userRole === 'expert') {
+              navigate('/expert/onboarding');
+            } else {
+              // Redirect users to experts page
+              navigate('/experts');
+            }
             return 0;
           }
           return prev - 1;
@@ -125,14 +131,18 @@ const VerifyEmailPage: React.FC = () => {
             <Typography variant="h5" gutterBottom>
               Email Verified!
             </Typography>
-            <Typography variant="body1" paragraph>
-              {userRole === 'expert' 
-                ? 'Your email has been successfully verified! Now let\'s set up your expert profile to get started.'
-                : `Your email has been successfully verified! Redirecting to The Stoic Mentor in ${countdown} second${countdown !== 1 ? 's' : ''}...`
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              {isVerified 
+                ? `Your email has been successfully verified! Redirecting in ${countdown} second${countdown !== 1 ? 's' : ''}...`
+                : 'Verifying your email address...'
               }
             </Typography>
-            <Button variant="contained" color="primary" onClick={handleGoToHome}>
-              {userRole === 'expert' ? 'Set Up Profile' : 'Chat with The Stoic Mentor'}
+            <Button
+              variant="contained"
+              onClick={() => userRole === 'expert' ? navigate('/expert/onboarding') : navigate('/experts')}
+              sx={{ mt: 2 }}
+            >
+              {userRole === 'expert' ? 'Set Up Profile' : 'Browse Experts'}
             </Button>
           </Box>
         ) : (

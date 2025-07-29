@@ -84,12 +84,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
 
       await onConsent(consentData);
       
-      // Store consent locally for UX
-      localStorage.setItem('consent_accepted', JSON.stringify({
-        ...consentData,
-        expertName,
-        timestamp: Date.now()
-      }));
+      // Consent storage is now handled by the parent component
 
     } catch (err) {
       console.error('Consent submission error:', err);

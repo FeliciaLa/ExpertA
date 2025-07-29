@@ -61,7 +61,7 @@ export const Chat: React.FC<ChatProps> = ({
   const [sessionStats, setSessionStats] = useState({
     messageCount: 0,
     hasActivePaidSession: false,
-    freeMessagesRemaining: expertName === 'The Stoic Mentor' ? 25 : 3
+    freeMessagesRemaining: 3
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -74,7 +74,9 @@ export const Chat: React.FC<ChatProps> = ({
   // Check for existing consent on component load
   useEffect(() => {
     const checkConsent = () => {
-      const storedConsent = localStorage.getItem('consent_accepted');
+      // Make consent expert-specific by including expertId in the key
+      const consentKey = `consent_accepted_${expertId}`;
+      const storedConsent = localStorage.getItem(consentKey);
       if (storedConsent) {
         try {
           const consentData = JSON.parse(storedConsent);
@@ -86,19 +88,22 @@ export const Chat: React.FC<ChatProps> = ({
             setHasUserConsent(true);
           } else {
             // Consent expired, remove it
-            localStorage.removeItem('consent_accepted');
+            localStorage.removeItem(consentKey);
             setHasUserConsent(false);
           }
         } catch (error) {
           console.error('Error parsing consent data:', error);
-          localStorage.removeItem('consent_accepted');
+          localStorage.removeItem(consentKey);
           setHasUserConsent(false);
         }
+      } else {
+        // No consent found for this expert
+        setHasUserConsent(false);
       }
     };
 
     checkConsent();
-  }, []);
+  }, [expertId]); // Re-check when expertId changes
   
   // Load chat behavior - every session starts fresh for privacy
   useEffect(() => {
@@ -152,22 +157,22 @@ export const Chat: React.FC<ChatProps> = ({
     
     console.log('Submit pressed - auth state:', { isAuthenticated, isExpert, isUser, hasUserConsent });
 
-    // Only require authentication for The Stoic Mentor (monetized expert)
-    if (!isAuthenticated && expertName === 'The Stoic Mentor') {
+    // ALWAYS require consent first - for ALL users (authenticated and non-authenticated)
+    if (!hasUserConsent) {
+      console.log('User needs to accept consent for this expert');
+      setShowConsentModal(true);
+      return;
+    }
+
+    // For monetized experts, require authentication after consent
+    if (!isAuthenticated && monetizationEnabled) {
       console.log('Not authenticated, showing login dialog');
       setIsAuthDialogOpen(true);
       return;
     }
 
-    // For non-authenticated users, require consent before allowing chat
-    if (!isAuthenticated && !hasUserConsent) {
-      console.log('User needs to accept consent');
-      setShowConsentModal(true);
-      return;
-    }
-
-    // Check if user should be blocked (only for The Stoic Mentor)
-    if (shouldBlockMessage() && expertName === 'The Stoic Mentor') {
+    // Check if user should be blocked (only for monetized experts)
+    if (shouldBlockMessage() && monetizationEnabled) {
       console.log('User needs to pay for more messages');
       setShowPaymentDialog(true);
       return;
@@ -198,105 +203,73 @@ export const Chat: React.FC<ChatProps> = ({
       if (response.total_messages !== undefined) {
         setSessionStats(prev => {
           console.log('🔥 Updating session stats after message:', {
-            hasActivePaidSession: prev.hasActivePaidSession,
-            responseMessages: response.total_messages,
-            currentFreeRemaining: prev.freeMessagesRemaining
+            oldStats: prev,
+            responseStats: response,
+            messageCount: response.total_messages
           });
           
-          if (prev.hasActivePaidSession) {
-            // User has paid - count down from 2 messages for this session
-            const newRemaining = Math.max(0, 20 - Math.floor(response.total_messages / 2));
-            console.log('💳 PAID SESSION UPDATE:', {
-              sessionMessages: response.total_messages,
-              newRemaining: newRemaining
-            });
-            return {
-              ...prev,
-              messageCount: response.total_messages,
-              freeMessagesRemaining: newRemaining
-            };
-          } else {
-            // User is on free messages
-            const newRemaining = monetizationEnabled ? Math.max(0, (expertName === 'The Stoic Mentor' ? 25 : 3) - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining;
-            console.log('🆓 FREE SESSION UPDATE:', {
-              sessionMessages: response.total_messages,
-              newRemaining: newRemaining
-            });
-            return {
-        ...prev,
-              messageCount: response.total_messages,
-              freeMessagesRemaining: newRemaining
-            };
-          }
+          // Calculate remaining messages based on whether it's monetized
+          const newRemaining = monetizationEnabled ? Math.max(0, 3 - Math.floor(response.total_messages / 2)) : prev.freeMessagesRemaining;
+          
+          return {
+            messageCount: response.total_messages,
+            hasActivePaidSession: response.has_active_paid_session || false,
+            freeMessagesRemaining: response.has_active_paid_session ? 
+              (response.free_messages_remaining || 0) : 
+              newRemaining
+          };
         });
-        
-        console.log('Updated session stats:', {
-          totalMessages: response.total_messages,
-          sessionId: response.session_id
-        });
-      } else {
-        console.log('❌ NO total_messages in response - session stats NOT updated');
       }
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      setError(error.response?.data?.error || 'Failed to send message. Please try again.');
       
-    } catch (err: any) {
-      console.error('Chat error:', err);
-      const errorMessage = err.response?.data?.error || err.response?.data?.detail || 'I\'m having trouble formulating a response right now. Please try again later.';
-      setError(errorMessage);
-      
-      // Add the error message as a system message in the chat
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: errorMessage },
-      ]);
+      // Check if this is a limit reached error
+      if (error.response?.data?.limit_reached) {
+        setSessionStats(prev => ({
+          ...prev,
+          freeMessagesRemaining: 0
+        }));
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle payment success
   const handlePaymentSuccess = () => {
-    // Update session to paid status
-    setSessionStats(prev => ({
-      ...prev,
-      hasActivePaidSession: true,
-      freeMessagesRemaining: expertName === 'The Stoic Mentor' ? 20 : 0 // 20 messages for paid session
-    }));
-    
+    console.log('Payment successful');
     setShowPaymentDialog(false);
     setShowPaymentSuccess(true);
     
-    // Add a system message about the paid session
-    const systemMessage = {
-      id: Date.now().toString(),
-      role: 'assistant' as const,
-      content: expertName === 'The Stoic Mentor' 
-        ? `🎉 Thank you for your payment! You now have 20 additional messages with ${firstName}. Feel free to ask detailed questions and get in-depth philosophical guidance. Your extended session is active now.`
-        : `🎉 Thank you for your payment! Your consultation session with ${firstName} is now active. Feel free to ask detailed questions and get expert advice.`,
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, systemMessage]);
+    // Update session stats to reflect paid session
+    setSessionStats(prev => ({
+      ...prev,
+      hasActivePaidSession: true,
+      freeMessagesRemaining: 20 // 20 messages for paid session
+    }));
   };
 
-  // Handle user sign in
   const handleUserSignIn = async (email: string, password: string) => {
     try {
-      const result = await signIn(email, password, false);
+      const result = await signIn(email, password);
       setIsAuthDialogOpen(false);
+      setError('');
       return result;
-    } catch (error) {
-      throw error;
+    } catch (err: any) {
+      console.error('Sign in error:', err);
+      throw err; // Re-throw to show error in dialog
     }
   };
 
-  // Handle user registration
   const handleUserRegister = async (name: string, email: string, password: string) => {
     try {
-      const result = await register(name, email, password, false);
+      const result = await register(name, email, password, false, 'user');
       setIsAuthDialogOpen(false);
+      setError('');
       return result;
-    } catch (error) {
-      throw error;
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      throw err; // Re-throw to show error in dialog
     }
   };
 
@@ -308,11 +281,20 @@ export const Chat: React.FC<ChatProps> = ({
       // Submit consent to server for legal record
       await consentService.submitConsent(consentData);
       
+      // Store consent locally with expert-specific key
+      const consentKey = `consent_accepted_${expertId}`;
+      localStorage.setItem(consentKey, JSON.stringify({
+        ...consentData,
+        expertName,
+        expertId,
+        timestamp: Date.now()
+      }));
+      
       // Update local state
       setHasUserConsent(true);
       setShowConsentModal(false);
       
-      console.log('Consent successfully submitted and stored');
+      console.log('Consent successfully submitted and stored for expert:', expertName);
     } catch (error) {
       console.error('Failed to submit consent:', error);
       // Still allow local consent to avoid blocking user, but log the issue
@@ -324,26 +306,30 @@ export const Chat: React.FC<ChatProps> = ({
 
   // Create login prompt or chat based on authentication status
   const renderChatOrPrompt = () => {
-    // Only require authentication for The Stoic Mentor (monetized expert)
-    if (!isAuthenticated && expertName === 'The Stoic Mentor') {
+    // For monetized experts, require authentication
+    if (!isAuthenticated && monetizationEnabled) {
       return (
         <Box 
           sx={{ 
+            flex: 1, 
             display: 'flex', 
             flexDirection: 'column', 
-            alignItems: 'center', 
             justifyContent: 'center', 
-            height: '300px' 
+            alignItems: 'center',
+            p: 4,
+            textAlign: 'center'
           }}
         >
-          <Typography variant="h6" align="center" gutterBottom>
-            Sign in to chat with {firstName}'s AI
+          <Typography variant="h6" gutterBottom>
+            Welcome to {expertName}'s AI
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Please sign in to start chatting
           </Typography>
           <Button 
             variant="contained" 
-            color="primary" 
             onClick={() => setIsAuthDialogOpen(true)}
-            sx={{ mt: 2 }}
+            sx={{ px: 4 }}
           >
             Sign In / Register
           </Button>
@@ -351,158 +337,182 @@ export const Chat: React.FC<ChatProps> = ({
       );
     }
 
-    // Show the chat interface
+    // Main chat interface for authenticated users or free experts
     return (
       <>
-        {/* Session status banner - HIDDEN FOR NOW DUE TO CONFUSING MESSAGING */}
-        {/* {features.payments && monetizationEnabled && (
-          <Box sx={{ p: 2, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider' }}>
-            {sessionStats.hasActivePaidSession ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Chip 
-                  label={expertName === 'The Stoic Mentor' ? "20 Messages Active" : "15-Min Session Active"}
-                  color="success" 
-                  size="small" 
-                />
-                <Typography variant="body2" color="text.secondary">
-                  {expertName === 'The Stoic Mentor' 
-                    ? `${sessionStats.freeMessagesRemaining} additional messages available`
-                    : "Unlimited questions until session expires"
-                  }
-                </Typography>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip 
-                    label={`${sessionStats.freeMessagesRemaining} free messages left`} 
-                    color={sessionStats.freeMessagesRemaining > 0 ? "primary" : "warning"}
-                    size="small" 
-                  />
-                  <Typography variant="body2" color="text.secondary">
-              {expertName === 'The Stoic Mentor'
-                ? 'Then £1.99 for 20 messages'
-                : `Then £${(validExpertPrice * 1.2).toFixed(2)} for 15-min session`
+        {/* Session Status Bar */}
+        {sessionStats.hasActivePaidSession && (
+          <Box sx={{ p: 2, bgcolor: '#e8f5e8', borderBottom: '1px solid #c8e6c9' }}>
+            <Chip
+              size="small"
+              label="Paid Session Active"
+              sx={{ bgcolor: '#4caf50', color: 'white', fontWeight: 'bold' }}
+            />
+            <Typography variant="caption" sx={{ ml: 2, color: '#2e7d32' }}>
+              {sessionStats.freeMessagesRemaining > 0 
+                ? `${sessionStats.freeMessagesRemaining} messages remaining`
+                : 'Session expired'
               }
-                  </Typography>
-                </Box>
-              </Box>
-            )}
+            </Typography>
           </Box>
-        )} */}
+        )}
 
-        <Box
+        {/* Messages Container */}
+        <Box 
           ref={messagesContainerRef}
-          sx={{
-            flex: 1,
-            overflow: 'auto',
-            p: 3,
+          sx={{ 
+            flex: 1, 
+            overflow: 'auto', 
+            p: 2,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
-            bgcolor: '#fafafa',
+            gap: 2
           }}
         >
-          {messages.map((message, index) => (
-            <Box
-              key={index}
-              sx={{
-                alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
-                maxWidth: '70%',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 1,
-                flexDirection: message.role === 'user' ? 'row-reverse' : 'row'
+          {/* Welcome message */}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            <Avatar 
+              sx={{ 
+                width: 32, 
+                height: 32,
+                bgcolor: 'primary.main',
+                color: 'white',
+                fontSize: '0.875rem'
               }}
             >
-              {/* Show expert avatar only for assistant messages */}
+              {expertName[0]}
+            </Avatar>
+            <Paper 
+              elevation={1} 
+              sx={{ 
+                p: 2, 
+                maxWidth: '80%',
+                bgcolor: '#f5f5f5',
+                borderRadius: 2
+              }}
+            >
+              <Typography variant="body2">
+                Hello! I'm {expertName}'s AI assistant. How can I help you today?
+              </Typography>
+            </Paper>
+          </Box>
+
+          {/* Chat Messages */}
+          {messages.map((message, index) => (
+            <Box 
+              key={index} 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
+                alignItems: 'flex-start',
+                gap: 2
+              }}
+            >
               {message.role === 'assistant' && (
-                <Avatar
-                  src={expertProfileImage}
-                  sx={{
-                    width: 32,
+                <Avatar 
+                  sx={{ 
+                    width: 32, 
                     height: 32,
-                    fontSize: '1rem',
-                    bgcolor: expertName === 'The Stoic Mentor' ? '#d4af37' : 'primary.main',
-                    color: expertName === 'The Stoic Mentor' ? '#2c3e50' : 'white',
-                    mt: 0.5,
-                    flexShrink: 0
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    fontSize: '0.875rem'
                   }}
                 >
-                  {expertName === 'The Stoic Mentor' ? '🏛️' : expertName[0]}
+                  {expertName[0]}
                 </Avatar>
               )}
-              
-              <Paper
-                elevation={1}
-                sx={{
-                  p: 2,
-                  backgroundColor: message.role === 'user' ? '#1976d2' : 'white',
-                  color: message.role === 'user' ? 'white' : 'text.primary',
-                  borderRadius: 2,
-                  boxShadow: message.role === 'user' ? 1 : 2,
+              <Paper 
+                elevation={1} 
+                sx={{ 
+                  p: 2, 
+                  maxWidth: '80%',
+                  bgcolor: message.role === 'user' ? '#e3f2fd' : '#f5f5f5',
+                  borderRadius: 2
                 }}
               >
-                <Typography variant="body1">
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                   {message.content}
                 </Typography>
               </Paper>
+              {message.role === 'user' && (
+                <Avatar sx={{ width: 32, height: 32, bgcolor: '#1976d2' }}>
+                  U
+                </Avatar>
+              )}
             </Box>
           ))}
+          
           {loading && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-              <CircularProgress size={24} />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 2 }}>
+              <Avatar 
+                sx={{ 
+                  width: 32, 
+                  height: 32,
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  fontSize: '0.875rem'
+                }}
+              >
+                {expertName[0]}
+              </Avatar>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                <CircularProgress size={16} sx={{ mr: 1 }} />
+                <Typography variant="body2" component="span">
+                  Thinking...
+                </Typography>
+              </Paper>
             </Box>
           )}
-          {error && (
-            <Typography color="error" sx={{ textAlign: 'center', p: 2 }}>
-              {error}
-            </Typography>
-          )}
+          
           <div ref={messagesEndRef} />
         </Box>
 
-        <Box 
-          component="form" 
-          onSubmit={handleSubmit} 
-          sx={{ 
-            p: 2, 
-            borderTop: '1px solid',
-            borderColor: 'divider',
-            display: 'flex',
-            gap: 2,
-            bgcolor: 'white',
-          }}
-        >
+        {/* Error Display */}
+        {error && (
+          <Alert severity="error" sx={{ m: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Input Area */}
+        <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0', display: 'flex', gap: 2 }}>
           <TextField
             fullWidth
             variant="outlined"
-            placeholder={
-              (shouldBlockMessage() && expertName === 'The Stoic Mentor') 
-                ? "Click Upgrade to continue chatting..."
-                : "Type your message..."
-            }
+            placeholder={shouldBlockMessage() && monetizationEnabled ? "Click Upgrade to continue chatting..." : "Type your message..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (shouldBlockMessage() && monetizationEnabled) {
+                  setShowPaymentDialog(true);
+                } else {
+                  handleSubmit(e);
+                }
+              }
+            }}
+            multiline
+            maxRows={4}
+            size="small"
+            disabled={loading}
             onClick={() => {
-              if (shouldBlockMessage() && expertName === 'The Stoic Mentor') {
+              if (shouldBlockMessage() && monetizationEnabled) {
                 setShowPaymentDialog(true);
               }
             }}
-            disabled={loading}
-            size="medium"
             sx={{
               '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                backgroundColor: (shouldBlockMessage() && expertName === 'The Stoic Mentor') ? '#f5f5f5' : '#f8f9fa',
-                cursor: (shouldBlockMessage() && expertName === 'The Stoic Mentor') ? 'pointer' : 'text',
+                borderRadius: 3,
+                backgroundColor: shouldBlockMessage() && monetizationEnabled ? '#f5f5f5' : '#f8f9fa',
+                cursor: shouldBlockMessage() && monetizationEnabled ? 'pointer' : 'text',
               }
             }}
           />
           <Button
             type="submit"
             variant="contained"
-            disabled={loading || (!(shouldBlockMessage() && expertName === 'The Stoic Mentor') && !input.trim())}
+            disabled={loading || (!shouldBlockMessage() && !input.trim())}
             sx={{
               px: 4,
               borderRadius: 2,
@@ -513,7 +523,7 @@ export const Chat: React.FC<ChatProps> = ({
               }
             }}
           >
-            {(shouldBlockMessage() && expertName === 'The Stoic Mentor') ? 'Upgrade' : 'Send'}
+            {shouldBlockMessage() && monetizationEnabled ? 'Upgrade' : 'Send'}
           </Button>
         </Box>
       </>
@@ -537,7 +547,7 @@ export const Chat: React.FC<ChatProps> = ({
         {renderChatOrPrompt()}
       </Paper>
 
-      {expertName === 'The Stoic Mentor' && (
+      {monetizationEnabled && (
       <UserAuthDialog
         open={isAuthDialogOpen}
         onClose={() => setIsAuthDialogOpen(false)}
@@ -558,7 +568,7 @@ export const Chat: React.FC<ChatProps> = ({
         <PaymentSection
           expertId={expertId}
           expertName={firstName}
-                      price={expertName === 'The Stoic Mentor' ? 1.99 : validExpertPrice * 1.2}
+          price={validExpertPrice * 1.2}
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
@@ -568,8 +578,8 @@ export const Chat: React.FC<ChatProps> = ({
           isOpen={showPaymentSuccess}
           onClose={() => setShowPaymentSuccess(false)}
           expertName={firstName}
-          sessionDuration={expertName === 'The Stoic Mentor' ? 30 : 15}
-                      amountPaid={expertName === 'The Stoic Mentor' ? 1.99 : validExpertPrice * 1.2}
+          sessionDuration={15}
+          amountPaid={validExpertPrice * 1.2}
         />
       )}
     </Box>
