@@ -114,28 +114,37 @@ export const ExpertDetailPage: React.FC = () => {
     fetchExpertDetails();
   }, [expertId]);
 
+  // Function to get the correct image URL
+  const getProfileImageUrl = () => {
+    if (!expert?.profile_image) return '';
+    
+    // Handle both relative and absolute URLs
+    if (expert.profile_image.startsWith('http')) {
+      return expert.profile_image;
+    }
+    
+    // Use the API URL from the api service
+    return `${api.defaults.baseURL}${expert.profile_image}`;
+  };
+
+  // Handle user sign in
   const handleUserSignIn = async (email: string, password: string) => {
     try {
-      const result = await signIn(email, password, false); // false indicates user login, not expert
-      if (result.success) {
-        setIsAuthDialogOpen(false);
-      }
+      const result = await signIn(email, password, false);
+      setIsAuthDialogOpen(false);
       return result;
     } catch (error) {
-      // Error is handled by the dialog
       throw error;
     }
   };
 
+  // Handle user registration
   const handleUserRegister = async (name: string, email: string, password: string) => {
     try {
-      const result = await register(name, email, password, false); // false indicates user registration, not expert
-      if (result.success) {
-        setIsAuthDialogOpen(false);
-      }
+      const result = await register(name, email, password, false, 'user');
+      setIsAuthDialogOpen(false);
       return result;
     } catch (error) {
-      // Error is handled by the dialog
       throw error;
     }
   };
@@ -160,20 +169,18 @@ export const ExpertDetailPage: React.FC = () => {
   };
 
   const renderChat = () => {
-    // For all experts, show chat when properly loaded
-    if (expert) {
-      return (
-        <Chat
-          key={expert.id}
-          expertId={expert.id}
-          expertName={expert.name}
-          monetizationEnabled={false}
-          expertPrice={5}
-          expertProfileImage={expert.profile_image || undefined}
-        />
-      );
-    }
-    return null;
+    if (!expert) return null;
+    
+    return (
+      <Chat
+        key={expert.id}
+        expertId={expert.id}
+        expertName={expert.name}
+        monetizationEnabled={false}
+        expertPrice={5}
+        expertProfileImage={getProfileImageUrl()}
+      />
+    );
   };
 
   const previewMessages = [
@@ -214,140 +221,166 @@ export const ExpertDetailPage: React.FC = () => {
     );
   }
 
-  // Standard layout for all experts
+  // Default layout for all experts  
   return (
     <Box sx={{ 
       minHeight: '100vh',
-      bgcolor: '#f8f9fa'
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      py: 4
     }}>
-      {/* Header */}
-      <Box sx={{ 
-        bgcolor: 'white', 
-        borderBottom: '1px solid #e0e0e0',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1100
-      }}>
-        <Container maxWidth="lg">
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            py: 2
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <IconButton onClick={() => navigate('/experts')} edge="start">
-                <ArrowBack />
-              </IconButton>
-              <Typography variant="h6" component="div">
-                {expert.name}
-              </Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {isAuthenticated ? (
-                <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar sx={{ width: 32, height: 32 }}>
-                      {(user?.name || expert?.name || 'U')[0]}
-                    </Avatar>
-                    <Typography variant="body2">
-                      {user?.name || expert?.name}
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={handleSignOut}
-                    sx={{ textTransform: 'none' }}
-                  >
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => setIsAuthDialogOpen(true)}
-                  sx={{ textTransform: 'none' }}
-                >
-                  Sign In
-                </Button>
-              )}
-            </Box>
-          </Box>
-        </Container>
-      </Box>
-
-      {/* Main Content */}
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Grid container spacing={4}>
-          {/* Expert Info */}
-          <Grid item xs={12} md={4}>
-            <Paper elevation={2} sx={{ p: 4, borderRadius: 3, textAlign: 'center' }}>
-                             <Avatar
-                 src={expert.profile_image || undefined}
-                 sx={{
-                  width: 100,
-                  height: 100,
-                  mx: 'auto',
-                  mb: 2,
-                  fontSize: '2rem',
+      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
+        <Grid container spacing={6}>
+        {/* Expert Profile Section */}
+        <Grid item xs={12} md={4}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 4, 
+              height: 'fit-content',
+              minHeight: '400px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 3,
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              position: 'relative',
+              zIndex: 1
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Avatar
+                src={getProfileImageUrl()}
+                sx={{
+                  width: 90,
+                  height: 90,
                   bgcolor: 'primary.main',
-                  color: 'white',
+                  fontSize: '2.2rem',
+                  mr: 2,
+                  border: '3px solid rgba(255, 255, 255, 0.8)',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
                 }}
               >
                 {expert.name[0]}
               </Avatar>
-              
-              <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {expert.name}
-              </Typography>
-              
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                {expert.title || 'Expert'}
-              </Typography>
+              <Box>
+                <Typography 
+                  variant="h4" 
+                  gutterBottom
+                  sx={{ 
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}
+                >
+                  {expert.name}
+                </Typography>
+                {expert.title && (
+                  <Typography 
+                    variant="h6" 
+                    color="text.secondary" 
+                    gutterBottom
+                    sx={{ fontWeight: 500 }}
+                  >
+                    {expert.title}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
 
-              {expert.specialties && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Specialties
-                  </Typography>
-                  <Typography variant="body1">
-                    {expert.specialties}
-                  </Typography>
-                </Box>
-              )}
+            <Divider sx={{ my: 2 }} />
 
-              {expert.bio && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    About
-                  </Typography>
-                  <Typography variant="body2">
-                    {expert.bio}
-                  </Typography>
-                </Box>
-              )}
-            </Paper>
-          </Grid>
+            <Typography variant="h6" gutterBottom>
+              About
+            </Typography>
+            <Typography paragraph>
+              {expert.bio || 'No bio available'}
+            </Typography>
 
-          {/* Chat Interface */}
-          <Grid item xs={12} md={8}>
-            <Paper elevation={2} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-              {renderChat()}
-            </Paper>
-          </Grid>
+            {/* Monetization Info */}
+            {expert.profile?.monetization_enabled && (
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  💡 This expert offers paid consultations
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  3 free questions, then £{((Number(expert.profile.monetization_price) || 5) * 1.2).toFixed(2)} for 15-min session
+                </Typography>
+              </Box>
+            )}
+          </Paper>
         </Grid>
-      </Container>
 
-      {/* Auth Dialog */}
+        {/* Chat Section */}
+        <Grid item xs={12} md={8}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 0, 
+              minHeight: '600px', 
+              display: 'flex', 
+              flexDirection: 'column',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 3,
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              overflow: 'hidden',
+              position: 'relative',
+              zIndex: 1
+            }}
+          >
+            {/* Chat Header */}
+            <Box sx={{ 
+              p: 3, 
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+              borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+            }}>
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: '#1976d2',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 2
+                }}
+              >
+                Chat with {expert.name}'s AI
+                <Box sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  borderRadius: 2, 
+                  px: 1.5,
+                  py: 0.5,
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px'
+                }}>
+                  AI POWERED
+                </Box>
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Get expert insights powered by {expert.name}'s knowledge and experience
+              </Typography>
+            </Box>
+            
+            {/* Chat Content */}
+            <Box sx={{ flex: 1, p: 3 }}>
+              {renderChat()}
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+
       <UserAuthDialog
         open={isAuthDialogOpen}
         onClose={() => setIsAuthDialogOpen(false)}
         onSignIn={handleUserSignIn}
         onRegister={handleUserRegister}
       />
+    </Container>
     </Box>
   );
 };
