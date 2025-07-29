@@ -363,147 +363,100 @@ export const Chat: React.FC<ChatProps> = ({
           sx={{ 
             flex: 1, 
             overflow: 'auto', 
-            p: 2,
+            p: 3,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2
+            gap: 2,
+            bgcolor: '#fafafa',
           }}
         >
-          {/* Welcome message */}
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <Avatar 
-              sx={{ 
-                width: 32, 
-                height: 32,
-                bgcolor: 'primary.main',
-                color: 'white',
-                fontSize: '0.875rem'
-              }}
-            >
-              {expertName[0]}
-            </Avatar>
-            <Paper 
-              elevation={1} 
-              sx={{ 
-                p: 2, 
-                maxWidth: '80%',
-                bgcolor: '#f5f5f5',
-                borderRadius: 2
-              }}
-            >
-              <Typography variant="body2">
-                Hello! I'm {expertName}'s AI assistant. How can I help you today?
-              </Typography>
-            </Paper>
-          </Box>
-
-          {/* Chat Messages */}
           {messages.map((message, index) => (
-            <Box 
-              key={index} 
-              sx={{ 
-                display: 'flex', 
-                justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
+            <Box
+              key={index}
+              sx={{
+                alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                maxWidth: '70%',
+                display: 'flex',
                 alignItems: 'flex-start',
-                gap: 2
+                gap: 1,
+                flexDirection: message.role === 'user' ? 'row-reverse' : 'row'
               }}
             >
+              {/* Show expert avatar only for assistant messages */}
               {message.role === 'assistant' && (
-                <Avatar 
-                  sx={{ 
-                    width: 32, 
+                <Avatar
+                  src={expertProfileImage}
+                  sx={{
+                    width: 32,
                     height: 32,
+                    fontSize: '1rem',
                     bgcolor: 'primary.main',
                     color: 'white',
-                    fontSize: '0.875rem'
+                    mt: 0.5,
+                    flexShrink: 0
                   }}
                 >
                   {expertName[0]}
                 </Avatar>
               )}
-              <Paper 
-                elevation={1} 
-                sx={{ 
-                  p: 2, 
-                  maxWidth: '80%',
-                  bgcolor: message.role === 'user' ? '#e3f2fd' : '#f5f5f5',
-                  borderRadius: 2
+              
+              <Paper
+                elevation={1}
+                sx={{
+                  p: 2,
+                  backgroundColor: message.role === 'user' ? '#1976d2' : 'white',
+                  color: message.role === 'user' ? 'white' : 'text.primary',
+                  borderRadius: 2,
+                  boxShadow: message.role === 'user' ? 1 : 2,
                 }}
               >
-                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                <Typography variant="body1">
                   {message.content}
                 </Typography>
               </Paper>
-              {message.role === 'user' && (
-                <Avatar sx={{ width: 32, height: 32, bgcolor: '#1976d2' }}>
-                  U
-                </Avatar>
-              )}
             </Box>
           ))}
-          
           {loading && (
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 2 }}>
-              <Avatar 
-                sx={{ 
-                  width: 32, 
-                  height: 32,
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  fontSize: '0.875rem'
-                }}
-              >
-                {expertName[0]}
-              </Avatar>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
-                <CircularProgress size={16} sx={{ mr: 1 }} />
-                <Typography variant="body2" component="span">
-                  Thinking...
-                </Typography>
-              </Paper>
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+              <CircularProgress size={24} />
             </Box>
           )}
-          
+          {error && (
+            <Typography color="error" sx={{ textAlign: 'center', p: 2 }}>
+              {error}
+            </Typography>
+          )}
           <div ref={messagesEndRef} />
         </Box>
 
-        {/* Error Display */}
-        {error && (
-          <Alert severity="error" sx={{ m: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Input Area */}
-        <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0', display: 'flex', gap: 2 }}>
+        <Box 
+          component="form" 
+          onSubmit={handleSubmit} 
+          sx={{ 
+            p: 2, 
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            gap: 2,
+            bgcolor: 'white',
+          }}
+        >
           <TextField
             fullWidth
             variant="outlined"
             placeholder={shouldBlockMessage() && monetizationEnabled ? "Click Upgrade to continue chatting..." : "Type your message..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (shouldBlockMessage() && monetizationEnabled) {
-                  setShowPaymentDialog(true);
-                } else {
-                  handleSubmit(e);
-                }
-              }
-            }}
-            multiline
-            maxRows={4}
-            size="small"
-            disabled={loading}
             onClick={() => {
               if (shouldBlockMessage() && monetizationEnabled) {
                 setShowPaymentDialog(true);
               }
             }}
+            disabled={loading}
+            size="medium"
             sx={{
               '& .MuiOutlinedInput-root': {
-                borderRadius: 3,
+                borderRadius: 2,
                 backgroundColor: shouldBlockMessage() && monetizationEnabled ? '#f5f5f5' : '#f8f9fa',
                 cursor: shouldBlockMessage() && monetizationEnabled ? 'pointer' : 'text',
               }
