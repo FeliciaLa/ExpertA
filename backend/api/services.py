@@ -830,10 +830,10 @@ Keep it warm, brief, and conversational."""
             industry = getattr(expert_profile, 'industry', '') if expert_profile else ''
             
             # Create a simple prompt for greeting generation
-            prompt = f"""You are {self.expert.name}, an expert being greeted by someone. Generate a warm, brief greeting response (1-2 sentences) that:
+            prompt = f"""You are an AI assistant representing {self.expert.name}. Generate a warm, brief greeting response (1-2 sentences) that:
 
 1. Greets them back warmly
-2. Introduces yourself briefly 
+2. Introduces yourself as "{self.expert.name}'s AI" 
 3. Mentions what you can help with based on your expertise
 
 Your expertise:
@@ -841,7 +841,7 @@ Your expertise:
 - Specialties: {specialties or 'Not specified'}  
 - Industry: {industry or 'Not specified'}
 
-Example style: "Hello! I'm [name] and I specialize in [area]. Feel free to ask me anything about [specific topics you help with]."
+Example style: "Hello! I'm {self.expert.name}'s AI and I specialize in [area]. Feel free to ask me anything about [specific topics you help with]."
 
 Keep it natural, warm, and concise. Don't use formal lists or bullet points."""
 
