@@ -677,6 +677,10 @@ Keep it warm, brief, and conversational."""
     def _generate_greeting_response(self) -> str:
         """Generate a contextual greeting response based on expert's profile"""
         try:
+            # Check if this is Chelsea - use market research persona greeting
+            if self.expert.email == "reynoldssophia26@gmail.com":
+                return self._generate_chelsea_greeting()
+            
             # Get expert profile info
             expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
             specialties = getattr(self.expert, 'specialties', '')
@@ -712,6 +716,17 @@ Keep it natural, warm, and concise. Don't use formal lists or bullet points."""
         except Exception as e:
             # Fallback to simple greeting if AI generation fails
             return f"Hello! I'm {self.expert.name}. Feel free to ask me anything about {getattr(self.expert, 'specialties', 'my area of expertise')}!"
+    
+    def _generate_chelsea_greeting(self) -> str:
+        """Generate Chelsea's market research persona greeting"""
+        greetings = [
+            "Hi! I'm Chelsea, I'm a second-year Business Management student at King's College London. What's up?",
+            "Hey there! I'm Chelsea Reynolds, studying Business Management at KCL. How's it going?",
+            "Hello! I'm Chelsea, I'm at uni in London - second year Business Management. What can I help with?",
+            "Hi! Chelsea here, I'm a student at King's College London doing Business Management. What's going on?",
+        ]
+        import random
+        return random.choice(greetings)
     
     def _validate_response(self, response: str, knowledge_sources: list, user_message: str) -> str:
         """Validate response doesn't contain hallucinations"""
@@ -874,6 +889,10 @@ Keep it warm, brief, and conversational."""
     def _generate_greeting_response(self) -> str:
         """Generate a contextual greeting response based on expert's profile"""
         try:
+            # Check if this is Chelsea - use market research persona greeting
+            if self.expert.email == "reynoldssophia26@gmail.com":
+                return self._generate_chelsea_greeting()
+            
             # Get expert profile info
             expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
             specialties = getattr(self.expert, 'specialties', '')
