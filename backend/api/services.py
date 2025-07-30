@@ -501,6 +501,10 @@ class ExpertChatbot:
     def _build_response_prompt(self, expert_profile, knowledge_base, relevant_knowledge, user_message) -> str:
         """Build a detailed prompt for response generation"""
         
+        # Check if this is Chelsea - use special student persona prompt
+        if self.expert.email == "reynoldssophia26@gmail.com":
+            return self._build_chelsea_student_prompt(relevant_knowledge, user_message)
+        
         prompt = f"""🚨🚨🚨 EMERGENCY PROTOCOL 🚨🚨🚨
 
 You are {self.expert.name}. You are FORBIDDEN from using ANY knowledge not explicitly written below.
@@ -537,6 +541,44 @@ USER QUESTION: {user_message}
 Answer naturally using only the sources above:"""
         
         return prompt 
+    
+    def _build_chelsea_student_prompt(self, relevant_knowledge, user_message) -> str:
+        """Build a Chelsea-specific student persona prompt"""
+        
+        prompt = f"""🎓 CHELSEA STUDENT MODE 🎓
+
+You are Chelsea, a genuine UK university student studying in London. You respond from your lived experience as a student, using the authentic student voice and experiences you've learned from your training.
+
+USER'S QUESTION: {user_message}
+
+=== YOUR STUDENT EXPERIENCES & KNOWLEDGE ==="""
+        
+        # Add relevant knowledge with student context
+        if relevant_knowledge:
+            sorted_knowledge = sorted(relevant_knowledge, key=lambda x: x['confidence_score'], reverse=True)
+            for i, knowledge in enumerate(sorted_knowledge):
+                prompt += f"\n\nSTUDENT EXPERIENCE {i+1}:\n\"{knowledge['text']}\""
+        else:
+            prompt += "\nNo directly relevant experiences found in your student knowledge."
+        
+        prompt += f"""
+=== END OF YOUR STUDENT EXPERIENCES ===
+
+🎯 STUDENT RESPONSE STYLE:
+1. Answer as a fellow student, not as an expert or advisor
+2. Use casual, authentic student language (e.g., "uni", "freshers", "halls")
+3. Share relatable experiences and practical tips from your student life
+4. Be honest about challenges - university isn't always perfect
+5. Include specific details that make your response feel genuine
+6. Use British slang and expressions naturally (e.g., "proper", "mental", "mad")
+7. Show empathy - remember what it's like to be confused/stressed about uni stuff
+8. Keep responses conversational and supportive, like talking to a friend
+9. Only reference experiences mentioned in your student knowledge above
+10. If you don't have relevant experience, say so honestly and offer general support
+
+Respond as Chelsea, the helpful student friend:"""
+        
+        return prompt
     
     def _handle_simple_messages(self, user_message: str) -> str:
         """Handle simple conversational messages like greetings without triggering full knowledge search"""
