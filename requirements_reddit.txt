@@ -1,0 +1,9 @@
+# Reddit scraping dependencies
+praw==7.7.1
+python-dotenv==1.0.0
+
+# You probably already have these from your main project:
+# openai
+# requests
+# pandas
+# numpy
