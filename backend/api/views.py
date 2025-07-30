@@ -3311,8 +3311,8 @@ def confirm_payment(request):
             
             # Create a special consultation session to track activation payment
             # This serves as both payment record and activation flag
-        session = ConsultationSession.objects.create(
-            user=request.user,
+            session = ConsultationSession.objects.create(
+                user=request.user,
                 expert=expert,
                 expert_name=expert.name,
                 expert_industry="ACTIVATION",  # Special marker for activation payments
