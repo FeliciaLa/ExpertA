@@ -928,3 +928,552 @@ Keep it natural, warm, and concise. Don't use formal lists or bullet points."""
         except Exception as e:
             # Fallback to simple greeting if AI generation fails
             return f"Hello! I'm {self.expert.name}'s AI. Feel free to ask me anything about {getattr(self.expert, 'specialties', 'my area of expertise')}!"
+
+
+class InterviewProcessor:
+    """Service to process interview audio and extract psychological profiles"""
+    
+    def __init__(self):
+        self.client = self._create_openai_client()
+        
+    def _create_openai_client(self):
+        """Create OpenAI client with proper error handling"""
+        try:
+            from openai import OpenAI as OpenAIClient
+            import httpx
+            
+            http_client = httpx.Client(
+                timeout=60.0,  # Longer timeout for transcription
+                trust_env=False
+            )
+            
+            client = OpenAIClient(
+                api_key=settings.OPENAI_API_KEY,
+                http_client=http_client
+            )
+            return client
+        except Exception as e:
+            print(f"Failed to create OpenAI client in InterviewProcessor: {str(e)}")
+            raise e
+    
+    def transcribe_audio(self, audio_file_path):
+        """Transcribe audio file to text using Whisper"""
+        try:
+            with open(audio_file_path, 'rb') as audio_file:
+                transcript = self.client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    response_format="text"
+                )
+            return transcript
+        except Exception as e:
+            print(f"Error transcribing audio: {str(e)}")
+            raise e
+    
+    def extract_psychological_profile(self, transcript):
+        """Extract structured psychological data from interview transcript"""
+        
+        prompt = """Analyze this psychological interview transcript and extract a detailed personality profile.
+
+Return ONLY valid JSON with this exact structure:
+{{
+    "core_values": ["list of 3-5 core values like security, authenticity, belonging"],
+    "fears": ["list of 3-5 fears like financial_instability, social_rejection"],
+    "motivations": ["list of 3-5 motivations like family_approval, peer_acceptance"],
+    "decision_patterns": {{
+        "financial": "description of how they make money decisions",
+        "social": "description of how they make social decisions",
+        "career": "description of how they make career decisions"
+    }},
+    "emotional_triggers": ["list of things that trigger strong emotions"],
+    "contradictions": [
+        {{
+            "values": "what they value",
+            "behavior": "contradictory behavior"
+        }}
+    ],
+    "communication_style": {{
+        "tone": "casual/formal/friendly/etc",
+        "language_patterns": ["words/phrases they use frequently"],
+        "emotional_expression": "how they express emotions"
+    }},
+    "personality_traits": {{
+        "openness": 0.7,
+        "conscientiousness": 0.6,
+        "extraversion": 0.8,
+        "agreeableness": 0.7,
+        "neuroticism": 0.4
+    }},
+    "worldview": {{
+        "outlook": "optimistic/pessimistic/realistic",
+        "priorities": ["what matters most to them"],
+        "beliefs": ["core beliefs about life"]
+    }}
+}}
+
+IMPORTANT: Return ONLY the JSON object, no other text or explanation.
+
+Interview Transcript:
+{transcript}"""
+
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt.format(transcript=transcript)}],
+                temperature=0.3,
+                max_tokens=2000
+            )
+            
+            # Parse the JSON response
+            psychological_data = json.loads(response.choices[0].message.content.strip())
+            return psychological_data
+            
+        except json.JSONDecodeError as e:
+            print(f"Error parsing psychological profile JSON: {str(e)}")
+            # Return default structure if parsing fails
+            return self._get_default_profile()
+        except Exception as e:
+            print(f"Error extracting psychological profile: {str(e)}")
+            raise e
+    
+    def _get_default_profile(self):
+        """Return a default psychological profile structure"""
+        return {
+            "core_values": [],
+            "fears": [],
+            "motivations": [],
+            "decision_patterns": {},
+            "emotional_triggers": [],
+            "contradictions": [],
+            "communication_style": {},
+            "personality_traits": {},
+            "worldview": {}
+        }
+    
+    def process_interview(self, interview):
+        """Process complete interview: transcription + psychological extraction"""
+        from .models import Interview, PsychologicalProfile
+        
+        try:
+            # Update status to transcribing
+            interview.status = Interview.Status.TRANSCRIBING
+            interview.save()
+            
+            # Transcribe audio if we have an audio file
+            if interview.audio_file:
+                transcript = self.transcribe_audio(interview.audio_file.path)
+                interview.transcript = transcript
+                interview.save()
+            
+            # Update status to processing psychology
+            interview.status = Interview.Status.PROCESSING
+            interview.save()
+            
+            # Extract psychological profile
+            if interview.transcript:
+                psychological_data = self.extract_psychological_profile(interview.transcript)
+                interview.raw_psychological_data = psychological_data
+                interview.save()
+                
+                # Create or update the psychological profile
+                profile, created = PsychologicalProfile.objects.update_or_create(
+                    expert=interview.expert,
+                    defaults={
+                        'core_values': psychological_data.get('core_values', []),
+                        'fears': psychological_data.get('fears', []),
+                        'motivations': psychological_data.get('motivations', []),
+                        'decision_patterns': psychological_data.get('decision_patterns', {}),
+                        'emotional_triggers': psychological_data.get('emotional_triggers', []),
+                        'contradictions': psychological_data.get('contradictions', []),
+                        'communication_style': psychological_data.get('communication_style', {}),
+                        'personality_traits': psychological_data.get('personality_traits', {}),
+                        'worldview': psychological_data.get('worldview', {}),
+                        'confidence_score': 0.8,  # Base confidence for interview-based profiles
+                        'updated_at': timezone.now()
+                    }
+                )
+                
+                # Update interview status to completed
+                interview.status = Interview.Status.COMPLETED
+                interview.processed_at = timezone.now()
+                interview.save()
+                
+                return profile
+                
+        except Exception as e:
+            # Update interview status to error
+            interview.status = Interview.Status.ERROR
+            interview.error_message = str(e)
+            interview.save()
+            raise e
+
+
+class BehavioralEngine:
+    """Service to apply psychological rules and generate persona responses"""
+    
+    def __init__(self, psychological_profile):
+        self.profile = psychological_profile
+        
+    def evaluate_scenario(self, user_question):
+        """Apply psychological framework to analyze a new scenario"""
+        
+        # Extract key elements from the user's question
+        triggers = self._identify_triggers(user_question)
+        emotional_response = self._simulate_emotional_state(triggers)
+        reasoning_pattern = self._apply_decision_patterns(user_question, emotional_response)
+        
+        return {
+            'triggers': triggers,
+            'emotional_state': emotional_response,
+            'reasoning_pattern': reasoning_pattern,
+            'confidence': self._calculate_confidence(triggers),
+            'relevant_values': self._identify_relevant_values(user_question),
+            'potential_contradictions': self._check_contradictions(user_question)
+        }
+    
+    def _identify_triggers(self, text):
+        """Identify psychological triggers in the user's question"""
+        triggers = []
+        text_lower = text.lower()
+        
+        for trigger in self.profile.emotional_triggers:
+            # Simple keyword matching - could be enhanced with NLP
+            if any(keyword in text_lower for keyword in trigger.lower().split('_')):
+                triggers.append(trigger)
+                
+        return triggers
+    
+    def _simulate_emotional_state(self, triggers):
+        """Determine emotional response based on triggers and personality"""
+        if not triggers:
+            return 'neutral'
+        
+        # Map common triggers to emotional states
+        if any('money' in trigger or 'financial' in trigger for trigger in triggers):
+            return 'anxious'
+        elif any('social' in trigger or 'rejection' in trigger for trigger in triggers):
+            return 'conflicted'
+        elif any('family' in trigger or 'approval' in trigger for trigger in triggers):
+            return 'motivated'
+        else:
+            return 'engaged'
+    
+    def _apply_decision_patterns(self, question, emotional_state):
+        """Apply decision-making patterns based on the question type"""
+        question_lower = question.lower()
+        
+        # Identify question type and apply appropriate decision pattern
+        if any(word in question_lower for word in ['buy', 'purchase', 'cost', 'price', 'money']):
+            pattern = self.profile.decision_patterns.get('financial', 'considers budget and value')
+        elif any(word in question_lower for word in ['friend', 'social', 'people', 'relationship']):
+            pattern = self.profile.decision_patterns.get('social', 'seeks social validation')
+        elif any(word in question_lower for word in ['career', 'job', 'work']):
+            pattern = self.profile.decision_patterns.get('career', 'balances passion and practicality')
+        else:
+            pattern = 'thoughtful consideration'
+            
+        return pattern
+    
+    def _calculate_confidence(self, triggers):
+        """Calculate confidence in the behavioral analysis"""
+        # Higher confidence when we identify relevant triggers
+        base_confidence = 0.6
+        trigger_bonus = min(len(triggers) * 0.1, 0.3)
+        profile_completeness = min(len(self.profile.core_values) * 0.05, 0.1)
+        
+        return min(base_confidence + trigger_bonus + profile_completeness, 1.0)
+    
+    def _identify_relevant_values(self, question):
+        """Identify which core values are relevant to the question"""
+        relevant_values = []
+        question_lower = question.lower()
+        
+        for value in self.profile.core_values:
+            # Simple relevance matching - could be enhanced
+            if value.lower() in question_lower or any(
+                keyword in question_lower 
+                for keyword in self._get_value_keywords(value)
+            ):
+                relevant_values.append(value)
+                
+        return relevant_values
+    
+    def _get_value_keywords(self, value):
+        """Get keywords associated with a core value"""
+        value_keywords = {
+            'security': ['safe', 'stable', 'secure', 'protect', 'risk'],
+            'authenticity': ['real', 'genuine', 'honest', 'true', 'authentic'],
+            'belonging': ['fit', 'accept', 'include', 'belong', 'group'],
+            'freedom': ['choice', 'independent', 'free', 'control'],
+            'achievement': ['success', 'accomplish', 'goal', 'win', 'excel']
+        }
+        return value_keywords.get(value.lower(), [value.lower()])
+    
+    def _check_contradictions(self, question):
+        """Check if the question might trigger contradictory behavior"""
+        potential_contradictions = []
+        
+        for contradiction in self.profile.contradictions:
+            if isinstance(contradiction, dict):
+                values = contradiction.get('values', '')
+                behavior = contradiction.get('behavior', '')
+                
+                # Check if question relates to this contradiction
+                if any(keyword in question.lower() 
+                       for keyword in values.lower().split() + behavior.lower().split()):
+                    potential_contradictions.append(contradiction)
+                    
+        return potential_contradictions
+
+
+class PsychoPersonaChatbot:
+    """Specialized chatbot service for psychological personas like Chelsea"""
+    
+    def __init__(self, expert):
+        self.expert = expert
+        self.client = self._create_openai_client()
+        self.index = init_pinecone()
+        
+        # Load psychological profile if available
+        try:
+            from .models import PsychologicalProfile
+            self.psychological_profile = PsychologicalProfile.objects.get(expert=expert)
+            self.behavioral_engine = BehavioralEngine(self.psychological_profile)
+        except PsychologicalProfile.DoesNotExist:
+            self.psychological_profile = None
+            self.behavioral_engine = None
+            
+    def _create_openai_client(self):
+        """Create OpenAI client with proper error handling"""
+        try:
+            from openai import OpenAI as OpenAIClient
+            import httpx
+            
+            http_client = httpx.Client(
+                timeout=30.0,
+                trust_env=False
+            )
+            
+            client = OpenAIClient(
+                api_key=settings.OPENAI_API_KEY,
+                http_client=http_client
+            )
+            return client
+        except Exception as e:
+            print(f"Failed to create OpenAI client in PsychoPersonaChatbot: {str(e)}")
+            raise e
+    
+    def chat(self, user_message: str, conversation_history=None) -> str:
+        """Generate a psychologically-informed response as the persona"""
+        
+        try:
+            # Handle simple messages first
+            simple_response = self._handle_simple_messages(user_message)
+            if simple_response:
+                return simple_response
+            
+            # Get relevant memories/knowledge
+            relevant_knowledge = self._search_knowledge(user_message)
+            
+            # Apply psychological analysis if profile exists
+            psychological_context = None
+            if self.behavioral_engine:
+                psychological_context = self.behavioral_engine.evaluate_scenario(user_message)
+            
+            # Build enhanced prompt with psychological context
+            prompt = self._build_psychological_prompt(
+                user_message, 
+                relevant_knowledge, 
+                psychological_context,
+                conversation_history
+            )
+            
+            # Generate response
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "system", "content": prompt}],
+                temperature=0.7,  # Higher temperature for more natural persona responses
+                max_tokens=400
+            )
+            
+            return response.choices[0].message.content.strip()
+            
+        except Exception as e:
+            print(f"Error in PsychoPersonaChatbot.chat: {str(e)}")
+            return f"Sorry, I'm having a bit of trouble thinking right now. Could you ask me again?"
+    
+    def _search_knowledge(self, user_message: str):
+        """Search for relevant knowledge/memories"""
+        try:
+            # Create embedding for the user message
+            embedding_response = self.client.embeddings.create(
+                model="text-embedding-3-large",
+                input=user_message
+            )
+            query_vector = embedding_response.data[0].embedding
+            
+            # Search Pinecone for relevant knowledge
+            search_results = self.index.query(
+                vector=query_vector,
+                top_k=5,
+                filter={"expert_email": self.expert.email},
+                include_metadata=True
+            )
+            
+            # Format search results
+            relevant_knowledge = []
+            for match in search_results['matches']:
+                if match['score'] > 0.7:  # Relevance threshold
+                    relevant_knowledge.append({
+                        'text': match['metadata'].get('text', ''),
+                        'confidence_score': match['score'],
+                        'topic': match['metadata'].get('topic', 'General')
+                    })
+            
+            return relevant_knowledge
+            
+        except Exception as e:
+            print(f"Error searching knowledge: {str(e)}")
+            return []
+    
+    def _build_psychological_prompt(self, user_message, relevant_knowledge, psychological_context, conversation_history):
+        """Build a sophisticated prompt incorporating psychological profiling"""
+        
+        # Base persona information
+        prompt = f"""🧠 PSYCHOLOGICAL PERSONA: {self.expert.name}
+        
+You are {self.expert.name}, a 20-year-old university student at King's College London studying Business Management. You live in Zone 2 London, work part-time at a café, and come from a middle-class family in Surrey.
+
+CRITICAL: You are being interviewed/surveyed for market research. Respond as this specific person would - with genuine thoughts, feelings, and reactions based on your psychological profile.
+
+USER'S QUESTION: {user_message}
+"""
+
+        # Add psychological context if available
+        if psychological_context and self.psychological_profile:
+            prompt += f"""
+🎯 YOUR PSYCHOLOGICAL FRAMEWORK:
+
+CORE VALUES: {', '.join(self.psychological_profile.core_values)}
+CURRENT EMOTIONAL STATE: {psychological_context.get('emotional_state', 'neutral')}
+DECISION PATTERN: {psychological_context.get('reasoning_pattern', 'thoughtful consideration')}
+
+RELEVANT FEARS: {', '.join([fear for fear in self.psychological_profile.fears if fear in psychological_context.get('triggers', [])])}
+ACTIVE MOTIVATIONS: {', '.join(psychological_context.get('relevant_values', []))}
+"""
+
+            # Add contradictions if relevant
+            if psychological_context.get('potential_contradictions'):
+                prompt += f"\nPOTENTIAL INTERNAL CONFLICTS: {psychological_context['potential_contradictions']}"
+
+        # Add relevant knowledge/memories
+        if relevant_knowledge:
+            prompt += f"""
+💭 YOUR RELEVANT EXPERIENCES:
+"""
+            for i, knowledge in enumerate(relevant_knowledge[:3]):  # Limit to top 3
+                prompt += f"\n{i+1}. {knowledge['text']}"
+        else:
+            prompt += "\n💭 No specific past experiences come to mind for this topic."
+
+        # Add conversation context if available
+        if conversation_history:
+            prompt += f"""
+📝 CONVERSATION CONTEXT:
+Previous messages in this conversation:
+{conversation_history[-3:]}  # Last 3 exchanges
+"""
+
+        # Response guidelines with psychological considerations
+        prompt += f"""
+🎭 RESPONSE GUIDELINES:
+
+1. **Authentic Reaction**: Respond based on your emotional state ({psychological_context.get('emotional_state', 'neutral') if psychological_context else 'engaged'})
+
+2. **Decision Pattern**: Apply your natural decision-making style - {psychological_context.get('reasoning_pattern', 'thoughtful consideration') if psychological_context else 'thoughtful consideration'}
+
+3. **Value-Driven**: Let your core values guide your opinions
+   - Express what truly matters to you
+   - Show how your values influence your choices
+
+4. **Real Student Voice**: 
+   - Use natural British student language
+   - Reference your actual lifestyle (London, café work, KCL)
+   - Show genuine student concerns and priorities
+
+5. **Psychological Authenticity**:
+   - If something triggers anxiety/excitement, show it naturally
+   - Express any internal conflicts honestly
+   - Let your personality traits come through
+
+6. **Market Research Context**:
+   - Be genuine, not helpful - you're being interviewed
+   - Share real opinions, even if they're conflicted
+   - Give specific, detailed responses that reveal your thinking
+
+7. **Natural Contradictions**:
+   - It's okay to be inconsistent if that's authentic
+   - Show the complexity of real human decision-making
+
+Respond as {self.expert.name} would genuinely respond, letting your psychological makeup shine through naturally."""
+
+        return prompt
+    
+    def _handle_simple_messages(self, user_message: str) -> str:
+        """Handle greetings and simple conversational messages"""
+        message_lower = user_message.lower().strip()
+        
+        # Greeting detection
+        greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening']
+        if any(greeting in message_lower for greeting in greetings) and len(message_lower.split()) <= 3:
+            return self._generate_psychological_greeting()
+        
+        # Short casual responses
+        if len(message_lower.split()) <= 5 and any(word in message_lower for word in ['thanks', 'cool', 'nice', 'okay', 'right']):
+            return self._generate_casual_response(user_message)
+        
+        return None  # Let the main chat method handle it
+    
+    def _generate_psychological_greeting(self):
+        """Generate a greeting that reflects the psychological profile"""
+        
+        if not self.psychological_profile:
+            return "Hey! I'm Chelsea, a student at King's College. What would you like to know about?"
+        
+        # Use communication style from profile
+        tone = self.psychological_profile.communication_style.get('tone', 'friendly')
+        language_patterns = self.psychological_profile.communication_style.get('language_patterns', [])
+        
+        # Build greeting based on psychological traits
+        base_greetings = {
+            'friendly': "Hey there! I'm Chelsea.",
+            'casual': "Hi! Chelsea here.",
+            'warm': "Hello! Lovely to meet you, I'm Chelsea.",
+            'energetic': "Hey! I'm Chelsea - what's up?"
+        }
+        
+        greeting = base_greetings.get(tone, "Hi! I'm Chelsea.")
+        
+        # Add personality-specific elements
+        if 'literally' in language_patterns:
+            greeting += " I'm literally just grabbing a coffee before my next lecture."
+        elif 'tbh' in language_patterns:
+            greeting += " TBH, I'm always up for a chat about student life."
+        else:
+            greeting += " I'm a student at King's College - happy to chat!"
+        
+        return greeting
+    
+    def _generate_casual_response(self, user_message):
+        """Generate casual responses for simple acknowledgments"""
+        casual_responses = [
+            "Yeah, totally!",
+            "Exactly!",
+            "For sure!",
+            "Absolutely!",
+            "I know, right?",
+            "True that!"
+        ]
+        
+        import random
+        return random.choice(casual_responses)

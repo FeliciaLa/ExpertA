@@ -24,7 +24,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils import timezone
 import logging
-from .services import ExpertChatbot, KnowledgeProcessor
+from .services import ExpertChatbot, KnowledgeProcessor, PsychoPersonaChatbot
 from rest_framework import generics
 from .jwt_views import CustomTokenObtainPairSerializer
 from .utils import send_verification_email, is_token_expired
@@ -656,8 +656,13 @@ class ChatView(APIView):
             # Initialize chatbot and get response
             try:
                 print("Initializing chatbot...")
-                chatbot = ExpertChatbot(expert)
-                print("Chatbot initialized successfully")
+                # Check if this is Chelsea - use psychological persona chatbot
+                if expert.email == "reynoldssophia26@gmail.com":
+                    chatbot = PsychoPersonaChatbot(expert)
+                    print("PsychoPersonaChatbot initialized successfully for Chelsea")
+                else:
+                    chatbot = ExpertChatbot(expert)
+                    print("ExpertChatbot initialized successfully")
             except Exception as e:
                 print(f"Failed to initialize chatbot: {str(e)}")
                 import traceback
@@ -669,7 +674,11 @@ class ChatView(APIView):
 
             try:
                 print("Generating response...")
-                response = chatbot.get_response(question)
+                # Use appropriate method based on chatbot type
+                if expert.email == "reynoldssophia26@gmail.com":
+                    response = chatbot.chat(question)
+                else:
+                    response = chatbot.get_response(question)
                 print("Response generated successfully")
                 print(f"Response preview: {response[:100]}...")
             except Exception as e:
@@ -1645,8 +1654,15 @@ class ExpertChatbotView(APIView):
             print(f"User Message: {message}")
             
             # Initialize chatbot and get response
-            chatbot = ExpertChatbot(expert)
-            response = chatbot.get_response(message)
+            # Check if this is Chelsea - use psychological persona chatbot
+            if expert.email == "reynoldssophia26@gmail.com":
+                chatbot = PsychoPersonaChatbot(expert)
+                response = chatbot.chat(message)
+                print(f"Using PsychoPersonaChatbot for Chelsea")
+            else:
+                chatbot = ExpertChatbot(expert)
+                response = chatbot.get_response(message)
+                print(f"Using ExpertChatbot for {expert.email}")
             print(f"\n=== Response Debug ===")
             print(f"AI Response: {response}")
             
