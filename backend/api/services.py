@@ -501,10 +501,6 @@ class ExpertChatbot:
     def _build_response_prompt(self, expert_profile, knowledge_base, relevant_knowledge, user_message) -> str:
         """Build a detailed prompt for response generation"""
         
-        # Check if this is Chelsea - use special student persona prompt
-        if self.expert.email == "reynoldssophia26@gmail.com":
-            return self._build_chelsea_student_prompt(relevant_knowledge, user_message)
-        
         prompt = f"""🚨🚨🚨 EMERGENCY PROTOCOL 🚨🚨🚨
 
 You are {self.expert.name}. You are FORBIDDEN from using ANY knowledge not explicitly written below.
@@ -542,52 +538,7 @@ Answer naturally using only the sources above:"""
         
         return prompt 
     
-    def _build_chelsea_student_prompt(self, relevant_knowledge, user_message) -> str:
-        """Build a Chelsea-specific market research persona prompt"""
-        
-        prompt = f"""🎯 MARKET RESEARCH PERSONA: CHELSEA
 
-You are Chelsea Reynolds, a 20-year-old university student studying Business Management at King's College London. You are being interviewed/surveyed for market research purposes. Respond authentically as this real student would.
-
-PERSONA BACKGROUND:
-- 2nd year Business Management student at King's College London
-- Lives in shared student accommodation in Zone 2
-- Part-time job at a local café (weekends)
-- From a middle-class family in Surrey
-- Has student loans and is budget-conscious
-- Active on social media (Instagram, TikTok)
-- Enjoys going out with friends, shopping, and Netflix
-
-QUESTION/TOPIC: {user_message}
-
-=== YOUR AUTHENTIC STUDENT EXPERIENCES ==="""
-        
-        # Add relevant knowledge as authentic personal experiences
-        if relevant_knowledge:
-            sorted_knowledge = sorted(relevant_knowledge, key=lambda x: x['confidence_score'], reverse=True)
-            for i, knowledge in enumerate(sorted_knowledge):
-                prompt += f"\n\nRELEVANT EXPERIENCE {i+1}:\n\"{knowledge['text']}\""
-        else:
-            prompt += "\nNo directly relevant personal experiences found."
-        
-        prompt += f"""
-=== END OF YOUR EXPERIENCES ===
-
-🎯 RESEARCH RESPONSE GUIDELINES:
-1. Respond as Chelsea would in a real interview/survey - be genuine and natural
-2. Use authentic student language and British expressions 
-3. Share your honest opinions, preferences, and experiences as this student
-4. Include specific details that reflect your demographic and lifestyle
-5. Express genuine concerns, motivations, and attitudes typical of your persona
-6. Be conversational but not overly helpful - you're being interviewed, not giving advice
-7. Show your personality - be relatable but authentic to your background
-8. Reference experiences from your knowledge base as if they were your own
-9. If you don't have relevant experience, respond authentically as Chelsea would
-10. Remember: researchers want to understand YOU as a student demographic
-
-Respond authentically as Chelsea, the KCL student:"""
-        
-        return prompt
     
     def _handle_simple_messages(self, user_message: str) -> str:
         """Handle simple conversational messages like greetings without triggering full knowledge search"""
@@ -677,10 +628,6 @@ Keep it warm, brief, and conversational."""
     def _generate_greeting_response(self) -> str:
         """Generate a contextual greeting response based on expert's profile"""
         try:
-            # Check if this is Chelsea - use market research persona greeting
-            if self.expert.email == "reynoldssophia26@gmail.com":
-                return self._generate_chelsea_greeting()
-            
             # Get expert profile info
             expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
             specialties = getattr(self.expert, 'specialties', '')
@@ -717,16 +664,7 @@ Keep it natural, warm, and concise. Don't use formal lists or bullet points."""
             # Fallback to simple greeting if AI generation fails
             return f"Hello! I'm {self.expert.name}. Feel free to ask me anything about {getattr(self.expert, 'specialties', 'my area of expertise')}!"
     
-    def _generate_chelsea_greeting(self) -> str:
-        """Generate Chelsea's market research persona greeting"""
-        greetings = [
-            "Hi! I'm Chelsea, I'm a second-year Business Management student at King's College London. What's up?",
-            "Hey there! I'm Chelsea Reynolds, studying Business Management at KCL. How's it going?",
-            "Hello! I'm Chelsea, I'm at uni in London - second year Business Management. What can I help with?",
-            "Hi! Chelsea here, I'm a student at King's College London doing Business Management. What's going on?",
-        ]
-        import random
-        return random.choice(greetings)
+
     
     def _validate_response(self, response: str, knowledge_sources: list, user_message: str) -> str:
         """Validate response doesn't contain hallucinations"""
@@ -889,9 +827,7 @@ Keep it warm, brief, and conversational."""
     def _generate_greeting_response(self) -> str:
         """Generate a contextual greeting response based on expert's profile"""
         try:
-            # Check if this is Chelsea - use market research persona greeting
-            if self.expert.email == "reynoldssophia26@gmail.com":
-                return self._generate_chelsea_greeting()
+
             
             # Get expert profile info
             expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
