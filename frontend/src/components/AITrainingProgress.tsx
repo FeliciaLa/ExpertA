@@ -30,7 +30,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/api';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import ExpertActivationPayment from './ExpertSubscriptionPayment';
+
 import AITestPreview from './AITestPreview';
 
 interface TrainingStats {
@@ -55,7 +55,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
   const [shareSuccess, setShareSuccess] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [showActivationPayment, setShowActivationPayment] = useState(false);
+
   const [isActivated, setIsActivated] = useState(false);
   const [showTestPreview, setShowTestPreview] = useState(false);
   const [interactionStats, setInteractionStats] = useState({
@@ -228,13 +228,8 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
   };
 
   const handleShareAI = () => {
-    if (isActivated) {
-      // Expert is activated, toggle share modal
-      setShareModalOpen(prev => !prev);
-    } else {
-      // Expert not activated, toggle activation payment modal
-      setShowActivationPayment(prev => !prev);
-    }
+    // Always allow sharing - no activation required
+    setShareModalOpen(prev => !prev);
   };
 
   const getShareUrl = () => {
@@ -523,20 +518,7 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
         </Alert>
       </Snackbar>
 
-      {/* Activation Payment Modal */}
-      {showActivationPayment && (
-        <ExpertActivationPayment
-          onPaymentSuccess={() => {
-            setShowActivationPayment(false);
-            setIsActivated(true);
-            // Show success and then open share modal
-            setTimeout(() => {
-              setShareModalOpen(true);
-            }, 500);
-          }}
-          onClose={() => setShowActivationPayment(false)}
-        />
-      )}
+
 
       {/* AI Test Preview Modal */}
       {showTestPreview && (

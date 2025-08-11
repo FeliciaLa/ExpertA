@@ -101,7 +101,7 @@ const ExpertActivationPage: React.FC = () => {
           🚀 Ready to Launch Your AI Expert?
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-          Your profile is complete! Preview how it will look to users, then activate it.
+          Your profile is complete! Preview how it will look to users, then share your AI.
         </Typography>
       </Box>
 

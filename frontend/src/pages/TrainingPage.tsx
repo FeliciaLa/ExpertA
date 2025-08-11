@@ -205,7 +205,7 @@ const TrainingPage: React.FC = () => {
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   • Test your AI to make sure it sounds like you<br/>
-                  • Activate for £9.99 and get 200 messages<br/>
+                  • Activate for free and get 200 messages<br/>
                   • Start getting consultations through your AI
                 </Typography>
               </Box>
