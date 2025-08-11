@@ -365,14 +365,14 @@ export const AITrainingProgress: React.FC<AITrainingProgressProps> = () => {
                 px: 3,
                 fontSize: '1rem',
                 fontWeight: '600',
-                bgcolor: isActivated ? 'success.main' : 'warning.main',
+                bgcolor: 'success.main',
                 '&:hover': { 
-                  bgcolor: isActivated ? 'success.dark' : 'warning.dark',
+                  bgcolor: 'success.dark',
                 },
                 textTransform: 'none'
               }}
             >
-              {isActivated ? 'Share your AI' : 'Activate & Share'}
+              Share your AI
             </Button>
             
             {/* Secondary Test Button - Smaller */}
