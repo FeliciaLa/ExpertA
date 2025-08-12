@@ -669,11 +669,8 @@ class ChatView(APIView):
 
             try:
                 print("Generating response...")
-                # Use appropriate method based on chatbot type
-                if expert.email == "reynoldssophia26@gmail.com":
-                    response = chatbot.chat(question)
-                else:
-                    response = chatbot.get_response(question)
+                # Use the get_response method for all experts
+                response = chatbot.get_response(question)
                 print("Response generated successfully")
                 print(f"Response preview: {response[:100]}...")
             except Exception as e:
@@ -3587,7 +3584,7 @@ class ConsentSubmissionView(APIView):
             
             return Response({
                 'success': True,
-                'consent_id': str(consent_record.id),
+                'consent_id': 'temp_' + str(int(timestamp.timestamp())),
                 'message': 'Consent recorded successfully'
             }, status=status.HTTP_201_CREATED)
             
