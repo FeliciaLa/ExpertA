@@ -30,8 +30,9 @@ from .views import (
     ConsultationSessionView,
     ChatHistoryView,
     SavedPaymentMethodsView,
-    # ConsentSubmissionView,
-    # ConsentCheckView,
+    ExpertChatbotView,
+    ConsentSubmissionView,
+    ConsentCheckView,
     create_stripe_connect_url,
     stripe_connect_callback,
     disconnect_stripe_account,
@@ -163,6 +164,7 @@ def cors_test(request):
 
 urlpatterns = [
     path('chat/', ChatView.as_view(), name='chat'),
+    path('chat/<str:expert_id>/', ExpertChatbotView.as_view(), name='expert-chat'),
     path('chat/history/', ChatHistoryView.as_view(), name='chat-history'),
     path('chat/history/<str:expert_id>/', ChatHistoryView.as_view(), name='chat-history-expert'),
     path('token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -235,9 +237,9 @@ urlpatterns = [
     path('payment/confirm/', confirm_payment, name='confirm-payment'),
     path('payment/saved-methods/', SavedPaymentMethodsView.as_view(), name='saved-payment-methods'),
     
-    # Consent endpoints for legal compliance - TEMPORARILY DISABLED
-    # path('consent/submit/', ConsentSubmissionView.as_view(), name='consent-submit'),
-    # path('consent/check/<str:identifier>/', ConsentCheckView.as_view(), name='consent-check'),
+    # Consent endpoints for legal compliance
+    path('consent/submit/', ConsentSubmissionView.as_view(), name='consent-submit'),
+    path('consent/check/<str:identifier>/', ConsentCheckView.as_view(), name='consent-check'),
     
     # CORS test endpoint
     path('cors-test/', cors_test, name='cors-test'),
