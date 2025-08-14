@@ -656,7 +656,9 @@ class ChatView(APIView):
             # Initialize chatbot and get response
             try:
                 print("Initializing chatbot...")
-                chatbot = ExpertChatbot(expert)
+                use_rag = request.data.get('use_rag', True)  # Default to True for backward compatibility
+                print(f"Using RAG: {use_rag}")
+                chatbot = ExpertChatbot(expert, use_rag=use_rag)
                 print("ExpertChatbot initialized successfully")
             except Exception as e:
                 print(f"Failed to initialize chatbot: {str(e)}")

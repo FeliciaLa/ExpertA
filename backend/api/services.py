@@ -290,10 +290,14 @@ Return as JSON:
 class ExpertChatbot:
     """Service to generate responses based on expert's knowledge"""
     
-    def __init__(self, expert):
+    def __init__(self, expert, use_rag=True):
         self.expert = expert
+        self.use_rag = use_rag
         self.client = self._create_openai_client()
-        self.index = init_pinecone()
+        if self.use_rag:
+            self.index = init_pinecone()
+        else:
+            self.index = None
         
     def _create_openai_client(self):
         """Create OpenAI client with proper error handling"""
@@ -323,20 +327,29 @@ class ExpertChatbot:
             if simple_response:
                 return simple_response
             
-            # Get expert profile and knowledge base
-            expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
-            knowledge_base = None
-            
-            try:
-                knowledge_base = ExpertKnowledgeBase.objects.get(expert=self.expert)
-            except ExpertKnowledgeBase.DoesNotExist:
-                pass
-            
-            # Search for relevant knowledge
-            relevant_knowledge = self._search_knowledge(user_message)
-            
-            # Build response prompt
-            prompt = self._build_response_prompt(expert_profile, knowledge_base, relevant_knowledge, user_message)
+            if self.use_rag:
+                # RAG-enabled response generation
+                # Get expert profile and knowledge base
+                expert_profile = hasattr(self.expert, 'profile') and self.expert.profile
+                knowledge_base = None
+                
+                try:
+                    knowledge_base = ExpertKnowledgeBase.objects.get(expert=self.expert)
+                except ExpertKnowledgeBase.DoesNotExist:
+                    pass
+                
+                # Search for relevant knowledge
+                relevant_knowledge = self._search_knowledge(user_message)
+                
+                # Build response prompt
+                prompt = self._build_response_prompt(expert_profile, knowledge_base, relevant_knowledge, user_message)
+            else:
+                # No-RAG response generation - direct LLM call
+                prompt = f"""You are {self.expert.name}, an expert in your field. Answer the following question based on your general knowledge and expertise.
+
+Question: {user_message}
+
+Provide a helpful and accurate response:"""
             
             # Generate response
             response = self.client.chat.completions.create(
@@ -348,8 +361,11 @@ class ExpertChatbot:
             
             response_text = response.choices[0].message.content.strip()
             
-            # Validate response
-            validated_response = self._validate_response(response_text, relevant_knowledge, user_message)
+            # Validate response (only for RAG responses)
+            if self.use_rag:
+                validated_response = self._validate_response(response_text, relevant_knowledge, user_message)
+            else:
+                validated_response = response_text
             
             return validated_response
             

@@ -1,0 +1,21 @@
+query_number,query,rag_response,rag_score,rag_latency,rag_status,no_rag_response,no_rag_score,no_rag_latency,no_rag_status,timestamp
+1,What are the four main benefits of cloud computing according to AWS?,No response,5,0.4618570804595947,500,No response,5,0.3775749206542969,500,2025-08-14T12:15:43.756538
+2,Which AWS service is designed for globally distributing content with low latency?,No response,5,0.3662109375,500,No response,5,0.4017179012298584,500,2025-08-14T12:15:44.525812
+3,"What is the AWS Shared Responsibility Model, and what is AWS responsible for under it?",No response,5,0.4032890796661377,500,No response,5,0.3620569705963135,500,2025-08-14T12:15:45.292432
+4,Which AWS service is specifically used to store and retrieve any amount of data from anywhere?,No response,5,0.3799118995666504,500,No response,5,0.41502904891967773,500,2025-08-14T12:15:46.088677
+5,What are the three main types of cloud computing deployment models?,No response,5,0.37538886070251465,500,No response,5,0.41988396644592285,500,2025-08-14T12:15:46.885229
+6,"What AWS service helps you centrally manage AWS accounts, organizational units, and policies?",No response,5,0.37061095237731934,500,No response,5,0.3652358055114746,500,2025-08-14T12:15:47.622363
+7,Which AWS service provides encryption key management and integrates with most AWS services?,No response,5,0.3663501739501953,500,No response,5,0.3745279312133789,500,2025-08-14T12:15:48.364580
+8,"In the shared responsibility model, who is responsible for configuring IAM policies?",No response,5,0.3777918815612793,500,No response,5,0.3693246841430664,500,2025-08-14T12:15:49.112975
+9,Which AWS service automatically detects unusual activity and potential security threats?,No response,5,0.36891698837280273,500,No response,5,0.3761610984802246,500,2025-08-14T12:15:49.859235
+10,What is AWS Artifact used for?,No response,5,0.3623197078704834,500,No response,5,0.36360764503479004,500,2025-08-14T12:15:50.586322
+11,What are the three main AWS pricing models for EC2 instances?,No response,5,0.3995940685272217,500,No response,5,0.4109501838684082,500,2025-08-14T12:15:51.398048
+12,Which AWS pricing calculator can be used to estimate monthly costs for a solution?,No response,5,0.3802781105041504,500,No response,5,0.3678569793701172,500,2025-08-14T12:15:52.147396
+13,What is the difference between the AWS Basic Support plan and the Developer Support plan?,No response,5,0.4033989906311035,500,No response,5,0.3588571548461914,500,2025-08-14T12:15:52.910797
+14,Which AWS service lets you set alarms when your charges exceed a certain amount?,No response,5,0.3751561641693115,500,No response,5,0.3723571300506592,500,2025-08-14T12:15:53.659321
+15,"How does AWS Free Tier differ between always free, 12-month free, and trial offers?",No response,5,0.36016201972961426,500,No response,5,0.36625099182128906,500,2025-08-14T12:15:54.386742
+16,What are the five pillars of the AWS Well-Architected Framework?,No response,5,0.36983776092529297,500,No response,5,0.3673279285430908,500,2025-08-14T12:15:55.124687
+17,Which AWS database service is fully managed and compatible with MySQL and PostgreSQL?,No response,5,0.3701632022857666,500,No response,5,0.36168813705444336,500,2025-08-14T12:15:55.857482
+18,What AWS service allows you to run containerized applications without managing servers or clusters?,No response,5,0.368358850479126,500,No response,5,0.41747617721557617,500,2025-08-14T12:15:56.644700
+19,Which AWS service is used for building workflows that coordinate multiple AWS services?,No response,5,0.3753800392150879,500,No response,5,0.36911487579345703,500,2025-08-14T12:15:57.390374
+20,What is the maximum size of an individual S3 object?,No response,5,0.36682701110839844,500,No response,5,0.3584592342376709,500,2025-08-14T12:15:58.116857
