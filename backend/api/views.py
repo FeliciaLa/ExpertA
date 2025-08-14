@@ -634,7 +634,7 @@ class ChatView(APIView):
 
             # Get the expert
             try:
-                expert = User.objects.get(id=expert_id)
+                expert = User.objects.get(email=expert_id)
                 print(f"\n=== Processing chat request ===")
                 print(f"Expert ID: {expert_id}")
                 print(f"Expert email: {expert.email}")
