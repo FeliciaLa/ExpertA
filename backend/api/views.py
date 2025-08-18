@@ -632,18 +632,30 @@ class ChatView(APIView):
                 except (jwt.DecodeError, jwt.ExpiredSignatureError) as e:
                     print(f"Token validation failed: {str(e)}")
 
-            # Get the expert
+            # Get the expert - try multiple lookup methods
+            expert = None
             try:
+                # First try to find by email
                 expert = User.objects.get(email=expert_id)
-                print(f"\n=== Processing chat request ===")
-                print(f"Expert ID: {expert_id}")
-                print(f"Expert email: {expert.email}")
-                print(f"User authenticated: {user is not None}")
             except User.DoesNotExist:
-                print(f"Expert not found: {expert_id}")
-                return Response({
-                    "error": "Expert not found"
-                }, status=status.HTTP_404_NOT_FOUND)
+                try:
+                    # Then try to find by ID (if it's a UUID)
+                    expert = User.objects.get(id=expert_id)
+                except (User.DoesNotExist, ValueError):
+                    try:
+                        # Finally try to find by name
+                        expert = User.objects.get(name=expert_id)
+                    except User.DoesNotExist:
+                        print(f"Expert not found: {expert_id}")
+                        return Response({
+                            "error": "Expert not found"
+                        }, status=status.HTTP_404_NOT_FOUND)
+            
+            print(f"\n=== Processing chat request ===")
+            print(f"Expert ID: {expert_id}")
+            print(f"Expert email: {expert.email}")
+            print(f"Expert name: {expert.name}")
+            print(f"User authenticated: {user is not None}")
 
             # Get the question
             question = request.data.get('message', '').strip()
