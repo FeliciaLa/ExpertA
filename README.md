@@ -1,121 +1,62 @@
-# ExpertA - AI Expert System
+# DuplixAI - AI-Powered Expert Digital Twins
 
-An AI-powered expert system that uses embeddings and vector search to provide intelligent responses based on domain knowledge.
+DuplixAI is a self-service platform that enables professionals to create and share AI-powered digital twins of themselves. By combining interactive Q&A sessions and document uploads, experts can train chatbots that deliver personalized, grounded responses based on their own knowledge.
 
-## Project Structure
+## Live Demo
 
-```
-ExpertA/
-├── backend/           # Django backend
-│   ├── api/          # Django app with views, models, and utils
-│   ├── expert_system/# Django project settings
-│   ├── manage.py     # Django management script
-│   ├── requirements.txt # Python dependencies
-│   └── venv/         # Python virtual environment
-├── frontend/         # React frontend
-│   ├── src/          # Source code
-│   ├── public/       # Static files
-│   └── package.json  # Node.js dependencies
-├── .env             # Environment variables
-└── .gitignore       # Git ignore file
-```
+**Try DuplixAI:** https://duplixai.co.uk
+
+## Project Overview
+
+DuplixAI transforms individual expertise into always-accessible, intelligent resources under the expert's direct control. The system demonstrates how real-world expertise can be digitized, structured, and deployed for independent distribution.
+
+## Key Features
+
+- **Expert Onboarding:** Structured profile creation and knowledge mapping
+- **Interactive Training:** Dynamic Q&A sessions and document uploads
+- **RAG Architecture:** Retrieval-Augmented Generation for grounded responses
+- **Anti-Hallucination:** Emergency protocol and confidence scoring
+- **Shareable Links:** Secure access to AI twins
+- **Real-time Chat:** Instant expert knowledge access
+
+## Technical Architecture
+
+### Frontend
+- React 18 + TypeScript
+- Material-UI (MUI v5)
+- Vercel deployment
+
+### Backend
+- Django + Django REST Framework
+- PostgreSQL database
+- Heroku deployment
+
+### AI Layer
+- OpenAI GPT-4o for response generation
+- Pinecone vector database for semantic search
+- RAG architecture with confidence scoring
+- Multi-layer validation pipeline
 
 ## Setup Instructions
 
 ### Backend Setup
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Set up environment variables:
-   - Create a `.env` file in the backend directory
-   - Add required API keys:
-     ```
-     OPENAI_API_KEY=your_openai_api_key
-     PINECONE_API_KEY=your_pinecone_api_key
-     ```
-
-5. Run migrations:
-   ```bash
-   python manage.py migrate
-   ```
-
-6. Start the development server:
-   ```bash
-   python manage.py runserver
-   ```
+1. Navigate to backend directory
+2. Create virtual environment: `python -m venv venv`
+3. Install dependencies: `pip install -r requirements.txt`
+4. Set up environment variables (OpenAI, Pinecone API keys)
+5. Run migrations: `python manage.py migrate`
+6. Start server: `python manage.py runserver`
 
 ### Frontend Setup
+1. Navigate to frontend directory
+2. Install dependencies: `npm install`
+3. Start dev server: `npm run dev`
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
+## Research & Evaluation
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+This project includes comprehensive user testing and RAG evaluation:
+- **3 rounds of usability testing** with domain experts
+- **RAG performance benchmarking** (0% hallucinations, 26% faster responses)
+- **Technical validation** of anti-hallucination mechanisms
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-The application will be available at:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-
-## Features
-
-- Knowledge input through expert form
-- Vector-based knowledge storage using Pinecone
-- Intelligent question answering using OpenAI
-- Real-time chat interface
-- Knowledge management interface
-
-## Technologies Used
-
-- **Frontend:**
-  - React with TypeScript
-  - Material-UI
-  - Vite
-  - Axios
-
-- **Backend:**
-  - Django
-  - Django REST Framework
-  - OpenAI API
-  - Pinecone Vector Database
-
-## Development
-
-- Frontend code is in TypeScript with React
-- Backend uses Django with Python
-- API documentation available at `/api/docs/`
-- Use `npm run build` to create production frontend build
-
-## API Endpoints
-
-### Training Endpoint
-- URL: `POST /api/train/`
-- Purpose: For experts to input knowledge into the system
-- Authentication: Required
-
-### Chat Endpoint
-- URL: `POST /api/chat/`
-- Purpose: For users to interact with the AI expert system
-- Authentication: Required 
+## Repository Structure

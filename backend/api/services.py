@@ -107,7 +107,7 @@ class KnowledgeProcessor:
             except Exception as e:
                 print(f"Error storing in Pinecone: {str(e)}")
                 # Continue even if Pinecone fails
-                
+            
             # Update knowledge base summary
             self._update_knowledge_base(knowledge_base)
             
@@ -260,7 +260,7 @@ Return as JSON:
             
             return json.loads(response.choices[0].message.content.strip())
             
-        except Exception as e:
+            except Exception as e:
             print(f"Error extracting knowledge from document: {str(e)}")
             return None
     
@@ -295,10 +295,10 @@ class ExpertChatbot:
         self.use_rag = use_rag
         self.client = self._create_openai_client()
         if self.use_rag:
-            self.index = init_pinecone()
+        self.index = init_pinecone()
         else:
             self.index = None
-        
+    
     def _create_openai_client(self):
         """Create OpenAI client with proper error handling"""
         try:
@@ -343,7 +343,7 @@ class ExpertChatbot:
                 
                 # Build response prompt
                 prompt = self._build_response_prompt(expert_profile, knowledge_base, relevant_knowledge, user_message)
-            else:
+                    else:
                 # No-RAG response generation - direct LLM call
                 prompt = f"""You are {self.expert.name}, an expert in your field. Answer the following question based on your general knowledge and expertise.
 
@@ -475,7 +475,7 @@ Message: "{user_message}"
 Keep it natural and conversational. 1-2 sentences max."""
 
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o-mini", 
                 messages=[{"role": "system", "content": prompt}],
                 temperature=0.7,
                 max_tokens=50
@@ -646,7 +646,7 @@ Message: "{user_message}"
 Keep it natural and conversational. 1-2 sentences max."""
 
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o-mini", 
                 messages=[{"role": "system", "content": prompt}],
                 temperature=0.7,
                 max_tokens=50
