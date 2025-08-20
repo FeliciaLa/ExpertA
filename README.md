@@ -48,22 +48,6 @@ This repository contains the complete implementation of DuplixAI, a self-service
 3. **Comprehensive Validation Pipeline** - Phrase detection and secondary AI verification
 4. **Expert-specific Knowledge Isolation** - Secure data separation and access control
 
-## Setup for Local Development
-
-*Note: This is for code review purposes. The live application is hosted at https://duplixai.co.uk*
-
-### Backend Setup
-1. Navigate to `backend/` directory
-2. Install dependencies: `pip install -r requirements.txt`
-3. Set up environment variables (OpenAI, Pinecone API keys)
-4. Run migrations: `python manage.py migrate`
-5. Start server: `python manage.py runserver`
-
-### Frontend Setup
-1. Navigate to `frontend/` directory
-2. Install dependencies: `npm install`
-3. Start dev server: `npm run dev`
-
 ## Dissertation Submission
 
 This repository accompanies the dissertation "DuplixAI: Building an AI Powered, Self-Service Platform for Human Digital Twin Creation" submitted for MSc Computing and Information Systems.
