@@ -30,7 +30,6 @@ This repository contains the complete implementation of DuplixAI, a self-service
 
 ### Research & Evaluation Data
 
-- **User Testing Results** - Comprehensive usability evaluation across 3 rounds
 - **RAG Performance Metrics** - Hallucination rates, response times, and groundedness scores
 - **Technical Validation** - Anti-hallucination protocol effectiveness
 
