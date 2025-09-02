@@ -74,7 +74,7 @@ export const DocumentUpload: React.FC = () => {
     setUploading(true);
     try {
       // Check file sizes before upload
-      const maxFileSize = 10 * 1024 * 1024; // 10 MB
+      const maxFileSize = 50 * 1024 * 1024; // 50 MB
       const oversizedFiles = [];
       
       for (let i = 0; i < files.length; i++) {
@@ -84,7 +84,7 @@ export const DocumentUpload: React.FC = () => {
       }
       
       if (oversizedFiles.length > 0) {
-        setError(`Files too large (max 10 MB): ${oversizedFiles.join(', ')}`);
+        setError(`Files too large (max 50 MB): ${oversizedFiles.join(', ')}`);
         setUploading(false);
         return;
       }
@@ -183,7 +183,7 @@ export const DocumentUpload: React.FC = () => {
         </Typography>
         
         <Typography variant="body2" color="textSecondary" paragraph>
-          Maximum file size: 10 MB per file
+          Maximum file size: 50 MB per file
         </Typography>
 
         <Box 
