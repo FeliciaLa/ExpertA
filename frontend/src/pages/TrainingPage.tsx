@@ -249,11 +249,11 @@ const TrainingPage: React.FC = () => {
         </Tabs>
 
         <TabPanel value={tabIndex} index={0}>
-          {tabIndex === 0 && <TrainingChat />}
+          {tabIndex === 0 && <DocumentUpload />}
         </TabPanel>
 
         <TabPanel value={tabIndex} index={1}>
-          {tabIndex === 1 && <DocumentUpload />}
+          {tabIndex === 1 && <TrainingChat />}
         </TabPanel>
       </Paper>
     </Box>
