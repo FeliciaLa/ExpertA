@@ -54,7 +54,7 @@ const TrainingPage: React.FC = () => {
   console.log('Current URL:', window.location.href);
   console.log('Current pathname:', window.location.pathname);
   
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState(1); // Changed from 0 to 1 to make Document Upload default
   const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
 
@@ -97,8 +97,8 @@ const TrainingPage: React.FC = () => {
       <AlertTitle sx={{ fontWeight: 600 }}>Welcome to AI Training!</AlertTitle>
       <Typography variant="body2" sx={{ mt: 1 }}>
         Now that your profile is set up, it's time to train your AI assistant with your expertise. 
-        Start with Q&A Training to teach your AI through conversation, 
-        or upload documents (PDFs, Word docs, etc.) that showcase your knowledge. 
+        Start by uploading documents (PDFs, Word docs, etc.) that showcase your knowledge, 
+        or use Q&A Training to teach your AI through conversation. 
         The more you train it, the better it becomes at representing your expertise to potential clients.
       </Typography>
     </>
@@ -170,29 +170,29 @@ const TrainingPage: React.FC = () => {
         <DialogContent>
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-              <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>📚</Typography>
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  STEP 1: Chat Training (15-30 minutes)
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  • Your AI will ask you questions about real scenarios<br/>
-                  • Answer like you're talking to a client<br/>
-                  • The more detailed your answers, the smarter your AI becomes
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
               <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>📄</Typography>
               <Box>
                 <Typography variant="subtitle1" fontWeight="bold">
-                  STEP 2: Upload Knowledge
+                  STEP 1: Upload Knowledge (5-10 minutes)
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   • Add documents, case studies, or guides you've written<br/>
                   • Your AI will learn from your actual work examples<br/>
                   • This helps your AI give more accurate, detailed responses
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+              <Typography variant="h5" sx={{ mr: 2, color: 'primary.main' }}>📚</Typography>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  STEP 2: Chat Training (15-30 minutes)
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  • Your AI will ask you questions about real scenarios<br/>
+                  • Answer like you're talking to a client<br/>
+                  • The more detailed your answers, the smarter your AI becomes
                 </Typography>
               </Box>
             </Box>
@@ -235,25 +235,25 @@ const TrainingPage: React.FC = () => {
           variant="fullWidth"
         >
           <Tab 
-            icon={<ChatIcon />} 
-            label="Q&A Training" 
+            icon={<UploadFileIcon />} 
+            label="Document Upload" 
             id="training-tab-0" 
             aria-controls="training-tabpanel-0" 
           />
           <Tab 
-            icon={<UploadFileIcon />} 
-            label="Document Upload" 
+            icon={<ChatIcon />} 
+            label="Q&A Training" 
             id="training-tab-1" 
             aria-controls="training-tabpanel-1" 
           />
         </Tabs>
 
         <TabPanel value={tabIndex} index={0}>
-          {tabIndex === 0 && <TrainingChat />}
+          {tabIndex === 0 && <DocumentUpload />}
         </TabPanel>
 
         <TabPanel value={tabIndex} index={1}>
-          <DocumentUpload />
+          {tabIndex === 1 && <TrainingChat />}
         </TabPanel>
       </Paper>
     </Box>
