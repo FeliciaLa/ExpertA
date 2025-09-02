@@ -54,7 +54,7 @@ const TrainingPage: React.FC = () => {
   console.log('Current URL:', window.location.href);
   console.log('Current pathname:', window.location.pathname);
   
-  const [tabIndex, setTabIndex] = useState(1); // Changed from 0 to 1 to make Document Upload default
+  const [tabIndex, setTabIndex] = useState(0); // Changed from 1 to 0 to make Document Upload default
   const [showTrainingWalkthrough, setShowTrainingWalkthrough] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
 
