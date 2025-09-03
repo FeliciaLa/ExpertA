@@ -260,7 +260,7 @@ Return as JSON:
             
             return json.loads(response.choices[0].message.content.strip())
             
-            except Exception as e:
+        except Exception as e:
             print(f"Error extracting knowledge from document: {str(e)}")
             return None
     
@@ -295,7 +295,7 @@ class ExpertChatbot:
         self.use_rag = use_rag
         self.client = self._create_openai_client()
         if self.use_rag:
-        self.index = init_pinecone()
+            self.index = init_pinecone()
         else:
             self.index = None
     
@@ -343,7 +343,7 @@ class ExpertChatbot:
                 
                 # Build response prompt
                 prompt = self._build_response_prompt(expert_profile, knowledge_base, relevant_knowledge, user_message)
-                    else:
+            else:
                 # No-RAG response generation - direct LLM call
                 prompt = f"""You are {self.expert.name}, an expert in your field. Answer the following question based on your general knowledge and expertise.
 
