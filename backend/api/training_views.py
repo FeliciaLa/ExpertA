@@ -328,6 +328,7 @@ class TrainingChatView(RateLimitMixin, APIView):
                 message=message if not is_command else None,
                 history=history,
                 profile=profile,
+                expert=expert,
                 is_initial=(command_type == 'START_TRAINING') if is_command else False,
                 should_skip_topic=(command_type == 'SKIP_TOPIC') if is_command else False
             )
@@ -463,7 +464,7 @@ class TrainingChatView(RateLimitMixin, APIView):
             print(f"Failed to create OpenAI client: {str(e)}")
             raise e
 
-    def _generate_ai_response(self, message, history, profile, is_initial=False, should_skip_topic=False):
+    def _generate_ai_response(self, message, history, profile, expert, is_initial=False, should_skip_topic=False):
         """Generate AI response using OpenAI"""
         try:
             # Create OpenAI client using helper function
@@ -490,7 +491,7 @@ class TrainingChatView(RateLimitMixin, APIView):
                     last_expert_message = msg['content']
 
             # Get comprehensive topic and question history to prevent repetition
-            topic_history = self._get_all_topics_and_questions(self.expert)
+            topic_history = self._get_all_topics_and_questions(expert)
             all_topics_covered = topic_history['all_topics']
             previous_questions = topic_history['previous_questions']
             topics_with_questions = topic_history['topics_with_questions']
