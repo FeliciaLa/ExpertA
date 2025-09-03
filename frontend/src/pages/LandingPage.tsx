@@ -120,7 +120,7 @@ const LandingPage: React.FC = () => {
                 WebkitTextFillColor: 'transparent'
               }}
             >
-              Duplicate your knowledge with AI
+              Digital Twins for coaches and consultants
             </Typography>
             
             <Typography 
