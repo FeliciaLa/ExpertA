@@ -120,7 +120,7 @@ const LandingPage: React.FC = () => {
                 WebkitTextFillColor: 'transparent'
               }}
             >
-              Digital Twins for coaches and consultants
+              Digital Twins for Coaches and Consultants
             </Typography>
             
             <Typography 
