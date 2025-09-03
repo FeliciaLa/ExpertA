@@ -378,6 +378,48 @@ class TrainingChatView(RateLimitMixin, APIView):
             'knowledge_area': msg.knowledge_area
         } for msg in messages][::-1]  # Reverse to get chronological order
 
+    def _get_all_topics_and_questions(self, expert):
+        """Get comprehensive list of all topics and questions to prevent repetition"""
+        try:
+            # Get all unique topics covered
+            all_topics = TrainingMessage.objects.filter(
+                expert=expert, 
+                role='ai'
+            ).exclude(
+                knowledge_area__isnull=True
+            ).exclude(
+                knowledge_area__exact=''
+            ).values_list('knowledge_area', flat=True).distinct()
+            
+            # Get last 15 questions asked (to check for similarity)
+            previous_questions = TrainingMessage.objects.filter(
+                expert=expert, 
+                role='ai'
+            ).order_by('-created_at')[:15]
+            
+            # Get questions by topic for better organization
+            topics_with_questions = {}
+            for msg in previous_questions:
+                topic = msg.knowledge_area or 'General'
+                if topic not in topics_with_questions:
+                    topics_with_questions[topic] = []
+                topics_with_questions[topic].append(msg.content[:100] + "..." if len(msg.content) > 100 else msg.content)
+            
+            return {
+                'all_topics': list(all_topics),
+                'previous_questions': [msg.content for msg in previous_questions],
+                'topics_with_questions': topics_with_questions,
+                'total_questions_asked': len(previous_questions)
+            }
+        except Exception as e:
+            print(f"Error getting topics and questions: {str(e)}")
+            return {
+                'all_topics': [],
+                'previous_questions': [],
+                'topics_with_questions': {},
+                'total_questions_asked': 0
+            }
+
     def _get_expert_profile_context(self, expert):
         """Get expert's profile information for context"""
         try:
@@ -447,6 +489,13 @@ class TrainingChatView(RateLimitMixin, APIView):
                 elif msg['role'] == 'expert':
                     last_expert_message = msg['content']
 
+            # Get comprehensive topic and question history to prevent repetition
+            topic_history = self._get_all_topics_and_questions(self.expert)
+            all_topics_covered = topic_history['all_topics']
+            previous_questions = topic_history['previous_questions']
+            topics_with_questions = topic_history['topics_with_questions']
+            total_questions_asked = topic_history['total_questions_asked']
+
             # Construct the conversation context
             context = f"""You are an AI interviewer conducting a knowledge-gathering conversation with an expert in {profile.get('industry', 'Not specified')}. 
 
@@ -456,7 +505,24 @@ Key Skills: {profile.get('key_skills', 'Not specified')}
 Typical Problems: {profile.get('typical_problems', 'Not specified')}
 Tools & Technologies: {profile.get('tools_technologies', 'Not specified')}
 
-Your role is to gather comprehensive knowledge about their field through two types of questions:
+CRITICAL ANTI-DUPLICATE INSTRUCTIONS:
+You have already asked {total_questions_asked} questions. You MUST avoid repeating similar questions.
+
+TOPICS ALREADY COVERED:
+{', '.join(all_topics_covered) if all_topics_covered else 'None yet'}
+
+RECENT QUESTIONS BY TOPIC:
+"""
+            
+            # Add detailed question history by topic
+            for topic, questions in topics_with_questions.items():
+                context += f"\n{topic}:\n"
+                for i, question in enumerate(questions[:3], 1):  # Show max 3 questions per topic
+                    context += f"  {i}. {question}\n"
+
+            context += f"""
+
+YOUR ROLE is to gather comprehensive knowledge about their field through two types of questions:
 
 1. PERSONAL EXPERIENCE QUESTIONS:
    - Their specific projects and work
@@ -511,6 +577,13 @@ IMPORTANT:
 - When they mention something interesting, explore both their personal experience with it AND their industry perspective
 - Draw connections between their personal approaches and industry trends
 
+ANTI-DUPLICATE RULES:
+1. NEVER ask a question that's similar to what you've already asked
+2. If a topic has been covered, either explore it much deeper OR move to a completely new topic
+3. Check your recent questions above - your new question must be significantly different
+4. If you're unsure, choose a completely new topic area
+5. Focus on unexplored aspects of their expertise
+
 Example formats:
 Personal Experience:
 - "How have you personally handled [specific challenge]?"
@@ -540,21 +613,27 @@ For the opening question, choose either:
 1. A personal experience question about their most significant work
 2. A broad industry question about current trends or challenges
 
+IMPORTANT: Check the topics already covered above. Choose a topic that hasn't been explored yet.
+If all topics have been covered, choose a completely new angle or deeper exploration.
+
 Example formats:
 Personal: "Could you tell me about the most challenging project you've worked on in {profile.get('industry', 'your field')}?"
 Industry: "What do you see as the most significant developments in {profile.get('industry', 'your field')} right now?"
 """
-                message = "Please start the interview with an engaging question about either their personal experience or industry knowledge."
+                message = "Please start the interview with an engaging question about either their personal experience or industry knowledge. Ensure it's on a topic not already covered."
             elif should_skip_topic:
                 context += f"""
 The expert wants to skip the current topic. Choose a new direction:
 1. Switch from personal experience to industry trends (or vice versa)
 2. Pick a different aspect of {profile.get('industry', 'their field')} to explore
 3. Move from specific cases to broader patterns (or vice versa)
+
+CRITICAL: Choose a topic that hasn't been covered yet. Check the topics above.
+If all topics have been covered, explore much deeper into existing topics or find completely new angles.
 """
-                message = "Please transition to a new topic, either personal or industry-focused."
+                message = "Please transition to a new topic, either personal or industry-focused. Ensure it's significantly different from what's been covered."
             elif message:
-                context += """
+                context += f"""
 The expert has provided a response. Please:
 1. Analyze their response for key points
 2. Generate a follow-up question that:
@@ -563,6 +642,9 @@ The expert has provided a response. Please:
    - Helps explore the topic more deeply
 3. Never simply repeat or acknowledge their response without a question
 4. If their response was brief, ask for more specific details or examples
+
+ANTI-DUPLICATE CHECK: Before asking, ensure your question is significantly different from the recent questions listed above.
+If you're unsure, choose a completely new topic area to explore.
 """
 
             # Prepare conversation history
@@ -646,6 +728,16 @@ The expert has provided a response. Please:
                             # Add a question mark if missing (instead of throwing error)
                             result['content'] = content + '?'
                             print(f"Added question mark to AI response: {result['content'][:50]}...")
+                        
+                        # Validate question uniqueness before returning
+                        if not self._validate_question_uniqueness(result['content'], previous_questions, all_topics_covered):
+                            print(f"Question too similar to previous ones, regenerating...")
+                            # If question is too similar, try one more time with stronger anti-duplicate instructions
+                            if attempt < max_retries - 1:
+                                context += "\n\nURGENT: Your last question was too similar to previous questions. Generate a COMPLETELY DIFFERENT question on a new topic."
+                                messages[0]["content"] = context
+                                continue
+                        
                         print("AI Response:", result)
                         return result
                     else:
@@ -660,6 +752,54 @@ The expert has provided a response. Please:
         except Exception as e:
             print(f"Error generating AI response: {str(e)}")
             raise e
+
+    def _validate_question_uniqueness(self, new_question, previous_questions, all_topics_covered):
+        """Validate that the new question is sufficiently different from previous ones"""
+        try:
+            if not previous_questions:
+                return True  # First question is always unique
+            
+            new_question_lower = new_question.lower()
+            
+            # Check for exact or very similar questions
+            for prev_question in previous_questions[-5:]:  # Check last 5 questions
+                prev_lower = prev_question.lower()
+                
+                # Check for exact matches or very high similarity
+                if new_question_lower == prev_lower:
+                    print(f"Exact duplicate detected: {new_question[:50]}...")
+                    return False
+                
+                # Check for high word overlap (more than 70% similar words)
+                new_words = set(new_question_lower.split())
+                prev_words = set(prev_lower.split())
+                
+                if len(new_words) > 0 and len(prev_words) > 0:
+                    overlap = len(new_words.intersection(prev_words))
+                    similarity = overlap / max(len(new_words), len(prev_words))
+                    
+                    if similarity > 0.7:  # More than 70% similar
+                        print(f"High similarity detected ({similarity:.2f}): {new_question[:50]}...")
+                        return False
+            
+            # Check if question is on a completely new topic
+            new_question_words = set(new_question_lower.split())
+            topic_words = set()
+            for topic in all_topics_covered:
+                topic_words.update(topic.lower().split())
+            
+            # If question has significant overlap with existing topics, it might be repetitive
+            if topic_words and new_question_words:
+                topic_overlap = len(new_question_words.intersection(topic_words))
+                if topic_overlap > len(new_question_words) * 0.6:  # More than 60% topic overlap
+                    print(f"High topic overlap detected: {new_question[:50]}...")
+                    return False
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error in question uniqueness validation: {str(e)}")
+            return True  # Default to allowing the question if validation fails
 
 class OnboardingAnswersView(APIView):
     """
