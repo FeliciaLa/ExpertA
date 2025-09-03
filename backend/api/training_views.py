@@ -634,27 +634,61 @@ If all topics have been covered, explore much deeper into existing topics or fin
 """
                 message = "Please transition to a new topic, either personal or industry-focused. Ensure it's significantly different from what's been covered."
             elif message:
-                context += f"""
-The expert has provided a response. Please:
+                # Check if the expert's response is substantive
+                is_substantive = len(message.strip()) > 10 and not message.lower().strip() in ['i dont', 'none', 'no', 'yes', 'ok', 'okay']
+                
+                if is_substantive:
+                    context += f"""
+The expert has provided a substantive response. Please:
 1. Analyze their response for key points
 2. Generate a follow-up question that:
    - Builds on specific details they mentioned
    - Encourages them to elaborate or provide examples
    - Helps explore the topic more deeply
 3. Never simply repeat or acknowledge their response without a question
-4. If their response was brief, ask for more specific details or examples
 
 ANTI-DUPLICATE CHECK: Before asking, ensure your question is significantly different from the recent questions listed above.
 If you're unsure, choose a completely new topic area to explore.
 """
+                else:
+                    context += f"""
+The expert gave a brief or non-substantive response. This indicates they may not want to elaborate on this topic.
+
+CRITICAL ANTI-DUPLICATE INSTRUCTION: 
+- DO NOT ask a follow-up question on the same topic
+- DO NOT ask a similar question to what you just asked
+- Instead, transition to a COMPLETELY NEW TOPIC that hasn't been covered yet
+- Choose from the unexplored topics above, or create a new angle
+
+Examples of what NOT to do:
+- Don't ask "How do you ensure..." if you just asked "How do you approach..."
+- Don't ask about "student support" if you just asked about "student support"
+- Don't rephrase the same question
+
+Examples of what TO do:
+- Switch from "student support" to "faculty development"
+- Move from "university challenges" to "industry trends"
+- Explore a completely different aspect of their expertise
+"""
+                    message = "Please transition to a completely new topic. The expert's brief response suggests they don't want to elaborate on the current topic."
 
             # Prepare conversation history
             messages = [
                 {"role": "system", "content": context}
             ]
             
-            # Add conversation history
+            # Add conversation history, filtering out non-substantive responses
+            filtered_history = []
             for msg in history:
+                # Skip very brief or non-substantive responses that could confuse the AI
+                if msg['role'] == 'expert':
+                    content = msg['content'].strip()
+                    if len(content) < 5 or content.lower() in ['i dont', 'none', 'no', 'yes', 'ok', 'okay']:
+                        continue  # Skip non-substantive responses
+                filtered_history.append(msg)
+            
+            # Add filtered conversation history
+            for msg in filtered_history:
                 role = "assistant" if msg['role'] == 'ai' else "user"
                 messages.append({"role": role, "content": msg['content']})
             
